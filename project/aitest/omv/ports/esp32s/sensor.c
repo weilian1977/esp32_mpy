@@ -691,7 +691,7 @@ int sensor_snapshot(omv_sensor_t *sensor, image_t *image, uint32_t flags)
     if (!buffer) {
         return -1;
     }
-  
+
     ESP_LOGD(TAG, "Taking picture...");
     camera_fb_t *pic = esp_camera_fb_get();
     memcpy(buffer->data, pic->buf, pic->len);

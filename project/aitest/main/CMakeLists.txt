@@ -39,7 +39,6 @@ set(MICROPY_SOURCE_DRIVERS
 
 set(MICROPY_SOURCE_PORT
     ${PROJECT_DIR}/src/main.c
-    ${PROJECT_DIR}/src/ef_sqrt.c
     ${PROJECT_DIR}/src/adapter/uart.c
     #${PROJECT_DIR}/src/adapter/usb.c
     ${PROJECT_DIR}/src/adapter/gccollect.c
@@ -198,7 +197,6 @@ target_compile_options(${MICROPY_TARGET} PUBLIC
 )
 
 # Add additional extmod and usermod components.
-target_link_libraries(${COMPONENT_LIB} "-u __ieee754_sqrtf")
 target_link_libraries(${MICROPY_TARGET} micropy_extmod_btree)
 target_link_libraries(${MICROPY_TARGET} usermod)
 
@@ -211,8 +209,10 @@ endforeach()
 if(IDF_VERSION_MINOR GREATER_EQUAL 2)
     # These paths cannot currently be found by the IDF_COMPONENTS search loop above,
     # so add them explicitly.
-    list(APPEND MICROPY_CPP_INC_EXTRA ${IDF_PATH}/components/soc/soc/${IDF_TARGET}/include)
-    list(APPEND MICROPY_CPP_INC_EXTRA ${IDF_PATH}/components/soc/soc/include)
+    list(APPEND MICROPY_CPP_INC_EXTRA ${IDF_PATH}/components/soc/${IDF_TARGET}/include/soc)
+    list(APPEND MICROPY_CPP_INC_EXTRA ${IDF_PATH}/components/soc/${IDF_TARGET})
+    list(APPEND MICROPY_CPP_INC_EXTRA ${IDF_PATH}/components/soc/include/soc)
+    
     if(IDF_VERSION_MINOR GREATER_EQUAL 3)
         list(APPEND MICROPY_CPP_INC_EXTRA ${IDF_PATH}/components/tinyusb/additions/include)
         list(APPEND MICROPY_CPP_INC_EXTRA ${IDF_PATH}/components/tinyusb/tinyusb/src)
