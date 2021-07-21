@@ -76,6 +76,18 @@ bool ll_cam_stop(cam_obj_t *cam)
     return true;
 }
 
+esp_err_t ll_cam_deinit(cam_obj_t *cam)
+{
+    gpio_isr_handler_remove(cam->vsync_pin);
+
+    if (cam->cam_intr_handle) {
+        esp_intr_free(cam->cam_intr_handle);
+        cam->cam_intr_handle = NULL;
+    }
+
+    return ESP_OK;
+}
+
 bool ll_cam_start(cam_obj_t *cam, int frame_pos)
 {
     I2S0.conf.rx_start = 0;
@@ -246,40 +258,128 @@ void ll_cam_do_vsync(cam_obj_t *cam)
 
 uint8_t ll_cam_get_dma_align(cam_obj_t *cam)
 {
-    return 16 << I2S0.lc_conf.ext_mem_bk_size;
+    return 64;//16 << I2S0.lc_conf.ext_mem_bk_size;
 }
 
-void ll_cam_dma_sizes(cam_obj_t *cam)
-{
-    int cnt = 0;
+static bool ll_cam_calc_rgb_dma(cam_obj_t *cam){
+    size_t node_max = LCD_CAM_DMA_NODE_BUFFER_MAX_SIZE / cam->dma_bytes_per_item;
+    size_t line_width = cam->width * cam->in_bytes_per_pixel;
+    size_t node_size = node_max;
+    size_t nodes_per_line = 1;
+    size_t lines_per_node = 1;
 
-    cam->dma_bytes_per_item = 1;
-    if (cam->jpeg_mode) {
-        cam->dma_half_buffer_cnt = 16;
-        cam->dma_buffer_size = cam->dma_half_buffer_cnt * 1024;
-        cam->dma_half_buffer_size = cam->dma_buffer_size / cam->dma_half_buffer_cnt;
-        cam->dma_node_buffer_size = cam->dma_half_buffer_size;
-    } else {
-        cam->dma_buffer_size = cam->recv_size;
-        cam->dma_half_buffer_cnt = 2;
-        cam->dma_half_buffer_size = cam->dma_buffer_size / cam->dma_half_buffer_cnt;
-
-        for (cnt = 0; cnt < LCD_CAM_DMA_NODE_BUFFER_MAX_SIZE; cnt++) { // Find a divisible dma size
-            if ((cam->dma_half_buffer_size) % (LCD_CAM_DMA_NODE_BUFFER_MAX_SIZE - cnt) == 0) {
+    // Calculate DMA Node Size so that it's divisable by or divisor of the line width
+    if(line_width >= node_max){
+        // One or more nodes will be requied for one line
+        for(size_t i = node_max; i > 0; i=i-1){
+            if ((line_width % i) == 0) {
+                node_size = i;
+                nodes_per_line = line_width / node_size;
                 break;
             }
         }
-        cam->dma_node_buffer_size = LCD_CAM_DMA_NODE_BUFFER_MAX_SIZE - cnt;
+    } else {
+        // One or more lines can fit into one node
+        for(size_t i = node_max; i > 0; i=i-1){
+            if ((i % line_width) == 0) {
+                node_size = i;
+                lines_per_node = node_size / line_width;
+                while((cam->height % lines_per_node) != 0){
+                    lines_per_node = lines_per_node - 1;
+                    node_size = lines_per_node * line_width;
+                }
+                break;
+            }
+        }
     }
+
+    ESP_LOGI(TAG, "node_size: %4u, nodes_per_line: %u, lines_per_node: %u", 
+            node_size * cam->dma_bytes_per_item, nodes_per_line, lines_per_node);
+
+    cam->dma_node_buffer_size = node_size * cam->dma_bytes_per_item;
+
+    if (cam->psram_mode) {
+        cam->dma_buffer_size = cam->recv_size * cam->dma_bytes_per_item;
+        cam->dma_half_buffer_cnt = 2;
+        cam->dma_half_buffer_size = cam->dma_buffer_size / cam->dma_half_buffer_cnt;
+    } else {
+        size_t dma_half_buffer_max = CONFIG_CAMERA_DMA_BUFFER_SIZE_MAX / 2 / cam->dma_bytes_per_item;
+        if (line_width > dma_half_buffer_max) {
+            ESP_LOGE(TAG, "Resolution too high");
+            return 0;
+        }
+
+        // Calculate minimum EOF size = max(mode_size, line_size)
+        size_t dma_half_buffer_min = node_size * nodes_per_line;
+
+        // Calculate max EOF size divisable by node size
+        size_t dma_half_buffer = (dma_half_buffer_max / dma_half_buffer_min) * dma_half_buffer_min;
+
+        // Adjust EOF size so that height will be divisable by the number of lines in each EOF
+        size_t lines_per_half_buffer = dma_half_buffer / line_width;
+        while((cam->height % lines_per_half_buffer) != 0){
+            dma_half_buffer = dma_half_buffer - dma_half_buffer_min;
+            lines_per_half_buffer = dma_half_buffer / line_width;
+        }
+
+        // Calculate DMA size
+        size_t dma_buffer_max = 2 * dma_half_buffer_max;
+        size_t dma_buffer_size = dma_buffer_max;
+        dma_buffer_size =(dma_buffer_max / dma_half_buffer) * dma_half_buffer;
+        
+        ESP_LOGI(TAG, "dma_half_buffer_min: %5u, dma_half_buffer: %5u, lines_per_half_buffer: %2u, dma_buffer_size: %5u", 
+                dma_half_buffer_min * cam->dma_bytes_per_item, dma_half_buffer * cam->dma_bytes_per_item, lines_per_half_buffer, dma_buffer_size * cam->dma_bytes_per_item);
+
+        cam->dma_buffer_size = dma_buffer_size * cam->dma_bytes_per_item;
+        cam->dma_half_buffer_size = dma_half_buffer * cam->dma_bytes_per_item;
+        cam->dma_half_buffer_cnt = cam->dma_buffer_size / cam->dma_half_buffer_size;
+    }
+    return 1;
 }
 
-size_t ll_cam_memcpy(uint8_t *out, const uint8_t *in, size_t len)
+bool ll_cam_dma_sizes(cam_obj_t *cam)
 {
+    cam->dma_bytes_per_item = 1;
+    if (cam->jpeg_mode) {
+        if (cam->psram_mode) {
+            cam->dma_buffer_size = cam->recv_size;
+            cam->dma_half_buffer_size = 1024;
+            cam->dma_half_buffer_cnt = cam->dma_buffer_size / cam->dma_half_buffer_size;
+            cam->dma_node_buffer_size = cam->dma_half_buffer_size;
+        } else {
+            cam->dma_half_buffer_cnt = 16;
+            cam->dma_buffer_size = cam->dma_half_buffer_cnt * 1024;
+            cam->dma_half_buffer_size = cam->dma_buffer_size / cam->dma_half_buffer_cnt;
+            cam->dma_node_buffer_size = cam->dma_half_buffer_size;
+        }
+    } else {
+        return ll_cam_calc_rgb_dma(cam);
+    }
+    return 1;
+}
+
+size_t IRAM_ATTR ll_cam_memcpy(cam_obj_t *cam, uint8_t *out, const uint8_t *in, size_t len)
+{
+    // YUV to Grayscale
+    if (cam->in_bytes_per_pixel == 2 && cam->fb_bytes_per_pixel == 1) {
+        size_t end = len / 8;
+        for (size_t i = 0; i < end; ++i) {
+            out[0] = in[0];
+            out[1] = in[2];
+            out[2] = in[4];
+            out[3] = in[6];
+            out += 4;
+            in += 8;
+        }
+        return len / 2;
+    }
+
+    // just memcpy
     memcpy(out, in, len);
     return len;
 }
 
-esp_err_t ll_cam_set_sample_mode(cam_obj_t *cam, pixformat_t pix_format, uint32_t xclk_freq_hz, uint8_t sensor_pid)
+esp_err_t ll_cam_set_sample_mode(cam_obj_t *cam, pixformat_t pix_format, uint32_t xclk_freq_hz, uint16_t sensor_pid)
 {
     if (pix_format == PIXFORMAT_GRAYSCALE) {
         if (sensor_pid == OV3660_PID || sensor_pid == OV5640_PID || sensor_pid == NT99141_PID) {
@@ -292,10 +392,6 @@ esp_err_t ll_cam_set_sample_mode(cam_obj_t *cam, pixformat_t pix_format, uint32_
             cam->in_bytes_per_pixel = 2;       // camera sends YU/YV
             cam->fb_bytes_per_pixel = 2;       // frame buffer stores YU/YV/RGB565
     } else if (pix_format == PIXFORMAT_JPEG) {
-        if (sensor_pid != OV2640_PID && sensor_pid != OV3660_PID && sensor_pid != OV5640_PID  && sensor_pid != NT99141_PID) {
-            ESP_LOGE(TAG, "JPEG format is not supported on this sensor");
-            return ESP_ERR_NOT_SUPPORTED;
-        }
         cam->in_bytes_per_pixel = 1;
         cam->fb_bytes_per_pixel = 1;
     } else {

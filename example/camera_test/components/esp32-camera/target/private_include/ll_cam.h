@@ -16,8 +16,13 @@
 
 #include <stdint.h>
 #include "sdkconfig.h"
+#include "esp_idf_version.h"
 #if CONFIG_IDF_TARGET_ESP32
+#if ESP_IDF_VERSION_MAJOR >= 4
 #include "esp32/rom/lldesc.h"
+#else
+#include "rom/lldesc.h"
+#endif
 #elif CONFIG_IDF_TARGET_ESP32S2
 #include "esp32s2/rom/lldesc.h"
 #elif CONFIG_IDF_TARGET_ESP32S3
@@ -25,18 +30,22 @@
 #endif
 #include "esp_log.h"
 #include "esp_camera.h"
-#include "camera_common.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/queue.h"
 #include "freertos/task.h"
 #include "freertos/semphr.h"
 
-#define DBG_PIN_NUM -1//7//26
-#if DBG_PIN_NUM >= 0
-#include "hal/gpio_ll.h"
-#define DBG_PIN_SET(v) gpio_ll_set_level(&GPIO, DBG_PIN_NUM, v)
+#define CAMERA_DBG_PIN_ENABLE 0
+#if CAMERA_DBG_PIN_ENABLE
+    #if CONFIG_IDF_TARGET_ESP32
+        #define DBG_PIN_NUM 26
+    #else
+        #define DBG_PIN_NUM 7
+    #endif
+    #include "hal/gpio_ll.h"
+    #define DBG_PIN_SET(v) gpio_ll_set_level(&GPIO, DBG_PIN_NUM, v)
 #else
-#define DBG_PIN_SET(v)
+    #define DBG_PIN_SET(v)
 #endif
 
 #define CAM_CHECK(a, str, ret) if (!(a)) {                                          \
@@ -105,6 +114,7 @@ typedef struct {
     uint16_t height;
     uint8_t in_bytes_per_pixel;
     uint8_t fb_bytes_per_pixel;
+    uint32_t fb_size;
 
     cam_state_t state;
 } cam_obj_t;
@@ -113,14 +123,15 @@ typedef struct {
 bool ll_cam_stop(cam_obj_t *cam);
 bool ll_cam_start(cam_obj_t *cam, int frame_pos);
 esp_err_t ll_cam_config(cam_obj_t *cam, const camera_config_t *config);
+esp_err_t ll_cam_deinit(cam_obj_t *cam);
 void ll_cam_vsync_intr_enable(cam_obj_t *cam, bool en);
 esp_err_t ll_cam_set_pin(cam_obj_t *cam, const camera_config_t *config);
 esp_err_t ll_cam_init_isr(cam_obj_t *cam);
 void ll_cam_do_vsync(cam_obj_t *cam);
 uint8_t ll_cam_get_dma_align(cam_obj_t *cam);
-void ll_cam_dma_sizes(cam_obj_t *cam);
-size_t ll_cam_memcpy(uint8_t *out, const uint8_t *in, size_t len);
-esp_err_t ll_cam_set_sample_mode(cam_obj_t *cam, pixformat_t pix_format, uint32_t xclk_freq_hz, uint8_t sensor_pid);
+bool ll_cam_dma_sizes(cam_obj_t *cam);
+size_t IRAM_ATTR ll_cam_memcpy(cam_obj_t *cam, uint8_t *out, const uint8_t *in, size_t len);
+esp_err_t ll_cam_set_sample_mode(cam_obj_t *cam, pixformat_t pix_format, uint32_t xclk_freq_hz, uint16_t sensor_pid);
 
 // implemented in cam_hal
 void ll_cam_send_event(cam_obj_t *cam, cam_event_t cam_event, BaseType_t * HPTaskAwoken);
