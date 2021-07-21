@@ -46,7 +46,7 @@
 
     `lvgl_esp32_drivers: commit-id 092ef5271cc769b4fd7b3401e7f51351b0c4886f 2021.06.18`
 
-    `lvgl: commit-id 55ef1826fcdae5b4eb920a0be4c1491757989cde 2021.07.21`
+    `lvgl: commit-id c6e97162d1425db409ce568c73d4d71abdee9d4e 2021.07.21`
 
 ## 5. 编译工程 ##
 
