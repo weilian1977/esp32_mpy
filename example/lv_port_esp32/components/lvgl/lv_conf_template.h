@@ -122,7 +122,7 @@ e.g. "stm32f769xx.h" or "stm32f429xx.h"*/
 #define LV_USE_GPU_NXP_PXP      0
 #if LV_USE_GPU_NXP_PXP
 /*1: Add default bare metal and FreeRTOS interrupt handling routines for PXP (lv_gpu_nxp_pxp_osa.c)
- *   and call lv_gpu_nxp_pxp_init() automatically during lv_init(). Note that symbol FSL_RTOS_FREE_RTOS
+ *   and call lv_gpu_nxp_pxp_init() automatically during lv_init(). Note that symbol SDK_OS_FREE_RTOS
  *   has to be defined in order to use FreeRTOS OSA, otherwise bare-metal implementation is selected.
  *0: lv_gpu_nxp_pxp_init() has to be called manually before lv_init()
  */
@@ -213,6 +213,9 @@ e.g. "stm32f769xx.h" or "stm32f429xx.h"*/
 #if LV_ENABLE_GC != 0
 #  define LV_GC_INCLUDE "gc.h"                           /*Include Garbage Collector related things*/
 #endif /*LV_ENABLE_GC*/
+
+/*1: Enable API to take snapshot for object*/
+#define LV_USE_SNAPSHOT         1
 
 /*=====================
  *  COMPILER SETTINGS

@@ -1,0 +1,82 @@
+	//HSD2.8  ST7789V
+
+
+//------------------------------display and color format setting-----------//
+WriteComm(0x36);
+WriteData(0x00);
+WriteComm(0x3a);
+WriteData(0x05);
+//--------------------------------ST7789V Frame rate setting---------------//
+WriteComm(0xb2);
+WriteData(0x0c);
+WriteData(0x0c);
+WriteData(0x00);
+WriteData(0x33);
+WriteData(0x33);
+
+WriteComm(0xb3);	 //58M
+WriteData(0x10);
+WriteData(0x10);
+WriteData(0x10);
+
+WriteComm(0xb7);
+WriteData(0x35);
+//---------------------------------ST7789V Power setting-------------------//
+WriteComm(0xbb);
+WriteData(0x28);
+WriteComm(0xc0);
+WriteData(0x2c);
+WriteComm(0xc2);
+WriteData(0x01);
+
+WriteComm(0xc3);
+WriteData(0x10);
+
+WriteComm(0xc4);
+WriteData(0x20);
+WriteComm(0xc6);
+WriteData(0x0f);
+WriteComm(0xd0);
+WriteData(0xa4);
+WriteData(0xa1);
+//--------------------------------ST7789V gamma setting--------------------//
+WriteComm(0xe0);
+WriteData(0xd0);
+WriteData(0x00);
+WriteData(0x02);
+WriteData(0x07);
+WriteData(0x0a);
+WriteData(0x28);
+WriteData(0x32);
+WriteData(0x44);
+WriteData(0x42);
+WriteData(0x06);
+WriteData(0x0e);
+WriteData(0x12);
+WriteData(0x14);
+WriteData(0x17);
+WriteComm(0xe1);
+WriteData(0xd0);
+WriteData(0x00);
+WriteData(0x02);
+WriteData(0x07);
+WriteData(0x0a);
+WriteData(0x28);
+WriteData(0x31);
+WriteData(0x54);
+WriteData(0x47);
+WriteData(0x0e);
+WriteData(0x1c);
+WriteData(0x17);
+WriteData(0x1b);
+WriteData(0x1e);
+
+
+WriteComm(0x11);
+	Delay(120);
+
+
+WriteComm(0x29);
+
+WriteComm(0x2C);	
+	

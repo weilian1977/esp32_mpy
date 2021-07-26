@@ -28,6 +28,7 @@
 #endif
 
 #include "lvgl_helpers.h"
+#include "drv_aw9523b.h"
 
 #ifndef CONFIG_LV_TFT_DISPLAY_MONOCHROME
     #if defined CONFIG_LV_USE_DEMO_WIDGETS
@@ -84,6 +85,16 @@ static void guiTask(void *pvParameter) {
 
     (void) pvParameter;
     xGuiSemaphore = xSemaphoreCreateMutex();
+
+    vTaskDelay(1000 / portTICK_RATE_MS);
+    aw9523b_init();
+    ext_write_digital(CAMERA_RESET_PIN, 1);
+    ext_write_digital(CAMERA_PWDN_PIN, 0);
+    ext_write_digital(VIBRATION_MOTOR_PIN, 1);
+    ext_write_digital(LCD_LEDK_PIN, 0);
+    ext_write_digital(LCD_TP_RESET_PIN, 1);
+    ext_write_digital(PERI_PWR_ON_PIN, 0);
+    ext_write_digital(LIGHT_SW_PIN, 0);
 
     lv_init();
 

@@ -30,6 +30,11 @@
     #include "../gpu/lv_gpu_stm32_dma2d.h"
 #endif
 
+#if LV_USE_GPU_NXP_PXP && LV_USE_GPU_NXP_PXP_AUTO_INIT
+    #include "../gpu/lv_gpu_nxp_pxp.h"
+    #include "../gpu/lv_gpu_nxp_pxp_osa.h"
+#endif
+
 /*********************
  *      DEFINES
  *********************/
@@ -103,6 +108,13 @@ void lv_init(void)
 #if LV_USE_GPU_STM32_DMA2D
     /*Initialize DMA2D GPU*/
     lv_gpu_stm32_dma2d_init();
+#endif
+
+#if LV_USE_GPU_NXP_PXP && LV_USE_GPU_NXP_PXP_AUTO_INIT
+    if(lv_gpu_nxp_pxp_init(&pxp_default_cfg) != LV_RES_OK) {
+        LV_LOG_ERROR("PXP init error. STOP.\n");
+        for(; ;) ;
+    }
 #endif
 
     _lv_obj_style_init();
@@ -389,6 +401,20 @@ static void lv_obj_destructor(const lv_obj_class_t * class_p, lv_obj_t * obj)
 {
     LV_UNUSED(class_p);
 
+    _lv_event_mark_deleted(obj);
+
+    /*Remove all style*/
+    lv_obj_enable_style_refresh(false); /*No need to refresh the style because the object will be deleted*/
+    lv_obj_remove_style_all(obj);
+    lv_obj_enable_style_refresh(true);
+
+    /*Remove the animations from this object*/
+    lv_anim_del(obj, NULL);
+
+    /*Delete from the group*/
+    lv_group_t * group = lv_obj_get_group(obj);
+    if(group) lv_group_remove_obj(obj);
+
     if(obj->spec_attr) {
         if(obj->spec_attr->children) {
             lv_mem_free(obj->spec_attr->children);
@@ -402,7 +428,6 @@ static void lv_obj_destructor(const lv_obj_class_t * class_p, lv_obj_t * obj)
         lv_mem_free(obj->spec_attr);
         obj->spec_attr = NULL;
     }
-
 }
 
 static void lv_obj_draw(lv_event_t * e)
@@ -472,7 +497,19 @@ static void lv_obj_draw(lv_event_t * e)
         coords.y1 -= h;
         coords.y2 += h;
 
+
+        lv_obj_draw_part_dsc_t part_dsc;
+        lv_obj_draw_dsc_init(&part_dsc, clip_area);
+        part_dsc.class_p = MY_CLASS;
+        part_dsc.type = LV_OBJ_DRAW_PART_RECTANGLE;
+        part_dsc.rect_dsc = &draw_dsc;
+        part_dsc.draw_area = &coords;
+        part_dsc.part = LV_PART_MAIN;
+        lv_event_send(obj, LV_EVENT_DRAW_PART_BEGIN, &part_dsc);
+
         lv_draw_rect(&coords, clip_area, &draw_dsc);
+
+        lv_event_send(obj, LV_EVENT_DRAW_PART_END, &part_dsc);
 
 #if LV_DRAW_COMPLEX
         if(lv_obj_get_style_clip_corner(obj, LV_PART_MAIN)) {
@@ -512,7 +549,19 @@ static void lv_obj_draw(lv_event_t * e)
             coords.x2 += w;
             coords.y1 -= h;
             coords.y2 += h;
+
+
+            lv_obj_draw_part_dsc_t part_dsc;
+            lv_obj_draw_dsc_init(&part_dsc, clip_area);
+            part_dsc.class_p = MY_CLASS;
+            part_dsc.type = LV_OBJ_DRAW_PART_BORDER_POST;
+            part_dsc.rect_dsc = &draw_dsc;
+            part_dsc.draw_area = &coords;
+            part_dsc.part = LV_PART_MAIN;
+            lv_event_send(obj, LV_EVENT_DRAW_PART_BEGIN, &part_dsc);
+
             lv_draw_rect(&coords, clip_area, &draw_dsc);
+            lv_event_send(obj, LV_EVENT_DRAW_PART_END, &part_dsc);
         }
     }
 }
@@ -530,8 +579,25 @@ static void draw_scrollbar(lv_obj_t * obj, const lv_area_t * clip_area)
     lv_res_t sb_res = scrollbar_init_draw_dsc(obj, &draw_dsc);
     if(sb_res != LV_RES_OK) return;
 
-    if(lv_area_get_size(&hor_area) > 0) lv_draw_rect(&hor_area, clip_area, &draw_dsc);
-    if(lv_area_get_size(&ver_area) > 0) lv_draw_rect(&ver_area, clip_area, &draw_dsc);
+    lv_obj_draw_part_dsc_t part_dsc;
+    lv_obj_draw_dsc_init(&part_dsc, clip_area);
+    part_dsc.class_p = MY_CLASS;
+    part_dsc.type = LV_OBJ_DRAW_PART_SCROLLBAR;
+    part_dsc.rect_dsc = &draw_dsc;
+    part_dsc.part = LV_PART_SCROLLBAR;
+
+    if(lv_area_get_size(&hor_area) > 0) {
+        part_dsc.draw_area = &hor_area;
+        lv_event_send(obj, LV_EVENT_DRAW_PART_BEGIN, &part_dsc);
+        lv_draw_rect(&hor_area, clip_area, &draw_dsc);
+        lv_event_send(obj, LV_EVENT_DRAW_PART_END, &part_dsc);
+    }
+    if(lv_area_get_size(&ver_area) > 0) {
+        part_dsc.draw_area = &ver_area;
+        lv_event_send(obj, LV_EVENT_DRAW_PART_BEGIN, &part_dsc);
+        lv_draw_rect(&ver_area, clip_area, &draw_dsc);
+        lv_event_send(obj, LV_EVENT_DRAW_PART_END, &part_dsc);
+    }
 }
 
 /**
@@ -613,6 +679,13 @@ static void lv_obj_event(const lv_obj_class_t * class_p, lv_event_t * e)
     else if(code == LV_EVENT_PRESS_LOST) {
         lv_obj_clear_state(obj, LV_STATE_PRESSED);
     }
+    else if(code == LV_EVENT_STYLE_CHANGED) {
+        uint32_t child_cnt = lv_obj_get_child_cnt(obj);
+        for(uint32_t i = 0; i < child_cnt; i++) {
+            lv_obj_t * child = obj->spec_attr->children[i];
+            lv_obj_mark_layout_as_dirty(child);
+        }
+    }
     else if(code == LV_EVENT_KEY) {
         if(lv_obj_has_flag(obj, LV_OBJ_FLAG_CHECKABLE)) {
             char c = *((char *)lv_event_get_param(e));
@@ -622,8 +695,12 @@ static void lv_obj_event(const lv_obj_class_t * class_p, lv_event_t * e)
             else if(c == LV_KEY_LEFT || c == LV_KEY_DOWN) {
                 lv_obj_clear_state(obj, LV_STATE_CHECKED);
             }
-            lv_res_t res = lv_event_send(obj, LV_EVENT_VALUE_CHANGED, NULL);
-            if(res != LV_RES_OK) return;
+
+            /*With Enter LV_EVENT_RELEASED will send VALUE_CHANGE event*/
+            if(c != LV_KEY_ENTER) {
+                lv_res_t res = lv_event_send(obj, LV_EVENT_VALUE_CHANGED, NULL);
+                if(res != LV_RES_OK) return;
+            }
         }
     }
     else if(code == LV_EVENT_FOCUSED) {
@@ -635,7 +712,12 @@ static void lv_obj_event(const lv_obj_class_t * class_p, lv_event_t * e)
         editing = lv_group_get_editing(lv_obj_get_group(obj));
         lv_state_t state = LV_STATE_FOCUSED;
 
+        /* Use the indev for then indev handler.
+         * But if the obj was focused manually it returns NULL so try to
+         * use the indev from the event*/
         lv_indev_t * indev = lv_indev_get_act();
+        if(indev == NULL) indev = lv_event_get_indev(e);
+
         lv_indev_type_t indev_type = lv_indev_get_type(indev);
         if(indev_type == LV_INDEV_TYPE_KEYPAD || indev_type == LV_INDEV_TYPE_ENCODER) state |= LV_STATE_FOCUS_KEY;
         if(editing) {
@@ -664,7 +746,8 @@ static void lv_obj_event(const lv_obj_class_t * class_p, lv_event_t * e)
         }
 
         uint32_t i;
-        for(i = 0; i < lv_obj_get_child_cnt(obj); i++) {
+        uint32_t child_cnt = lv_obj_get_child_cnt(obj);
+        for(i = 0; i < child_cnt; i++) {
             lv_obj_t * child = lv_obj_get_child(obj, i);
             lv_obj_mark_layout_as_dirty(child);
         }

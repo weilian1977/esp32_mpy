@@ -184,7 +184,7 @@ void _lv_disp_refr_timer(lv_timer_t * tmr)
     TRACE_REFR("begin");
 
     uint32_t start = lv_tick_get();
-    uint32_t elaps = 0;
+    volatile uint32_t elaps = 0;
 
     disp_refr = tmr->user_data;
 
@@ -408,75 +408,75 @@ static void lv_refr_area(const lv_area_t * area_p)
         draw_buf->area.y2        = lv_disp_get_ver_res(disp_refr) - 1;
         disp_refr->driver->draw_buf->last_part = 1;
         lv_refr_area_part(area_p);
+        return;
     }
+
     /*Normal refresh: draw the area in parts*/
-    else {
-        lv_disp_draw_buf_t * draw_buf = lv_disp_get_draw_buf(disp_refr);
-        /*Calculate the max row num*/
-        lv_coord_t w = lv_area_get_width(area_p);
-        lv_coord_t h = lv_area_get_height(area_p);
-        lv_coord_t y2 =
-            area_p->y2 >= lv_disp_get_ver_res(disp_refr) ? lv_disp_get_ver_res(disp_refr) - 1 : area_p->y2;
+    lv_disp_draw_buf_t * draw_buf = lv_disp_get_draw_buf(disp_refr);
+    /*Calculate the max row num*/
+    lv_coord_t w = lv_area_get_width(area_p);
+    lv_coord_t h = lv_area_get_height(area_p);
+    lv_coord_t y2 = area_p->y2 >= lv_disp_get_ver_res(disp_refr) ?
+                        lv_disp_get_ver_res(disp_refr) - 1 : area_p->y2;
 
-        int32_t max_row = (uint32_t)draw_buf->size / w;
+    int32_t max_row = (uint32_t)draw_buf->size / w;
 
-        if(max_row > h) max_row = h;
+    if(max_row > h) max_row = h;
 
-        /*Round down the lines of draw_buf if rounding is added*/
-        if(disp_refr->driver->rounder_cb) {
-            lv_area_t tmp;
-            tmp.x1 = 0;
-            tmp.x2 = 0;
-            tmp.y1 = 0;
+    /*Round down the lines of draw_buf if rounding is added*/
+    if(disp_refr->driver->rounder_cb) {
+        lv_area_t tmp;
+        tmp.x1 = 0;
+        tmp.x2 = 0;
+        tmp.y1 = 0;
 
-            lv_coord_t h_tmp = max_row;
-            do {
-                tmp.y2 = h_tmp - 1;
-                disp_refr->driver->rounder_cb(disp_refr->driver, &tmp);
+        lv_coord_t h_tmp = max_row;
+        do {
+            tmp.y2 = h_tmp - 1;
+            disp_refr->driver->rounder_cb(disp_refr->driver, &tmp);
 
-                /*If this height fits into `max_row` then fine*/
-                if(lv_area_get_height(&tmp) <= max_row) break;
+            /*If this height fits into `max_row` then fine*/
+            if(lv_area_get_height(&tmp) <= max_row) break;
 
-                /*Decrement the height of the area until it fits into `max_row` after rounding*/
-                h_tmp--;
-            } while(h_tmp > 0);
+            /*Decrement the height of the area until it fits into `max_row` after rounding*/
+            h_tmp--;
+        } while(h_tmp > 0);
 
-            if(h_tmp <= 0) {
-                LV_LOG_WARN("Can't set draw_buf height using the round function. (Wrong round_cb or to "
-                            "small draw_buf)");
-                return;
-            }
-            else {
-                max_row = tmp.y2 + 1;
-            }
+        if(h_tmp <= 0) {
+            LV_LOG_WARN("Can't set draw_buf height using the round function. (Wrong round_cb or to "
+                        "small draw_buf)");
+            return;
         }
-
-        /*Always use the full row*/
-        lv_coord_t row;
-        lv_coord_t row_last = 0;
-        for(row = area_p->y1; row + max_row - 1 <= y2; row += max_row) {
-            /*Calc. the next y coordinates of draw_buf*/
-            draw_buf->area.x1 = area_p->x1;
-            draw_buf->area.x2 = area_p->x2;
-            draw_buf->area.y1 = row;
-            draw_buf->area.y2 = row + max_row - 1;
-            if(draw_buf->area.y2 > y2) draw_buf->area.y2 = y2;
-            row_last = draw_buf->area.y2;
-            if(y2 == row_last) disp_refr->driver->draw_buf->last_part = 1;
-            lv_refr_area_part(area_p);
+        else {
+            max_row = tmp.y2 + 1;
         }
+    }
 
-        /*If the last y coordinates are not handled yet ...*/
-        if(y2 != row_last) {
-            /*Calc. the next y coordinates of draw_buf*/
-            draw_buf->area.x1 = area_p->x1;
-            draw_buf->area.x2 = area_p->x2;
-            draw_buf->area.y1 = row;
-            draw_buf->area.y2 = y2;
+    /*Always use the full row*/
+    lv_coord_t row;
+    lv_coord_t row_last = 0;
+    for(row = area_p->y1; row + max_row - 1 <= y2; row += max_row) {
+        /*Calc. the next y coordinates of draw_buf*/
+        draw_buf->area.x1 = area_p->x1;
+        draw_buf->area.x2 = area_p->x2;
+        draw_buf->area.y1 = row;
+        draw_buf->area.y2 = row + max_row - 1;
+        if(draw_buf->area.y2 > y2) draw_buf->area.y2 = y2;
+        row_last = draw_buf->area.y2;
+        if(y2 == row_last) disp_refr->driver->draw_buf->last_part = 1;
+        lv_refr_area_part(area_p);
+    }
 
-            disp_refr->driver->draw_buf->last_part = 1;
-            lv_refr_area_part(area_p);
-        }
+    /*If the last y coordinates are not handled yet ...*/
+    if(y2 != row_last) {
+        /*Calc. the next y coordinates of draw_buf*/
+        draw_buf->area.x1 = area_p->x1;
+        draw_buf->area.x2 = area_p->x2;
+        draw_buf->area.y1 = row;
+        draw_buf->area.y2 = y2;
+
+        disp_refr->driver->draw_buf->last_part = 1;
+        lv_refr_area_part(area_p);
     }
 }
 
@@ -584,7 +584,8 @@ static lv_obj_t * lv_refr_get_top_obj(const lv_area_t * area_p, lv_obj_t * obj)
         if(info.res == LV_COVER_RES_MASKED) return NULL;
 
         uint32_t i;
-        for(i = 0; i < lv_obj_get_child_cnt(obj); i++) {
+        uint32_t child_cnt = lv_obj_get_child_cnt(obj);
+        for(i = 0; i < child_cnt; i++) {
             lv_obj_t * child = lv_obj_get_child(obj, i);
             found_p = lv_refr_get_top_obj(area_p, child);
 
@@ -631,7 +632,8 @@ static void lv_refr_obj_and_children(lv_obj_t * top_p, const lv_area_t * mask_p)
     while(par != NULL) {
         bool go = false;
         uint32_t i;
-        for(i = 0; i < lv_obj_get_child_cnt(par); i++) {
+        uint32_t child_cnt = lv_obj_get_child_cnt(par);
+        for(i = 0; i < child_cnt; i++) {
             lv_obj_t * child = lv_obj_get_child(par, i);
             if(!go) {
                 if(child == border_p) go = true;
@@ -703,7 +705,8 @@ static void lv_refr_obj(lv_obj_t * obj, const lv_area_t * mask_ori_p)
             lv_area_t mask_child; /*Mask from obj and its child*/
             lv_area_t child_area;
             uint32_t i;
-            for(i = 0; i < lv_obj_get_child_cnt(obj); i++) {
+            uint32_t child_cnt = lv_obj_get_child_cnt(obj);
+            for(i = 0; i < child_cnt; i++) {
                 lv_obj_t * child = lv_obj_get_child(obj, i);
                 lv_obj_get_coords(child, &child_area);
                 ext_size = _lv_obj_get_ext_draw_size(child);
