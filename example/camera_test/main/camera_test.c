@@ -40,6 +40,7 @@
 #include "freertos/task.h"
 
 #include "esp_camera.h"
+#include "drv_aw9523b.h"
 
 
 #define BOARD_MATATALAB
@@ -95,21 +96,21 @@
 
 #define CAM_PIN_PWDN -1
 #define CAM_PIN_RESET -1 //software reset will be performed
-#define CAM_PIN_XCLK 40
-#define CAM_PIN_SIOD 34
-#define CAM_PIN_SIOC 33
+#define CAM_PIN_XCLK 46
+#define CAM_PIN_SIOD -1
+#define CAM_PIN_SIOC -1
 
-#define CAM_PIN_D7 39
-#define CAM_PIN_D6 41
-#define CAM_PIN_D5 42
-#define CAM_PIN_D4 12
-#define CAM_PIN_D3 3
-#define CAM_PIN_D2 14
-#define CAM_PIN_D1 47
-#define CAM_PIN_D0 13
-#define CAM_PIN_VSYNC 21
-#define CAM_PIN_HREF 38
-#define CAM_PIN_PCLK 11
+#define CAM_PIN_D7 15
+#define CAM_PIN_D6 16
+#define CAM_PIN_D5 17
+#define CAM_PIN_D4 18
+#define CAM_PIN_D3 21
+#define CAM_PIN_D2 38
+#define CAM_PIN_D1 39
+#define CAM_PIN_D0 40
+#define CAM_PIN_VSYNC 48
+#define CAM_PIN_HREF 47
+#define CAM_PIN_PCLK 45
 
 #endif
 
@@ -140,7 +141,7 @@ static camera_config_t camera_config = {
     .ledc_channel = LEDC_CHANNEL_0,
 
     .pixel_format = PIXFORMAT_JPEG, //YUV422,GRAYSCALE,RGB565,JPEG
-    .frame_size = FRAMESIZE_VGA,    //QQVGA-UXGA Do not use sizes above QVGA when not JPEG
+    .frame_size = FRAMESIZE_QVGA,    //QQVGA-UXGA Do not use sizes above QVGA when not JPEG
 
     .jpeg_quality = 12, //0-63 lower number means higher quality
     .fb_count = 1       //if more than one, i2s runs in continuous mode. Use only with JPEG
@@ -148,6 +149,15 @@ static camera_config_t camera_config = {
 
 static esp_err_t init_camera()
 {
+    //initialize the PWDN and RESET pin
+    aw9523b_init();
+    ext_write_digital(CAMERA_RESET_PIN, 1);
+    ext_write_digital(CAMERA_PWDN_PIN, 0);
+    ext_write_digital(VIBRATION_MOTOR_PIN, 1);
+    ext_write_digital(LCD_LEDK_PIN, 0);
+    ext_write_digital(LCD_TP_RESET_PIN, 1);
+    ext_write_digital(PERI_PWR_ON_PIN, 0);
+    ext_write_digital(LIGHT_SW_PIN, 0);
     //initialize the camera
     esp_err_t err = esp_camera_init(&camera_config);
     if (err != ESP_OK)
@@ -161,8 +171,8 @@ static esp_err_t init_camera()
 
 void app_main()
 {
+    vTaskDelay(1000 / portTICK_RATE_MS);
     init_camera();
-
     while (1)
     {
         ESP_LOGI(TAG, "Taking picture...");
