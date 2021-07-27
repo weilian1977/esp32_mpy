@@ -12,6 +12,7 @@
 
 #include "esp_camera.h"
 #include "omv_sensor.h"
+#include "drv_aw9523b.h"
 
 static const char *TAG = "esp32_sensors";
 
@@ -67,21 +68,21 @@ static const char *TAG = "esp32_sensors";
 
 #define CAM_PIN_PWDN -1
 #define CAM_PIN_RESET -1 //software reset will be performed
-#define CAM_PIN_XCLK 40
-#define CAM_PIN_SIOD 34
-#define CAM_PIN_SIOC 33
+#define CAM_PIN_XCLK 46
+#define CAM_PIN_SIOD -1
+#define CAM_PIN_SIOC -1
 
-#define CAM_PIN_D7 39
-#define CAM_PIN_D6 41
-#define CAM_PIN_D5 42
-#define CAM_PIN_D4 12
-#define CAM_PIN_D3 3
-#define CAM_PIN_D2 14
-#define CAM_PIN_D1 47
-#define CAM_PIN_D0 13
-#define CAM_PIN_VSYNC 21
-#define CAM_PIN_HREF 38
-#define CAM_PIN_PCLK 11
+#define CAM_PIN_D7 15
+#define CAM_PIN_D6 16
+#define CAM_PIN_D5 17
+#define CAM_PIN_D4 18
+#define CAM_PIN_D3 21
+#define CAM_PIN_D2 38
+#define CAM_PIN_D1 39
+#define CAM_PIN_D0 40
+#define CAM_PIN_VSYNC 48
+#define CAM_PIN_HREF 47
+#define CAM_PIN_PCLK 45
 #else
 #error "At least one Camera board defined!"
 #endif
@@ -245,6 +246,16 @@ static int omv_set_special_effect(omv_sensor_t *sensor, sde_t sde)
 
 static void esp32_sensor_init(omv_sensor_t *sensor)
 {
+  //initialize the PWDN and RESET pin
+  vTaskDelay(100 / portTICK_RATE_MS);
+  aw9523b_init();
+  ext_write_digital(CAMERA_RESET_PIN, 1);
+  ext_write_digital(CAMERA_PWDN_PIN, 0);
+  ext_write_digital(VIBRATION_MOTOR_PIN, 1);
+  ext_write_digital(LCD_LEDK_PIN, 0);
+  ext_write_digital(LCD_TP_RESET_PIN, 1);
+  ext_write_digital(PERI_PWR_ON_PIN, 0);
+  ext_write_digital(LIGHT_SW_PIN, 0);
   esp_err_t err = esp_camera_init(&camera_config);
   if (err != ESP_OK)
   {

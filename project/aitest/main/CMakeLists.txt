@@ -16,21 +16,28 @@ set(MICROPY_QSTRDEFS_PORT
     ${PROJECT_DIR}/src/adapter/qstrdefsport.h
 )
 
+set(MICROPY_SOURCE_SHARED
+    ${MICROPY_DIR}/shared/readline/readline.c
+    ${MICROPY_DIR}/shared/netutils/netutils.c
+    ${MICROPY_DIR}/shared/timeutils/timeutils.c
+    ${MICROPY_DIR}/shared/runtime/interrupt_char.c
+    ${MICROPY_DIR}/shared/runtime/stdout_helpers.c
+    ${MICROPY_DIR}/shared/runtime/sys_stdio_mphal.c
+    ${MICROPY_DIR}/shared/runtime/pyexec.c
+)
+
 set(MICROPY_SOURCE_LIB
     ${MICROPY_DIR}/lib/littlefs/lfs1.c
     ${MICROPY_DIR}/lib/littlefs/lfs1_util.c
     ${MICROPY_DIR}/lib/littlefs/lfs2.c
     ${MICROPY_DIR}/lib/littlefs/lfs2_util.c
     ${MICROPY_DIR}/lib/mbedtls_errors/mp_mbedtls_errors.c
-    ${MICROPY_DIR}/lib/mp-readline/readline.c
-    ${MICROPY_DIR}/lib/netutils/netutils.c
     ${MICROPY_DIR}/lib/oofatfs/ff.c
     ${MICROPY_DIR}/lib/oofatfs/ffunicode.c
-    ${MICROPY_DIR}/lib/timeutils/timeutils.c
-    ${MICROPY_DIR}/lib/utils/interrupt_char.c
-    ${MICROPY_DIR}/lib/utils/sys_stdio_mphal.c
-    ${MICROPY_DIR}/lib/utils/pyexec.c
 )
+if(IDF_TARGET STREQUAL "esp32c3")
+    list(APPEND MICROPY_SOURCE_LIB ${MICROPY_DIR}/shared/runtime/gchelper_generic.c)
+endif()
 
 set(MICROPY_SOURCE_DRIVERS
     ${MICROPY_DIR}/drivers/bus/softspi.c
@@ -50,9 +57,10 @@ set(MICROPY_SOURCE_PORT
     ${PROJECT_DIR}/src/adapter/machine_timer.c
     ${PROJECT_DIR}/src/adapter/machine_pin.c
     ${PROJECT_DIR}/src/adapter/machine_touchpad.c
-    #${PROJECT_DIR}/src/adapter/machine_adc.c
+    ${PROJECT_DIR}/src/adapter/machine_adc.c
     #${PROJECT_DIR}/src/adapter/machine_dac.c
     ${PROJECT_DIR}/src/adapter/machine_i2c.c
+    ${PROJECT_DIR}/src/adapter/machine_i2s.c
     ${PROJECT_DIR}/src/adapter/machine_pwm.c
     ${PROJECT_DIR}/src/adapter/machine_uart.c
     ${PROJECT_DIR}/src/adapter/modmachine.c
@@ -76,6 +84,11 @@ set(MICROPY_SOURCE_PORT
     ${PROJECT_DIR}/src/mpy_modules/modmatatalab.c
 )
 
+set(AITEST_SOURCE_DRIVERS
+    ${PROJECT_DIR}/src/driver/drv_aw9523b.c
+    ${PROJECT_DIR}/src/driver/drv_i2c.c
+)
+
 if(CONFIG_USB_ENABLED)
 list(APPEND MICROPY_SOURCE_PORT ${PROJECT_DIR}/src/usb/usb_cdc.c)
 endif()
@@ -84,7 +97,9 @@ set(MICROPY_SOURCE_QSTR
     ${MICROPY_SOURCE_PY}
     ${MICROPY_SOURCE_EXTMOD}
     ${MICROPY_SOURCE_USERMOD}
+    ${MICROPY_SOURCE_SHARED}
     ${MICROPY_SOURCE_LIB}
+    ${AITEST_SOURCE_DRIVERS}
     ${MICROPY_SOURCE_PORT}
     ${OMV_MOD_SRCS}
 )
@@ -115,6 +130,7 @@ set(IDF_COMPONENTS
     ulp
     vfs
     xtensa
+    esp32-camera
 )
 
 if(IDF_VERSION_MINOR GREATER_EQUAL 1)
@@ -148,7 +164,9 @@ idf_component_register(
     SRCS
         ${MICROPY_SOURCE_PY}
         ${MICROPY_SOURCE_EXTMOD}
+        ${MICROPY_SOURCE_SHARED}
         ${MICROPY_SOURCE_LIB}
+        ${AITEST_SOURCE_DRIVERS}
         ${MICROPY_SOURCE_DRIVERS}
         ${MICROPY_SOURCE_PORT}
         ${OMV_SRCS}
@@ -157,6 +175,7 @@ idf_component_register(
         ${MICROPY_INC_USERMOD}
         ${MICROPY_PORT_DIR}
         ${PROJECT_DIR}/src/usb/
+        ${PROJECT_DIR}/src/driver/
         ${MICROPY_PORT_DIR}/src/adapter/
         ${OMV_INCLUDEDIRS}
         ${MICROPY_BOARD_DIR}

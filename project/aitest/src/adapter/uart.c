@@ -45,9 +45,9 @@ void uart_init(void) {
 // all code executed in ISR must be in IRAM, and any const data must be in DRAM
 STATIC void IRAM_ATTR uart_irq_handler(void *arg) {
     volatile uart_dev_t *uart = &UART0;
-    uart->int_clr.rxfifo_full = 1;
-    uart->int_clr.frm_err = 1;
-    uart->int_clr.rxfifo_tout = 1;
+    uart->int_raw.rxfifo_full_int_raw = 1;
+    uart->int_raw.frm_err_int_raw = 1;
+    uart->int_raw.rxfifo_tout_int_raw = 1;
     while (uart->status.rxfifo_cnt) {
         #if CONFIG_IDF_TARGET_ESP32
         uint8_t c = uart->fifo.rw_byte;
