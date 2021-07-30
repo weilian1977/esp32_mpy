@@ -4,7 +4,7 @@
         branch = master
 [submodule "submodule/esp-idf"]
 	path = submodule/esp-idf
-	url = ../../Yanminge/esp-idf
+	url = ../../espressif/esp-idf
         branch = master
 [submodule "project/aitest/components/esp32-camera"]
 	path = project/aitest/components/esp32-camera
