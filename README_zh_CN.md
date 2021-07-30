@@ -38,15 +38,15 @@
    `make -C mpy-cross`
 ## 4. ESP-IDF 和 micropython 对应的版本 ##
     
-    `ESP-IDF: commit-id c69f0ec3292de2b9df5554405744296333d0feb2  2021.07.25`
+    `ESP-IDF: commit-id 58022f8599401740979ac7657a57348285a70374  2021.07.28`
 
     `micropython: commit-id 0f0006f4e15f710b4d2fa6a27cb932f580194729 2021.07.26`
 
-    `esp32-camera: commit-id 6a9497bbe909165663d958986e621e98dabcf994 2021.07.20`
+    `esp32-camera: commit-id d1f6b9c2af104e40b461a21884ec2db90a8e2d61 2021.07.29`
 
     `lvgl_esp32_drivers: commit-id cccb932d3c8b0035632bfff866d242308d0ce167 2021.06.08`
 
-    `lvgl: commit-id c6e97162d1425db409ce568c73d4d71abdee9d4e 2021.07.21`
+    `lvgl: commit-id 65475a75ba603bf78930085e23833a04f4fc70e9 2021.07.29`
 
 ## 5. 编译工程 ##
 

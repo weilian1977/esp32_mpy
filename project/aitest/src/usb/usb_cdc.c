@@ -189,8 +189,17 @@ void cdc_loop() {
     }
 }
 
+#if CONFIG_IDF_TARGET_ESP32S3
+static void usb_otg_router_to_internal_phy()
+{
+  uint32_t *usb_phy_sel_reg = (uint32_t *)(0x60008000 + 0x120);
+  *usb_phy_sel_reg |= BIT(19) | BIT(20);
+}
+#endif
+
 int usb_cdc_init(void)
 {
+    vTaskDelay(100 / portTICK_PERIOD_MS);
     static bool initialized = false;
     if (!initialized) {
         initialized = true;
@@ -210,7 +219,9 @@ int usb_cdc_init(void)
             .string_descriptor = NULL,
             .external_phy = false // In the most cases you need to use a `false` value
         };
-
+#if CONFIG_IDF_TARGET_ESP32S3
+        usb_otg_router_to_internal_phy();
+#endif
         ESP_ERROR_CHECK(tinyusb_driver_install(&tusb_cfg));
         xTaskCreatePinnedToCore(cdc_loop, "cdc_loop", USB_CDC_TASK_STACK_SIZE / sizeof(StackType_t), NULL, USB_CDC_TASK_PRIORITY, NULL, 1);
     }
