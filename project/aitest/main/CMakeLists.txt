@@ -130,7 +130,6 @@ set(IDF_COMPONENTS
     ulp
     vfs
     xtensa
-    esp32-camera
 )
 
 if(IDF_VERSION_MINOR GREATER_EQUAL 1)

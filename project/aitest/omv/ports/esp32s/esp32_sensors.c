@@ -82,7 +82,7 @@ static const char *TAG = "esp32_sensors";
 #define CAM_PIN_D0 40
 #define CAM_PIN_VSYNC 48
 #define CAM_PIN_HREF 47
-#define CAM_PIN_PCLK 45
+#define CAM_PIN_PCLK 42
 #else
 #error "At least one Camera board defined!"
 #endif
