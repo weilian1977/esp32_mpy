@@ -19,14 +19,13 @@
  **********************/
 
 /*Data of anim_timeline_dsc*/
-typedef struct{
+typedef struct {
     lv_anim_t anim;
-    lv_anim_t * new_anim;
     uint32_t start_time;
-}lv_anim_timeline_dsc_t;
+} lv_anim_timeline_dsc_t;
 
 /*Data of anim_timeline*/
-struct _lv_anim_timeline_t{
+struct _lv_anim_timeline_t {
     lv_anim_timeline_dsc_t * anim_dsc;  /**< Dynamically allocated anim dsc array*/
     uint32_t anim_dsc_cnt;              /**< The length of anim dsc array*/
     bool reverse;                       /**< Reverse playback*/
@@ -63,10 +62,7 @@ void lv_anim_timeline_del(lv_anim_timeline_t * at)
 {
     LV_ASSERT_NULL(at);
 
-    for(uint32_t i = 0; i < at->anim_dsc_cnt; i++) {
-        lv_anim_t * a = &(at->anim_dsc[i].anim);
-        lv_anim_custom_del(at->anim_dsc[i].new_anim, (lv_anim_custom_exec_cb_t)a->exec_cb);
-    }
+    lv_anim_timeline_stop(at);
 
     lv_mem_free(at->anim_dsc);
     lv_mem_free(at);
@@ -82,7 +78,6 @@ void lv_anim_timeline_add(lv_anim_timeline_t * at, uint32_t start_time, lv_anim_
     LV_ASSERT_MALLOC(at->anim_dsc);
 
     at->anim_dsc[at->anim_dsc_cnt - 1].anim = *a;
-    at->anim_dsc[at->anim_dsc_cnt - 1].new_anim = NULL;
     at->anim_dsc[at->anim_dsc_cnt - 1].start_time = start_time;
 }
 
@@ -107,10 +102,20 @@ uint32_t lv_anim_timeline_start(lv_anim_timeline_t * at)
             lv_anim_set_delay(&a, start_time);
         }
 
-        at->anim_dsc[i].new_anim = lv_anim_start(&a);
+        lv_anim_start(&a);
     }
 
     return playtime;
+}
+
+void lv_anim_timeline_stop(lv_anim_timeline_t * at)
+{
+    LV_ASSERT_NULL(at);
+
+    for(uint32_t i = 0; i < at->anim_dsc_cnt; i++) {
+        lv_anim_t * a = &(at->anim_dsc[i].anim);
+        lv_anim_custom_del(a, (lv_anim_custom_exec_cb_t)a->exec_cb);
+    }
 }
 
 void lv_anim_timeline_set_reverse(lv_anim_timeline_t * at, bool reverse)

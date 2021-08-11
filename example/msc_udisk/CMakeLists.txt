@@ -10,4 +10,4 @@ set(SDKCONFIG_DEFAULTS
     sdkconfig.usb
 )
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
-project(cdc_msc)
+project(msc_udisk)

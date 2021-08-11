@@ -84,6 +84,11 @@ const lv_obj_class_t lv_obj_class = {
  *   GLOBAL FUNCTIONS
  **********************/
 
+bool lv_is_initialized(void)
+{
+    return lv_initialized;
+}
+
 void lv_init(void)
 {
     /*Do nothing if already initialized*/
@@ -528,6 +533,7 @@ static void lv_obj_draw(lv_event_t * e)
 #if LV_DRAW_COMPLEX
         if(lv_obj_get_style_clip_corner(obj, LV_PART_MAIN)) {
             lv_draw_mask_radius_param_t * param = lv_draw_mask_remove_custom(obj + 8);
+            lv_draw_mask_free_param(param);
             lv_mem_buf_release(param);
         }
 #endif
@@ -702,6 +708,34 @@ static void lv_obj_event(const lv_obj_class_t * class_p, lv_event_t * e)
                 if(res != LV_RES_OK) return;
             }
         }
+        else if(lv_obj_has_flag(obj, LV_OBJ_FLAG_SCROLLABLE) && !lv_obj_is_editable(obj)) {
+            /*scroll by keypad or encoder*/
+            lv_anim_enable_t anim_enable = LV_ANIM_OFF;
+            lv_coord_t sl = lv_obj_get_scroll_left(obj);
+            lv_coord_t sr = lv_obj_get_scroll_right(obj);
+            char c = *((char *)lv_event_get_param(e));
+            if(c == LV_KEY_DOWN) {
+                /*use scroll_to_x/y functions to enforce scroll limits*/
+                lv_obj_scroll_to_y(obj, lv_obj_get_scroll_y(obj) + lv_obj_get_height(obj) / 4, anim_enable);
+            }
+            else if(c == LV_KEY_UP) {
+                lv_obj_scroll_to_y(obj, lv_obj_get_scroll_y(obj) - lv_obj_get_height(obj) / 4, anim_enable);
+            }
+            else if(c == LV_KEY_RIGHT) {
+                /*If the object can't be scrolled horizontally then scroll it vertically*/
+                if(!((lv_obj_get_scroll_dir(obj) & LV_DIR_HOR) && (sl > 0 || sr > 0)))
+                    lv_obj_scroll_to_y(obj, lv_obj_get_scroll_y(obj) + lv_obj_get_height(obj) / 4, anim_enable);
+                else
+                    lv_obj_scroll_to_x(obj, lv_obj_get_scroll_x(obj) + lv_obj_get_width(obj) / 4, anim_enable);
+            }
+            else if(c == LV_KEY_LEFT) {
+                /*If the object can't be scrolled horizontally then scroll it vertically*/
+                if(!((lv_obj_get_scroll_dir(obj) & LV_DIR_HOR) && (sl > 0 || sr > 0)))
+                    lv_obj_scroll_to_y(obj, lv_obj_get_scroll_y(obj) - lv_obj_get_height(obj) / 4, anim_enable);
+                else
+                    lv_obj_scroll_to_x(obj, lv_obj_get_scroll_x(obj) - lv_obj_get_width(obj) / 4, anim_enable);
+            }
+        }
     }
     else if(code == LV_EVENT_FOCUSED) {
         if(lv_obj_has_flag(obj, LV_OBJ_FLAG_SCROLL_ON_FOCUS)) {
@@ -748,7 +782,7 @@ static void lv_obj_event(const lv_obj_class_t * class_p, lv_event_t * e)
         uint32_t i;
         uint32_t child_cnt = lv_obj_get_child_cnt(obj);
         for(i = 0; i < child_cnt; i++) {
-            lv_obj_t * child = lv_obj_get_child(obj, i);
+            lv_obj_t * child = obj->spec_attr->children[i];
             lv_obj_mark_layout_as_dirty(child);
         }
     }
