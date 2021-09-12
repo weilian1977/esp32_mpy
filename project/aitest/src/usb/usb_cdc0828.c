@@ -61,24 +61,14 @@ extern void usbdbg_data_in(void *buffer, int length);
 extern void usbdbg_data_out(void *buffer, int length);
 extern void usbdbg_control(void *buffer, uint8_t brequest, uint32_t wlength);
 
-uint8_t tx_ringbuf_array[1024];
-volatile ringbuf_t tx_ringbuf;
-
 uint32_t usb_cdc_buf_len()
 {
-    return ringbuf_avail((ringbuf_t*)&tx_ringbuf);
+    return 1024;
 }
 
 uint32_t usb_cdc_get_buf(uint8_t *buf, uint32_t len)
 {
-    int i=0;
-    for (; i<len; i++) {
-        buf[i] = ringbuf_get((ringbuf_t*)&tx_ringbuf);
-        if (buf[i] == -1) {
-            break;
-        }
-    }
-    return i;
+    return 0;
 }
 
 #include "py/runtime.h"
@@ -99,35 +89,24 @@ void cdc_task_serial_mode(void)
                 debug("%c", usb_rx_buf[i]);
             }
             debug(" avail %d, put %d bytes\n", ringbuf_avail(&stdin_ringbuf), len);
-        } else {
-          vTaskDelay(pdMS_TO_TICKS(1));
         }
     } else {
-      vTaskDelay(pdMS_TO_TICKS(200));
+      vTaskDelay(pdMS_TO_TICKS(5));
     }
 }
 
 #define CDC_WRDAT(w_buf, w_len) do {  \
   int pos = 0, left = w_len;  \
   while(left > 0) { \
-    int count = tud_cdc_write(&w_buf[pos], left); \
-    pos+=count; \
+    pos += tud_cdc_write(&w_buf[pos], left); \
     left = w_len-pos; \
+    tud_cdc_write_flush();  \
   } \
-  tud_cdc_write_flush();  \
 } while(0)
 void usb_tx_strn(const char *str, size_t len) {
     debug("usb_tx_strn %d bytes\n", len);
-    if(dbg_mode_enabled == false) {
-      CDC_WRDAT(str, len);vTaskDelay(pdMS_TO_TICKS(10));
-    } else {
-       for (int i=0;i<len;i++) {
-        while(ringbuf_put(&tx_ringbuf, (uint8_t )str[i]) < 0) {
-          printf("Error: usb_cdc tx_ringbuf overflow!\n");
-          vTaskDelay(pdMS_TO_TICKS(5));
-        }
-      }
-    }	  
+    if(dbg_mode_enabled == false)
+      CDC_WRDAT(str, len);
 }
 
 void cdc_task_debug_mode(void)
@@ -179,8 +158,6 @@ void tud_cdc_line_coding_cb(uint8_t itf, cdc_line_coding_t const* p_line_coding)
     } else {
         dbg_mode_enabled = 0;
     }
-    tx_ringbuf.iget = 0;
-    tx_ringbuf.iput = 0;
 
     linecode_set = true;
     debug("tud_cdc_line_coding_cb dbg_mode_enabled %d\n", dbg_mode_enabled);
@@ -204,7 +181,6 @@ void tud_cdc_line_state_cb(uint8_t itf, bool dtr, bool rts)
 
   debug("tud_cdc_line_state_cb userial_open %d, line_state %d\n", userial_open, (dtr|(rts<<1)));
 }
-
 
 bool is_dbg_mode_enabled(void)
 {
@@ -235,12 +211,7 @@ int usb_cdc_init(void)
     static bool initialized = false;
     if (!initialized) {
         initialized = true;
-
-        tx_ringbuf.buf = tx_ringbuf_array;
-        tx_ringbuf.size = sizeof(tx_ringbuf_array);
-        tx_ringbuf.iget = 0;
-        tx_ringbuf.iput = 0;
-        //tusb_init();
+        
         tinyusb_config_t tusb_cfg = {
             .descriptor = NULL,
             .string_descriptor = NULL,
@@ -253,24 +224,6 @@ int usb_cdc_init(void)
         xTaskCreatePinnedToCore(cdc_loop, "cdc_loop", USB_CDC_TASK_STACK_SIZE / sizeof(StackType_t), NULL, USB_CDC_TASK_PRIORITY, NULL, 1);
     }
     return 0;
-}
-
-void cdc_printf2(const char *fmt, ...)
-{  
-  va_list ap;
-  char p_buf[1024]; 
-  int p_len;
-
-  va_start(ap, fmt);
-  p_len = vsprintf(p_buf, fmt, ap);
-  va_end(ap);//debug("cdc_printf size %d, cdc open %d\n", p_len, tud_cdc_connected());
-  p_buf[p_len] = '\r';  
-  p_buf[p_len+1] = '\n';
-  p_buf[p_len+2] = 0;
-  if(!dbg_mode_enabled && tud_ready() && userial_open)
-    CDC_WRDAT(p_buf, p_len+2);
-  else
-    printf("%s", p_buf);
 }
 
 void cdc_printf(const char *fmt, ...)
@@ -286,4 +239,6 @@ void cdc_printf(const char *fmt, ...)
     CDC_WRDAT(p_buf, p_len);    
   }
 }
+
+
 #endif // CONFIG_USB_ENABLED

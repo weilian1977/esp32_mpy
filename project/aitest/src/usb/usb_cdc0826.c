@@ -55,14 +55,32 @@
 
 volatile uint8_t  dbg_mode_enabled = 1;
 static bool linecode_set = false, userial_open = false;
-#define debug(fmt, ...)   if(0) printf(fmt, ##__VA_ARGS__)
+#define debug(fmt, ...)   if(1) printf(fmt, ##__VA_ARGS__)
 
 extern void usbdbg_data_in(void *buffer, int length);
 extern void usbdbg_data_out(void *buffer, int length);
 extern void usbdbg_control(void *buffer, uint8_t brequest, uint32_t wlength);
 
+uint8_t rx_ringbuf_array[1024];
 uint8_t tx_ringbuf_array[1024];
+volatile ringbuf_t rx_ringbuf;
 volatile ringbuf_t tx_ringbuf;
+
+static bool cdc_rx_any(void) {
+    return rx_ringbuf.iput != rx_ringbuf.iget;
+}
+
+static int cdc_rx_char(void) {
+    return ringbuf_get((ringbuf_t*)&rx_ringbuf);
+}
+
+static bool cdc_tx_any(void) {
+    return tx_ringbuf.iput != tx_ringbuf.iget;
+}
+
+static int cdc_tx_char(void) {
+    return ringbuf_get((ringbuf_t*)&tx_ringbuf);
+}
 
 uint32_t usb_cdc_buf_len()
 {
@@ -85,55 +103,50 @@ uint32_t usb_cdc_get_buf(uint8_t *buf, uint32_t len)
 #include "py/mphal.h"
 void cdc_task_serial_mode(void)
 {
-    if (tud_ready() && userial_open) {
+    if (tud_cdc_connected() && (tud_cdc_available() || cdc_tx_any())) {printf("%s: %d\n", __func__, __LINE__);
         // connected and there are data available
-        if (tud_cdc_available()) {
-            uint8_t usb_rx_buf[CONFIG_USB_CDC_RX_BUFSIZE];
-            uint32_t len = tud_cdc_read(usb_rx_buf, CONFIG_USB_CDC_RX_BUFSIZE);
-            for (int i = 0; i < len; i++) {
-                if (usb_rx_buf[i] == mp_interrupt_char) {
-                    debug("keyboard_interrupt. ");mp_sched_keyboard_interrupt();
-                } else {
-                    ringbuf_put(&stdin_ringbuf, usb_rx_buf[i]);
-                }
-                debug("%c", usb_rx_buf[i]);
+        while (tud_cdc_available()) {
+            uint8_t c;printf("%s: %d\n", __func__, __LINE__);
+            uint32_t count = tud_cdc_read(&c, 1);printf("%s: %d\n", __func__, __LINE__);
+            (void)count;
+            ringbuf_put((ringbuf_t*)&rx_ringbuf, c);printf("%s: %d\n", __func__, __LINE__);
+            if (c == mp_interrupt_char) {
+                mp_sched_keyboard_interrupt();printf("%s: %d\n", __func__, __LINE__);
+            } else {
+                printf("%s: %d\n", __func__, __LINE__);ringbuf_put(&stdin_ringbuf, c);printf("%s: %d\n", __func__, __LINE__);
             }
-            debug(" avail %d, put %d bytes\n", ringbuf_avail(&stdin_ringbuf), len);
-        } else {
-          vTaskDelay(pdMS_TO_TICKS(1));
+            printf("cdc_task_serial_mode get char 0x%X\n", c);
         }
-    } else {
-      vTaskDelay(pdMS_TO_TICKS(200));
+
+        int chars = 0;
+        while (cdc_tx_any()) {
+            if (chars < DBG_MAX_PACKET) {
+               tud_cdc_write_char(cdc_tx_char());
+               chars++;
+            } else {
+               chars = 0;
+               tud_cdc_write_flush();
+            }
+        }
+        tud_cdc_write_flush();
+    }else {
+      vTaskDelay(pdMS_TO_TICKS(1000));
+      printf("no char received!\n");
     }
 }
 
-#define CDC_WRDAT(w_buf, w_len) do {  \
-  int pos = 0, left = w_len;  \
-  while(left > 0) { \
-    int count = tud_cdc_write(&w_buf[pos], left); \
-    pos+=count; \
-    left = w_len-pos; \
-  } \
-  tud_cdc_write_flush();  \
-} while(0)
 void usb_tx_strn(const char *str, size_t len) {
-    debug("usb_tx_strn %d bytes\n", len);
-    if(dbg_mode_enabled == false) {
-      CDC_WRDAT(str, len);vTaskDelay(pdMS_TO_TICKS(10));
-    } else {
-       for (int i=0;i<len;i++) {
-        while(ringbuf_put(&tx_ringbuf, (uint8_t )str[i]) < 0) {
-          printf("Error: usb_cdc tx_ringbuf overflow!\n");
-          vTaskDelay(pdMS_TO_TICKS(5));
-        }
+    for (int i=0;i<len;i++) {
+      while(ringbuf_put(&tx_ringbuf, (uint8_t )str[i]) < 0) {
+        printf("Error: usb_cdc tx_ringbuf overflow!\n");
+        vTaskDelay(pdMS_TO_TICKS(5));
       }
-    }	  
+    }
 }
 
 void cdc_task_debug_mode(void)
 {
-    if (tud_cdc_connected()) {
-      if(tud_cdc_available()) {
+    if ( tud_cdc_connected() && tud_cdc_available() ) {debug("cdc_task_debug_mode %d\n", tud_cdc_available());
         uint8_t buf[DBG_MAX_PACKET];
         uint32_t count = tud_cdc_read(buf, 6);
         if (count < 6) {
@@ -165,12 +178,13 @@ void cdc_task_debug_mode(void)
             }
         }
         tud_cdc_write_flush();
-      }
-    } else {
-      vTaskDelay(pdMS_TO_TICKS(5));
     }
 }
 
+#include "soc/spinlock.h"
+
+#define MAX_MUTEX_WAIT_TICKS ((10 + portTICK_PERIOD_MS - 1) / portTICK_PERIOD_MS)
+static SemaphoreHandle_t s_log_mutex = NULL;
 void tud_cdc_line_coding_cb(uint8_t itf, cdc_line_coding_t const* p_line_coding)
 {
     if (p_line_coding->bit_rate == IDE_BAUDRATE_SLOW ||
@@ -182,6 +196,8 @@ void tud_cdc_line_coding_cb(uint8_t itf, cdc_line_coding_t const* p_line_coding)
     tx_ringbuf.iget = 0;
     tx_ringbuf.iput = 0;
 
+    rx_ringbuf.iget = 0;
+    rx_ringbuf.iput = 0;
     linecode_set = true;
     debug("tud_cdc_line_coding_cb dbg_mode_enabled %d\n", dbg_mode_enabled);
 }
@@ -205,36 +221,34 @@ void tud_cdc_line_state_cb(uint8_t itf, bool dtr, bool rts)
   debug("tud_cdc_line_state_cb userial_open %d, line_state %d\n", userial_open, (dtr|(rts<<1)));
 }
 
-
 bool is_dbg_mode_enabled(void)
 {
     return dbg_mode_enabled;
 }
 
-void cdc_loop() {
+static void cdc_loop(void *pvParameters) {
+    (void)pvParameters;
     while(true) {
         if(is_dbg_mode_enabled()) {
             cdc_task_debug_mode();
         } else {
-            cdc_task_serial_mode();
+            printf("%s: %d\n", __func__, __LINE__);cdc_task_serial_mode();
         }
     }
 }
 
-#if CONFIG_IDF_TARGET_ESP32S3
-static void usb_otg_router_to_internal_phy()
-{
-  uint32_t *usb_phy_sel_reg = (uint32_t *)(0x60008000 + 0x120);
-  *usb_phy_sel_reg |= BIT(19) | BIT(20);
-}
-#endif
-
 int usb_cdc_init(void)
 {
-    vTaskDelay(100 / portTICK_PERIOD_MS);
     static bool initialized = false;
+
+    linecode_set = false;userial_open = false;
     if (!initialized) {
         initialized = true;
+
+        rx_ringbuf.buf = rx_ringbuf_array;
+        rx_ringbuf.size = sizeof(rx_ringbuf_array);
+        rx_ringbuf.iget = 0;
+        rx_ringbuf.iput = 0;
 
         tx_ringbuf.buf = tx_ringbuf_array;
         tx_ringbuf.size = sizeof(tx_ringbuf_array);
@@ -246,44 +260,47 @@ int usb_cdc_init(void)
             .string_descriptor = NULL,
             .external_phy = false // In the most cases you need to use a `false` value
         };
-#if CONFIG_IDF_TARGET_ESP32S3
-        usb_otg_router_to_internal_phy();
-#endif
+
         ESP_ERROR_CHECK(tinyusb_driver_install(&tusb_cfg));
         xTaskCreatePinnedToCore(cdc_loop, "cdc_loop", USB_CDC_TASK_STACK_SIZE / sizeof(StackType_t), NULL, USB_CDC_TASK_PRIORITY, NULL, 1);
     }
     return 0;
 }
 
-void cdc_printf2(const char *fmt, ...)
-{  
-  va_list ap;
-  char p_buf[1024]; 
-  int p_len;
-
-  va_start(ap, fmt);
-  p_len = vsprintf(p_buf, fmt, ap);
-  va_end(ap);//debug("cdc_printf size %d, cdc open %d\n", p_len, tud_cdc_connected());
-  p_buf[p_len] = '\r';  
-  p_buf[p_len+1] = '\n';
-  p_buf[p_len+2] = 0;
-  if(!dbg_mode_enabled && tud_ready() && userial_open)
-    CDC_WRDAT(p_buf, p_len+2);
-  else
-    printf("%s", p_buf);
-}
-
 void cdc_printf(const char *fmt, ...)
 {  
+  if (unlikely(!s_log_mutex)) {
+        s_log_mutex = xSemaphoreCreateMutex();
+  }
+  if (likely(xTaskGetSchedulerState() != taskSCHEDULER_NOT_STARTED)) {
+    if(xSemaphoreTake(s_log_mutex, MAX_MUTEX_WAIT_TICKS)!= pdTRUE) {
+      debug("Busy mutex\n");
+      return;
+    }
+  }
+  //debug("cdc_printf usb ready %d\n", tud_ready());  
   if(!dbg_mode_enabled && tud_ready() && userial_open) {  
     va_list ap;
     char p_buf[256]; 
     int p_len;
-   
+
+    //vTaskSuspendAll();    
     va_start(ap, fmt);
     p_len = vsprintf(p_buf, fmt, ap);
-    va_end(ap);//debug("cdc_printf size %d, cdc open %d\n", p_len, tud_cdc_connected());
-    CDC_WRDAT(p_buf, p_len);    
+    va_end(ap);debug("cdc_printf size %d, cdc open %d\n", p_len, tud_cdc_connected());
+    
+    int pos = 0, left = p_len;
+    while(left > 0) { \
+      pos += tud_cdc_write(&p_buf[pos], left); \
+      left = p_len-pos; \
+    } \
+    tud_cdc_write_flush();
+    //xTaskResumeAll();
+  }  
+  if (likely(xTaskGetSchedulerState() != taskSCHEDULER_NOT_STARTED)) {
+    xSemaphoreGive(s_log_mutex);
   }
 }
+
+
 #endif // CONFIG_USB_ENABLED
