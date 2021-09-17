@@ -15,3 +15,6 @@
 [submodule "project/aitest/components/lvgl"]
 	path = project/aitest/components/lvgl
 	url = ../../lvgl/lvgl
+[submodule "submodule/openmv"]
+	path = submodule/openmv
+	url = https://github.com/openmv/openmv.git
