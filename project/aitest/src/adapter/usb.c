@@ -48,17 +48,19 @@ static void usb_callback_rx(int itf, cdcacm_event_t *event) {
         if (len == 0) {
             break;
         }
-        for (size_t i = 0; i < len; ++i) {
+        for (size_t i = 0; i < len; i++) {
             if (usb_rx_buf[i] == mp_interrupt_char) {
-                mp_sched_keyboard_interrupt();
+                mp_sched_keyboard_interrupt();printf("keyboard_interrupt 0x%X\n", usb_rx_buf[i]);
             } else {
                 ringbuf_put(&stdin_ringbuf, usb_rx_buf[i]);
             }
+            printf("%c", usb_rx_buf[i]);
         }
+        printf(" avail %d, put %d bytes\n", ringbuf_avail(&stdin_ringbuf), len);
     }
 }
 
-void usb_init(void) {
+void usb_cdc_init(void) {
     // Initialise the USB with defaults.
     tinyusb_config_t tusb_cfg = {0};
     ESP_ERROR_CHECK(tinyusb_driver_install(&tusb_cfg));
@@ -88,5 +90,23 @@ void usb_tx_strn(const char *str, size_t len) {
         len -= l;
     }
 }
+
+void cdc_printf(const char *fmt, ...)
+{
+}
+
+void cdc_task_serial_mode(void)
+{
+}
+
+void cdc_task_debug_mode(void)
+{
+}
+
+bool is_dbg_mode_enabled(void)
+{
+    return false;
+}
+
 
 #endif // CONFIG_USB_ENABLED

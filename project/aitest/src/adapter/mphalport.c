@@ -55,9 +55,11 @@
 //#include "usb.h"
 #include "usb_cdc.h"
 
+//#undef CONFIG_USB_ENABLED
+//#define CONFIG_USB_ENABLED    0
 TaskHandle_t mp_main_task_handle;
 
-STATIC uint8_t stdin_ringbuf_array[260];
+STATIC uint8_t stdin_ringbuf_array[1024];
 ringbuf_t stdin_ringbuf = {stdin_ringbuf_array, sizeof(stdin_ringbuf_array), 0, 0};
 
 // Check the ESP-IDF error code and raise an OSError if it's not ESP_OK.
@@ -94,8 +96,7 @@ void check_esp_err(esp_err_t code) {
 
 uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {
     uintptr_t ret = 0;
-    //if ((poll_flags & MP_STREAM_POLL_RD) && stdin_ringbuf.iget != stdin_ringbuf.iput) {
-    if ((poll_flags & MP_STREAM_POLL_RD) && rx_ringbuf.iget != rx_ringbuf.iput) {
+    if ((poll_flags & MP_STREAM_POLL_RD) && stdin_ringbuf.iget != stdin_ringbuf.iput) {
         ret |= MP_STREAM_POLL_RD;
     }
     return ret;
@@ -103,8 +104,7 @@ uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {
 
 int mp_hal_stdin_rx_chr(void) {
     for (;;) {
-        //int c = ringbuf_get(&stdin_ringbuf);
-        int c = ringbuf_get(&rx_ringbuf);
+        int c = ringbuf_get(&stdin_ringbuf);
         if (c != -1) {
             return c;
         }
@@ -124,9 +124,7 @@ void mp_hal_stdout_tx_strn(const char *str, uint32_t len) {
         MP_THREAD_GIL_EXIT();
     }
     #if CONFIG_USB_ENABLED
-    for (const char *top = str + len; str < top; str++) {
-        ringbuf_put((ringbuf_t*)&tx_ringbuf, *str);
-    }
+    usb_tx_strn(str, len);
     #else
     for (uint32_t i = 0; i < len; ++i) {
         uart_tx_one_char(str[i]);

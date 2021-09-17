@@ -5,7 +5,10 @@ option(CONFIG_OPENMV_SUPPORT "option for openmv" ON)
 
 # Include core source components.
 include(${MICROPY_DIR}/py/py.cmake)
-include(${PROJECT_DIR}/omv/omv.cmake)
+include(${PROJECT_DIR}/src/omv_mlab/omv.cmake)
+if(MICROPY_PY_LVGL)
+include(${PROJECT_DIR}/src/lvgl_mlab/mkrules.cmake)
+endif()
 
 if(NOT CMAKE_BUILD_EARLY_EXPANSION)
     include(${MICROPY_DIR}/py/usermod.cmake)
@@ -82,6 +85,7 @@ set(MICROPY_SOURCE_PORT
     ${PROJECT_DIR}/src/adapter/machine_rtc.c
     ${PROJECT_DIR}/src/adapter/machine_sdcard.c
     ${PROJECT_DIR}/src/mpy_modules/modmatatalab.c
+    ${PROJECT_DIR}/src/test_esp32lvgl.c
 )
 
 set(AITEST_SOURCE_DRIVERS
@@ -89,8 +93,9 @@ set(AITEST_SOURCE_DRIVERS
     ${PROJECT_DIR}/src/driver/drv_i2c.c
 )
 
-if(CONFIG_USB_ENABLED)
+if(CONFIG_USB_CDC_ENABLED)
 list(APPEND MICROPY_SOURCE_PORT ${PROJECT_DIR}/src/usb/usb_cdc.c)
+#list(APPEND MICROPY_SOURCE_PORT ${PROJECT_DIR}/src/adapter/usb.c)
 endif()
 
 set(MICROPY_SOURCE_QSTR
@@ -102,6 +107,7 @@ set(MICROPY_SOURCE_QSTR
     ${AITEST_SOURCE_DRIVERS}
     ${MICROPY_SOURCE_PORT}
     ${OMV_MOD_SRCS}
+    ${LV_SRC}
 )
 
 set(IDF_COMPONENTS
@@ -169,6 +175,7 @@ idf_component_register(
         ${MICROPY_SOURCE_DRIVERS}
         ${MICROPY_SOURCE_PORT}
         ${OMV_SRCS}
+	      ${LV_SRC}
     INCLUDE_DIRS
         ${MICROPY_INC_CORE}
         ${MICROPY_INC_USERMOD}
@@ -180,6 +187,9 @@ idf_component_register(
         ${MICROPY_BOARD_DIR}
         ${CMAKE_BINARY_DIR}
         ${MICROPY_DIR}/py  
+        ${LV_INCLUDE}
+        ${PROJECT_DIR}/components/lvgl_esp32_drivers
+        ${PROJECT_DIR}/components
     REQUIRES
         ${IDF_COMPONENTS}
 )
@@ -200,6 +210,7 @@ target_compile_definitions(${MICROPY_TARGET} PUBLIC
     FFCONF_H=\"${MICROPY_OOFATFS_DIR}/ffconf.h\"
     LFS1_NO_MALLOC LFS1_NO_DEBUG LFS1_NO_WARN LFS1_NO_ERROR LFS1_NO_ASSERT
     LFS2_NO_MALLOC LFS2_NO_DEBUG LFS2_NO_WARN LFS2_NO_ERROR LFS2_NO_ASSERT
+    ${LV_DEFINE}
 )
 
 # Disable some warnings to keep the build output clean.
@@ -211,7 +222,10 @@ target_compile_options(${MICROPY_TARGET} PUBLIC
     -Wno-error=maybe-uninitialized 
     -Wno-error=unused-but-set-parameter
     -Wno-error=uninitialized
+    -Wno-error=implicit-function-declaration
+    -Wno-error=return-type
     -Wno-error=format=
+    -Wno-error=sizeof-pointer-memaccess
 )
 
 # Add additional extmod and usermod components.
@@ -239,3 +253,11 @@ endif()
 
 # Include the main MicroPython cmake rules.
 include(${MICROPY_DIR}/py/mkrules.cmake)
+
+# Include LVGL bindings rules
+if(MICROPY_PY_LVGL)
+# Add lv_bindings rules
+all_lv_bindings()
+# Include LVGL component, ignore KCONFIG
+#idf_build_component(${PROJECT_DIR}/components/lvgl)
+endif()

@@ -169,6 +169,11 @@
 #define MICROPY_PY_BLUETOOTH_RANDOM_ADDR    (1)
 #define MICROPY_PY_BLUETOOTH_DEFAULT_GAP_NAME ("ESP32")
 
+#if MICROPY_PY_LVGL             
+#define MICROPY_PY_ESPIDF                   (1)
+#define MICROPY_PY_LODEPNG                  (1)
+#define MICROPY_PY_RTCH                     (0)
+#endif
 // fatfs configuration
 #define MICROPY_FATFS_ENABLE_LFN            (1)
 #define MICROPY_FATFS_RPATH                 (2)
@@ -198,6 +203,10 @@ extern const struct _mp_obj_module_t mp_module_network;
 extern const struct _mp_obj_module_t mp_module_onewire;
 extern const struct _mp_obj_module_t matatalab_module;
 
+extern const struct _mp_obj_module_t mp_module_lvgl;
+extern const struct _mp_obj_module_t mp_module_espidf;
+extern const struct _mp_obj_module_t mp_module_rtch;
+extern const struct _mp_obj_module_t mp_module_lodepng;
 #ifdef CONFIG_OPENMV_SUPPORT
 extern const struct _mp_obj_module_t omv_module;
 extern const struct _mp_obj_module_t sensor_module;
@@ -207,17 +216,50 @@ extern const struct _mp_obj_module_t mjpeg_module;
 //extern const struct _mp_obj_module_t cpufreq_module;
 //extern const struct _mp_obj_module_t tf_module;
 //extern const struct _mp_obj_module_t fir_module;
-//extern const struct _mp_obj_module_t lcd_module;
+extern const struct _mp_obj_module_t lcd_module;
 #define OMV_BUILTIN_MODULES   { MP_OBJ_NEW_QSTR(MP_QSTR_omv),     (mp_obj_t)&omv_module }, \
     {  MP_OBJ_NEW_QSTR(MP_QSTR_sensor), (mp_obj_t)&sensor_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_image),   (mp_obj_t)&image_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_gif),     (mp_obj_t)&gif_module }, \
+    {  MP_ROM_QSTR(MP_QSTR_lcd), MP_ROM_PTR(&lcd_module) }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_mjpeg),   (mp_obj_t)&mjpeg_module },
     /*    { MP_OBJ_NEW_QSTR(MP_QSTR_cpufreq), (mp_obj_t)&cpufreq_module }, \
-    {  MP_ROM_QSTR(MP_QSTR_lcd), MP_ROM_PTR(&lcd_module) }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_fir),     (mp_obj_t)&fir_module }, \*/
 #else
 #define OMV_BUILTIN_MODULES
+#endif
+
+#if MICROPY_PY_LVGL
+#define MICROPY_PORT_LVGL_DEF \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_lvgl), (mp_obj_t)&mp_module_lvgl }, \
+//    { MP_OBJ_NEW_QSTR(MP_QSTR_ILI9341), (mp_obj_t)&mp_module_ILI9341 },
+//    { MP_OBJ_NEW_QSTR(MP_QSTR_xpt2046), (mp_obj_t)&mp_module_xpt2046 },
+
+// lvesp needs to delete the timer task upon soft reset
+
+extern void lv_deinit(void);
+#define MICROPY_PORT_DEINIT_FUNC lv_deinit()
+
+#else
+#define MICROPY_PORT_LVGL_DEF
+#endif
+
+#if MICROPY_PY_ESPIDF
+#define MICROPY_PORT_ESPIDF_DEF { MP_OBJ_NEW_QSTR(MP_QSTR_espidf), (mp_obj_t)&mp_module_espidf },
+#else
+#define MICROPY_PORT_ESPIDF_DEF
+#endif
+
+#if MICROPY_PY_LODEPNG
+#define MICROPY_PORT_LODEPNG_DEF { MP_OBJ_NEW_QSTR(MP_QSTR_lodepng), (mp_obj_t)&mp_module_lodepng },
+#else
+#define MICROPY_PORT_LODEPNG_DEF
+#endif
+
+#if MICROPY_PY_RTCH
+#define MICROPY_PORT_RTCH_DEF { MP_OBJ_NEW_QSTR(MP_QSTR_rtch), (mp_obj_t)&mp_module_rtch },
+#else
+#define MICROPY_PORT_RTCH_DEF
 #endif
 
 #define MICROPY_PORT_BUILTIN_MODULES \
@@ -231,11 +273,26 @@ extern const struct _mp_obj_module_t mjpeg_module;
     { MP_OBJ_NEW_QSTR(MP_QSTR__onewire), (mp_obj_t)&mp_module_onewire }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_matatalab), (mp_obj_t)&matatalab_module}, \
     OMV_BUILTIN_MODULES \
+    MICROPY_PORT_LVGL_DEF \
+    MICROPY_PORT_ESPIDF_DEF \
+    MICROPY_PORT_LODEPNG_DEF \
+    MICROPY_PORT_RTCH_DEF
 
 #define MP_STATE_PORT MP_STATE_VM
 
 struct _machine_timer_obj_t;
 
+#if MICROPY_PY_LVGL
+#ifndef MICROPY_INCLUDED_PY_MPSTATE_H
+#define MICROPY_INCLUDED_PY_MPSTATE_H
+#include "components/lvgl/src/misc/lv_gc.h"
+#undef MICROPY_INCLUDED_PY_MPSTATE_H
+#else
+#include "components/lvgl/src/misc/lv_gc.h"
+#endif
+#else
+#define LV_ROOTS
+#endif
 #if MICROPY_BLUETOOTH_NIMBLE
 struct mp_bluetooth_nimble_root_pointers_t;
 #define MICROPY_PORT_ROOT_POINTER_BLUETOOTH_NIMBLE struct _mp_bluetooth_nimble_root_pointers_t *bluetooth_nimble_root_pointers;
@@ -244,6 +301,8 @@ struct mp_bluetooth_nimble_root_pointers_t;
 #endif
 
 #define MICROPY_PORT_ROOT_POINTERS \
+    LV_ROOTS \
+    void *mp_lv_user_data; \
     const char *readline_hist[8]; \
     mp_obj_t machine_pin_irq_handler[40]; \
     struct _machine_timer_obj_t *machine_timer_obj_head; \

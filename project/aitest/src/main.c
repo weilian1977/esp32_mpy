@@ -87,11 +87,9 @@ void mp_task(void *pvParameter) {
     mp_thread_init(pxTaskGetStackStart(NULL), MP_TASK_STACK_SIZE / sizeof(uintptr_t));
     #endif
     #if CONFIG_USB_ENABLED
-    //usb_init();
-    usb_cdc_init();
-    #else
-    uart_init();
+    usb_cdc_init();    
     #endif
+    //uart_init();
     machine_init();
     framebuffer_init0();
     fb_alloc_init0();
@@ -169,7 +167,8 @@ soft_reset:
 
     // run boot-up scripts
     pyexec_frozen_module("_boot.py");
-    pyexec_file_if_exists("boot.py");
+    pyexec_file_if_exists("boot.py");    
+    
     //pyexec_file_if_exists("system.py");
     usbdbg_init();
     // int ret = pyexec_file_if_exists("main.py");
@@ -177,7 +176,8 @@ soft_reset:
     //     printf("soft_reset_exit\r\n");
     //     goto soft_reset_exit;
     // }
-
+ repl_again:
+    ESP_LOGD("mp_task", "mp_interrupt_char 0x%X", mp_interrupt_char);
     // If there's no script ready, just re-exec REPL
     while (!usbdbg_script_ready()) {
         nlr_buf_t nlr;
@@ -217,6 +217,12 @@ soft_reset:
     }
     ESP_LOGI("mp_task", "usbdbg_wait_for_command");
     usbdbg_wait_for_command(1000);
+
+    bool script_sta = usbdbg_handle_script_status();
+    ESP_LOGI("mp_task", "script_status %d", script_sta);
+    if(script_sta) {
+      goto repl_again;
+    }
     goto soft_reset_exit;
 soft_reset_exit:
 
@@ -229,7 +235,7 @@ soft_reset_exit:
     #if MICROPY_PY_THREAD
     mp_thread_deinit();
     #endif
-
+ 
     gc_sweep_all();
 
     mp_hal_stdout_tx_str("MPY: soft reboot\r\n");
