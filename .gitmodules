@@ -18,3 +18,6 @@
 [submodule "submodule/openmv"]
 	path = submodule/openmv
 	url = https://github.com/openmv/openmv.git
+[submodule "project\\aitest\\components\\lv_bindings"]
+	path = project\\aitest\\components\\lv_bindings
+	url = https://github.com/lvgl/lv_binding_micropython.git
