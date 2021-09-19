@@ -27,7 +27,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(cdc_task_debug_mode_obj, mpy_cdc_task_debug_mod
 
 STATIC mp_obj_t mpy_cdc_task(void)
 {
-    cdc_task();
+    cdc_task_serial_mode();
     return mp_const_none;
 }
 
