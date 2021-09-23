@@ -7,6 +7,8 @@ option(CONFIG_OPENMV_SUPPORT "option for openmv" ON)
 include(${MICROPY_DIR}/py/py.cmake)
 include(${PROJECT_DIR}/src/omv_mlab/omv.cmake)
 if(MICROPY_PY_LVGL)
+set(LV_BINDINGS_DIR ${PROJECT_DIR}/components/lv_bindings)
+#file(COPY "${LV_BINDINGS_DIR}/driver/esp32/espidf.c" DESTINATION "${PROJECT_DIR}/src/lvgl_mlab/srcs")
 include(${PROJECT_DIR}/src/lvgl_mlab/mkrules.cmake)
 endif()
 
@@ -187,6 +189,7 @@ idf_component_register(
         ${MICROPY_BOARD_DIR}
         ${CMAKE_BINARY_DIR}
         ${MICROPY_DIR}/py  
+        ${PROJECT_DIR}/src/lvgl_mlab/inc
         ${LV_INCLUDE}
         ${PROJECT_DIR}/components/lvgl_esp32_drivers
         ${PROJECT_DIR}/components

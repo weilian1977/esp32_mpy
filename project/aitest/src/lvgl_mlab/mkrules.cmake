@@ -141,7 +141,7 @@ function(all_lv_bindings)
         OUTPUT
             ${LV_ESPIDF}
         INPUT
-            ${LV_BINDINGS_DIR}/driver/esp32/espidf.h
+            ${PROJECT_DIR}/src/lvgl_mlab/inc/espidf.h
         DEPENDS
             ${LV_ESPIDF_HEADERS}
         PP_OPTIONS
@@ -179,7 +179,7 @@ list(APPEND IDF_COMPONENTS lv_examples)
 set(LV_SRC
     ${LV_MP}    
     
-    ${LV_BINDINGS_DIR}/driver/esp32/espidf.c
+    ${PROJECT_DIR}/src/lvgl_mlab/srcs/espidf.c
 #    ${LV_BINDINGS_DIR}/driver/esp32/modrtch.c
 #    ${LV_BINDINGS_DIR}/driver/esp32/sh2lib.c
     
