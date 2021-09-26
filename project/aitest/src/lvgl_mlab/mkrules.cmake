@@ -179,7 +179,7 @@ list(APPEND IDF_COMPONENTS lv_examples)
 set(LV_SRC
     ${LV_MP}    
     
-    ${PROJECT_DIR}/src/lvgl_mlab/srcs/espidf.c
+    ${LV_BINDINGS_DIR}/driver/esp32/espidf.c
 #    ${LV_BINDINGS_DIR}/driver/esp32/modrtch.c
 #    ${LV_BINDINGS_DIR}/driver/esp32/sh2lib.c
     
