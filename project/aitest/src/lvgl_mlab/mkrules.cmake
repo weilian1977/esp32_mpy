@@ -3,7 +3,7 @@ find_package(Python3 REQUIRED COMPONENTS Interpreter)
 find_program(AWK awk mawk gawk)
 
 set(LV_BINDINGS_DIR ${PROJECT_DIR}/components/lv_bindings)
-
+git_submodule_check("${PROJECT_DIR}/components/lv_bindings")
 # Common function for creating LV bindings
 
 function(lv_bindings)
@@ -170,6 +170,7 @@ endfunction()
 set(LV_INCLUDE
     ${LV_BINDINGS_DIR}    
     ${LV_PNG_DIR}
+    ${LV_BINDINGS_DIR}/driver/include
 )
 
 list(APPEND IDF_COMPONENTS lv_examples)
@@ -179,7 +180,7 @@ list(APPEND IDF_COMPONENTS lv_examples)
 set(LV_SRC
     ${LV_MP}    
     
-    ${LV_BINDINGS_DIR}/driver/esp32/espidf.c
+    ${PROJECT_DIR}/src/lvgl_mlab/srcs/espidf.c
 #    ${LV_BINDINGS_DIR}/driver/esp32/modrtch.c
 #    ${LV_BINDINGS_DIR}/driver/esp32/sh2lib.c
     
