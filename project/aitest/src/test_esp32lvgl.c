@@ -28,6 +28,7 @@
 #endif
 
 #include "lvgl_helpers.h"
+#include "drv_aw9523b.h"
 
 #ifndef CONFIG_LV_TFT_DISPLAY_MONOCHROME
     #if defined CONFIG_LV_USE_DEMO_WIDGETS
@@ -140,6 +141,12 @@ lv_disp_drv_t disp_drv;
 static void wait_call(void)
 {
     disp_drv.draw_buf->flushing = false;
+}
+
+void enable_lcd_backlight(bool backlight)
+{
+    ext_write_digital(LCD_LEDK_PIN, !backlight);
+    printf("%s backlight by extgpio.\n", backlight ? "Enabling" : "Disabling");
 }
 
 void get_lcd_reslution(uint16_t *p_width, uint16_t *p_height)

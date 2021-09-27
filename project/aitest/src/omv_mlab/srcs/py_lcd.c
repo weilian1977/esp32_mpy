@@ -16,7 +16,7 @@
 
 extern void get_lcd_reslution(uint16_t *p_width, uint16_t *p_height);
 extern void lcd_driver_flush(int x1, int y1, int x2, int y2, uint8_t *rgb565_data);
-extern void st7789_enable_backlight(bool backlight);
+extern void enable_lcd_backlight(bool backlight);
 
 static bool bl_intensity;
 static uint16_t lcd_width = 0, lcd_height = 0;
@@ -133,7 +133,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(py_lcd_display_obj, 1, py_lcd_display);
 STATIC mp_obj_t py_lcd_clear(uint n_args, const mp_obj_t *args)
 {
   bl_intensity = false;
-  st7789_enable_backlight(bl_intensity); 
+  enable_lcd_backlight(bl_intensity); 
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(py_lcd_clear_obj, 0, 1, py_lcd_clear);
 
@@ -158,7 +158,7 @@ STATIC mp_obj_t py_lcd_set_backlight(mp_obj_t intensity_obj)
     int intensity = mp_obj_get_int(intensity_obj);
     if ((intensity < 0) || (255 < intensity)) mp_raise_msg(&mp_type_ValueError, MP_ERROR_TEXT("0 <= intensity <= 255!"));
     bl_intensity = !!intensity;
-    st7789_enable_backlight(bl_intensity);  
+    enable_lcd_backlight(bl_intensity);  
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(py_lcd_set_backlight_obj, py_lcd_set_backlight);
