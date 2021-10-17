@@ -125,11 +125,11 @@ void mp_hal_stdout_tx_strn(const char *str, uint32_t len) {
     }
     #if CONFIG_USB_ENABLED
     usb_tx_strn(str, len);
-    #else
+    #endif
     for (uint32_t i = 0; i < len; ++i) {
         uart_tx_one_char(str[i]);
     }
-    #endif
+    
     if (release_gil) {
         MP_THREAD_GIL_ENTER();
     }

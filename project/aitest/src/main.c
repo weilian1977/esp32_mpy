@@ -89,7 +89,7 @@ void mp_task(void *pvParameter) {
     #if CONFIG_USB_ENABLED
     usb_cdc_init();    
     #endif
-    //uart_init();
+    uart_init();
     machine_init();
     framebuffer_init0();
     fb_alloc_init0();
