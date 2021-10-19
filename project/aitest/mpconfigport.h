@@ -61,6 +61,7 @@
 #define MICROPY_PY_FUNCTION_ATTRS           (1)
 #define MICROPY_PY_DESCRIPTORS              (1)
 #define MICROPY_PY_DELATTR_SETATTR          (1)
+#define MICROPY_PY_FSTRINGS                 (1)
 #define MICROPY_PY_STR_BYTES_CMP_WARN       (1)
 #define MICROPY_PY_BUILTINS_STR_UNICODE     (1)
 #define MICROPY_PY_BUILTINS_STR_CENTER      (1)
@@ -77,6 +78,8 @@
 #define MICROPY_PY_BUILTINS_RANGE_ATTRS     (1)
 #define MICROPY_PY_BUILTINS_ROUND_INT       (1)
 #define MICROPY_PY_ALL_SPECIAL_METHODS      (1)
+#define MICROPY_PY_ALL_INPLACE_SPECIAL_METHODS (1)
+#define MICROPY_PY_REVERSE_SPECIAL_METHODS  (1)
 #define MICROPY_PY_BUILTINS_COMPILE         (1)
 #define MICROPY_PY_BUILTINS_ENUMERATE       (1)
 #define MICROPY_PY_BUILTINS_EXECFILE        (1)
@@ -150,9 +153,12 @@
 #define MICROPY_PY_MACHINE_PIN_MAKE_NEW     mp_pin_make_new
 #define MICROPY_PY_MACHINE_PULSE            (1)
 #define MICROPY_PY_MACHINE_I2C              (1)
+#define MICROPY_PY_MACHINE_SOFTI2C          (1)
 #define MICROPY_PY_MACHINE_SPI              (1)
 #define MICROPY_PY_MACHINE_SPI_MSB          (0)
 #define MICROPY_PY_MACHINE_SPI_LSB          (1)
+#define MICROPY_PY_MACHINE_SOFTSPI          (1)
+
 #ifndef MICROPY_HW_ENABLE_SDCARD
 #define MICROPY_HW_ENABLE_SDCARD            (1)
 #endif
@@ -165,6 +171,7 @@
 #define MICROPY_PY_WEBREPL                  (1)
 #define MICROPY_PY_FRAMEBUF                 (1)
 #define MICROPY_PY_BTREE                    (1)
+#define MICROPY_PY_ONEWIRE                  (1)
 #define MICROPY_PY_USOCKET_EVENTS           (MICROPY_PY_WEBREPL)
 #define MICROPY_PY_BLUETOOTH_RANDOM_ADDR    (1)
 #define MICROPY_PY_BLUETOOTH_DEFAULT_GAP_NAME ("ESP32")
