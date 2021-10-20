@@ -29,6 +29,7 @@ ifdef FROZEN_MANIFEST
 endif
 
 all:
+	main/copy_leftmodules.sh
 	rm -rf $(BUILD)/frozen_content.c && idf.py $(IDFPY_FLAGS) build
 	@$(PYTHON) makeimg.py \
 		$(BUILD)/bootloader/bootloader.bin \
