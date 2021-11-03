@@ -18,8 +18,10 @@
 #include "py/objstr.h"
 #include "py/objtuple.h"
 #include "py/objtype.h"
+#include "py/objarray.h"
 #include "py/runtime.h"
 #include "py/mphal.h"
+#include "py/binary.h"
 
 #include "imlib.h"
 #include "array.h"
@@ -1141,6 +1143,40 @@ static mp_obj_t py_image_compress(uint n_args, const mp_obj_t *args, mp_map_t *k
     return args[0];
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(py_image_compress_obj, 1, py_image_compress);
+
+static mp_obj_t py_image_to_bytes(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args)
+{
+    image_t *arg_img = py_image_cobj(args[0]);
+    mp_uint_t size = 0;
+    switch(arg_img->bpp) {
+        case IMAGE_BPP_BINARY: {
+            size = ((arg_img->w + UINT32_T_MASK) >> UINT32_T_SHIFT) * arg_img->h;
+            break;
+        }
+        case IMAGE_BPP_GRAYSCALE: {
+            size = (arg_img->w * arg_img->h) * sizeof(uint8_t);
+            break;
+        }
+        case IMAGE_BPP_RGB565: {
+            size = (arg_img->w * arg_img->h) * sizeof(uint16_t);
+            break;
+        }
+        default: {
+            size = arg_img->bpp;
+            }
+            break;
+    }
+    mp_obj_array_t *o = m_new_obj(mp_obj_array_t);
+    o->base.type = &mp_type_bytearray;
+    o->typecode = BYTEARRAY_TYPECODE;
+    o->free = 0;
+    o->len = size;
+    o->items = (void*)arg_img->pixels;
+    return o;
+    // return mp_obj_new_bytearray(size, arg_img->pixels);
+}
+
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(py_image_to_bytes_obj, 1, py_image_to_bytes);
 
 static mp_obj_t py_image_compress_for_ide(uint n_args, const mp_obj_t *args, mp_map_t *kw_args)
 {
@@ -5977,6 +6013,7 @@ static const mp_rom_map_elem_t locals_dict_table[] = {
     {MP_ROM_QSTR(MP_QSTR_copy),                MP_ROM_PTR(&py_image_copy_obj)},
     {MP_ROM_QSTR(MP_QSTR_crop),                MP_ROM_PTR(&py_image_crop_obj)},
     {MP_ROM_QSTR(MP_QSTR_scale),               MP_ROM_PTR(&py_image_crop_obj)},
+    {MP_ROM_QSTR(MP_QSTR_to_bytes),            MP_ROM_PTR(&py_image_to_bytes_obj)},
     #if defined(IMLIB_ENABLE_IMAGE_FILE_IO)
     {MP_ROM_QSTR(MP_QSTR_save),                MP_ROM_PTR(&py_image_save_obj)},
     #else

@@ -61,7 +61,7 @@ extern void usbdbg_data_in(void *buffer, int length);
 extern void usbdbg_data_out(void *buffer, int length);
 extern void usbdbg_control(void *buffer, uint8_t brequest, uint32_t wlength);
 
-uint8_t tx_ringbuf_array[1024];
+uint8_t tx_ringbuf_array[1024*16];
 volatile ringbuf_t tx_ringbuf;
 
 uint32_t usb_cdc_buf_len()
