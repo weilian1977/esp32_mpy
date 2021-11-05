@@ -9,8 +9,8 @@ BOARD ?= GENERIC_S3
 BUILD ?= build-$(BOARD)
 
 # Device serial settings.
-PORT ?= /dev/ttyUSB0
-BAUD ?= 460800
+PORT ?= /dev/ttyS3
+BAUD ?= 921600
 
 PYTHON ?= python3
 
