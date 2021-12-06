@@ -201,7 +201,7 @@ STATIC mp_obj_t machine_sdcard_make_new(const mp_obj_type_t *type, size_t n_args
         STATIC const sdspi_slot_config_t slot_defaults[2] = {
             {
                 .gpio_miso = GPIO_NUM_19,
-                .gpio_mosi = GPIO_NUM_23,
+                .gpio_mosi = GPIO_NUM_20,
                 .gpio_sck = GPIO_NUM_18,
                 .gpio_cs = GPIO_NUM_5,
                 .gpio_cd = SDSPI_SLOT_NO_CD,
@@ -227,6 +227,22 @@ STATIC mp_obj_t machine_sdcard_make_new(const mp_obj_type_t *type, size_t n_args
         // SD/MMC interface
         DEBUG_printf("  Setting up SDMMC slot configuration");
         sdmmc_slot_config_t slot_config = SDMMC_SLOT_CONFIG_DEFAULT();
+
+    // On chips where the GPIOs used for SD card can be configured, set them in
+    // the slot_config structure:
+//#ifdef SOC_SDMMC_USE_GPIO_MATRIX
+    slot_config.clk = GPIO_NUM_15;
+    slot_config.cmd = GPIO_NUM_7;
+    slot_config.d0 = GPIO_NUM_4;
+    //slot_config.d1 = GPIO_NUM_4;
+    //slot_config.d2 = GPIO_NUM_12;
+    //slot_config.d3 = GPIO_NUM_13;
+//#endif
+
+    // Enable internal pullups on enabled pins. The internal pullups
+    // are insufficient however, please make sure 10k external pullups are
+    // connected on the bus. This is for debug / example purpose only.
+    slot_config.flags |= SDMMC_SLOT_FLAG_INTERNAL_PULLUP;
 
         // Stronger external pull-ups are still needed but apparently
         // it is a good idea to set the internal pull-ups anyway.

@@ -1,10 +1,11 @@
 import gc
-import os
+import os, machine
 from flashbdev import bdev
 
 try:
     if bdev:
-        os.mount(bdev, "/")
+        os.mount(machine.SDCard(width=1), '/')
+        #os.mount(bdev, "/")
 except OSError:
     import inisetup
 

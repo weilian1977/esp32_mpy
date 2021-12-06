@@ -3,9 +3,9 @@ set(IDF_TARGET esp32s3)
 set(SDKCONFIG_DEFAULTS
     boards/sdkconfig.base_s3
     boards/sdkconfig.240mhz_s3
-    boards/sdkconfig.spiram_s3
+    boards/sdkconfig.oct_spiram_s3
     boards/sdkconfig.usb
-    boards/sdkconfig.lvgl
+    boards/sdkconfig.oct_lvgl_sp4_no_touch
     boards/sdkconfig.freertos
 )
 
