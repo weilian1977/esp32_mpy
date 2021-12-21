@@ -1159,6 +1159,14 @@ static mp_obj_t py_image_to_bytes(size_t n_args, const mp_obj_t *args, mp_map_t 
         }
         case IMAGE_BPP_RGB565: {
             size = (arg_img->w * arg_img->h) * sizeof(uint16_t);
+            /*
+            for(int i = 0; i < size; i+=2){
+                uint8_t temp = 0;
+                temp = arg_img->pixels[i];
+                arg_img->pixels[i] = arg_img->pixels[i+1];
+                arg_img->pixels[i+1] = temp;
+            }
+            //*/
             break;
         }
         default: {
@@ -1177,6 +1185,30 @@ static mp_obj_t py_image_to_bytes(size_t n_args, const mp_obj_t *args, mp_map_t 
 }
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(py_image_to_bytes_obj, 1, py_image_to_bytes);
+
+static mp_obj_t py_image_rgb565_swap(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args)
+{
+    image_t *arg_img = py_image_cobj(args[0]);
+
+    image_t dst_img;
+    dst_img.w = arg_img->w;
+    dst_img.h = arg_img->h;
+    dst_img.bpp = arg_img->bpp;
+    mp_uint_t size = (arg_img->w * arg_img->h) * sizeof(uint16_t);
+    dst_img.data = xalloc(image_size(&dst_img));
+
+    for (int i = 0; i < size; i += 2)
+    {
+        uint8_t temp = 0;
+        temp = arg_img->pixels[i];
+        dst_img.pixels[i] = arg_img->pixels[i + 1];
+        dst_img.pixels[i + 1] = temp;
+    }
+    return py_image_from_struct(&dst_img);
+    // return mp_obj_new_bytearray(size, arg_img->pixels);
+}
+
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(py_image_rgb565_swap_obj, 1, py_image_rgb565_swap);
 
 static mp_obj_t py_image_compress_for_ide(uint n_args, const mp_obj_t *args, mp_map_t *kw_args)
 {
@@ -6014,6 +6046,7 @@ static const mp_rom_map_elem_t locals_dict_table[] = {
     {MP_ROM_QSTR(MP_QSTR_crop),                MP_ROM_PTR(&py_image_crop_obj)},
     {MP_ROM_QSTR(MP_QSTR_scale),               MP_ROM_PTR(&py_image_crop_obj)},
     {MP_ROM_QSTR(MP_QSTR_to_bytes),            MP_ROM_PTR(&py_image_to_bytes_obj)},
+    {MP_ROM_QSTR(MP_QSTR_rgb565_swap),         MP_ROM_PTR(&py_image_rgb565_swap_obj)},
     #if defined(IMLIB_ENABLE_IMAGE_FILE_IO)
     {MP_ROM_QSTR(MP_QSTR_save),                MP_ROM_PTR(&py_image_save_obj)},
     #else
