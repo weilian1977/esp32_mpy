@@ -988,6 +988,7 @@ STATIC const mp_map_elem_t globals_dict_table[] = {
     // VGA Resolutions
     { MP_OBJ_NEW_QSTR(MP_QSTR_QQQQVGA),             MP_OBJ_NEW_SMALL_INT(OMV_FRAMESIZE_QQQQVGA)},  /* 40x30     */
     { MP_OBJ_NEW_QSTR(MP_QSTR_QQQVGA),              MP_OBJ_NEW_SMALL_INT(OMV_FRAMESIZE_QQQVGA)},   /* 80x60     */
+    { MP_OBJ_NEW_QSTR(MP_QSTR_V96X96),               MP_OBJ_NEW_SMALL_INT(OMV_FRAMESIZE_96X96)},   /* 96x96     */
     { MP_OBJ_NEW_QSTR(MP_QSTR_QQVGA),               MP_OBJ_NEW_SMALL_INT(OMV_FRAMESIZE_QQVGA)},    /* 160x120   */
     { MP_OBJ_NEW_QSTR(MP_QSTR_QVGA),                MP_OBJ_NEW_SMALL_INT(OMV_FRAMESIZE_QVGA)},     /* 320x240   */
     { MP_OBJ_NEW_QSTR(MP_QSTR_VGA),                 MP_OBJ_NEW_SMALL_INT(OMV_FRAMESIZE_VGA)},      /* 640x480   */

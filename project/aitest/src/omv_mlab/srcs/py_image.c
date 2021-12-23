@@ -1169,6 +1169,10 @@ static mp_obj_t py_image_to_bytes(size_t n_args, const mp_obj_t *args, mp_map_t 
             //*/
             break;
         }
+        case IMAGE_BPP_RGB888: {
+            size = (arg_img->w * arg_img->h) * 3;
+            break;
+        }
         default: {
             size = arg_img->bpp;
             }
@@ -1209,6 +1213,44 @@ static mp_obj_t py_image_rgb565_swap(size_t n_args, const mp_obj_t *args, mp_map
 }
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(py_image_rgb565_swap_obj, 1, py_image_rgb565_swap);
+
+static mp_obj_t py_image_to_rgb888(uint n_args, const mp_obj_t *args, mp_map_t *kw_args)
+{
+    image_t *arg_img = py_helper_arg_to_image_mutable(args[0]);
+    bool copy = py_helper_keyword_int(n_args, args, 1, kw_args, MP_OBJ_NEW_QSTR(MP_QSTR_copy), false);
+
+    image_t out;
+    out.w = arg_img->w;
+    out.h = arg_img->h;
+    out.bpp = IMAGE_BPP_RGB888;
+    out.data = xalloc(out.w*out.h*3);
+
+    uint8_t* r = out.data;
+    uint16_t* in = (uint16_t*)arg_img->pixels;
+    uint32_t index;
+
+    switch(arg_img->bpp) {
+    case IMAGE_BPP_RGB565:
+    {
+        PY_ASSERT_TRUE_MSG(copy,
+                           "Can't convert to rgb888 in place!");
+
+        for (index = 0; index < out.w * out.h; index++)
+        {
+            r[3*index] = COLOR_RGB565_TO_R8(in[index])^0x80;
+            r[3*index + 1] = COLOR_RGB565_TO_G8(in[index])^0x80;
+            r[3*index + 2] = COLOR_RGB565_TO_B8(in[index])^0x80;
+        }
+        break;
+    }
+        default: {
+            break;
+        }
+    }
+
+    return py_image_from_struct(&out);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(py_image_to_rgb888_obj, 1, py_image_to_rgb888);
 
 static mp_obj_t py_image_compress_for_ide(uint n_args, const mp_obj_t *args, mp_map_t *kw_args)
 {
@@ -6047,6 +6089,7 @@ static const mp_rom_map_elem_t locals_dict_table[] = {
     {MP_ROM_QSTR(MP_QSTR_scale),               MP_ROM_PTR(&py_image_crop_obj)},
     {MP_ROM_QSTR(MP_QSTR_to_bytes),            MP_ROM_PTR(&py_image_to_bytes_obj)},
     {MP_ROM_QSTR(MP_QSTR_rgb565_swap),         MP_ROM_PTR(&py_image_rgb565_swap_obj)},
+    {MP_ROM_QSTR(MP_QSTR_to_rgb888),           MP_ROM_PTR(&py_image_to_rgb888_obj)},
     #if defined(IMLIB_ENABLE_IMAGE_FILE_IO)
     {MP_ROM_QSTR(MP_QSTR_save),                MP_ROM_PTR(&py_image_save_obj)},
     #else

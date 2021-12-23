@@ -136,7 +136,7 @@ void framebuffer_update_jpeg_buffer()
     image_t *src = &main_fb_src;
 
     if (framebuffer->streaming_enabled && jpeg_framebuffer->enabled) {
-        if (src->bpp > 3) {
+        if (src->bpp > 4) {
             bool does_not_fit = false;
 
             if (mutex_try_lock(&jpeg_framebuffer->lock, MUTEX_TID_OMV)) {

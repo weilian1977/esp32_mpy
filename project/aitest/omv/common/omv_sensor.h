@@ -52,6 +52,7 @@ typedef enum {
     // VGA Resolutions
     OMV_FRAMESIZE_QQQQVGA,  // 40x30
     OMV_FRAMESIZE_QQQVGA,   // 80x60
+    OMV_FRAMESIZE_96X96,    // 96x96
     OMV_FRAMESIZE_QQVGA,    // 160x120
     OMV_FRAMESIZE_QVGA,     // 320x240
     OMV_FRAMESIZE_VGA,      // 640x480

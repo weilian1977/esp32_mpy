@@ -30,6 +30,7 @@ const int omv_resolution[][2] = {
     // VGA Resolutions
     {40,   30  },    /* QQQQVGA   */
     {80,   60  },    /* QQQVGA    */
+    {96,   96  },    /* 96X96    */
     {160,  120 },    /* QQVGA     */
     {320,  240 },    /* QVGA      */
     {640,  480 },    /* VGA       */

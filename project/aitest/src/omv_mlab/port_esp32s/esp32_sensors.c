@@ -277,6 +277,7 @@ static int omv_set_framesize(omv_sensor_t *sensor, omv_framesize_t _framesize)
   framesize_t framesize;
   
   switch(_framesize) {
+    FSOMV2ESP32(FRAMESIZE_96X96)
     FSOMV2ESP32(FRAMESIZE_QQVGA)
     FSOMV2ESP32(FRAMESIZE_QCIF)
     FSOMV2ESP32(FRAMESIZE_HQVGA)
