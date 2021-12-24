@@ -10,7 +10,7 @@ BUILD ?= build-$(BOARD)
 
 # Device serial settings.
 PORT ?= /dev/ttyUSB0
-BAUD ?= 460800
+BAUD ?= 921600
 
 PYTHON ?= python3
 

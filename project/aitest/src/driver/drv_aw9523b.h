@@ -95,6 +95,7 @@ typedef enum
 #define LCD_CS_PIN                P10
 #define PA_CTRL_PIN               P05
 #define IR_EN_PIN                 P07
+#define USB_IN_PIN                P03
 #define SD_P_EN_PIN               P04
 
 #define HOME_PIN                  P00

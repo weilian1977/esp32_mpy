@@ -397,7 +397,6 @@ static void esp32_sensor_init(omv_sensor_t *sensor)
   ext_write_digital(LANG_CS_PIN, 1);
   ext_write_digital(LCD_TP_RESET_PIN, 0);
   vTaskDelay(100 / portTICK_PERIOD_MS);
-  ext_write_digital(SD_P_EN_PIN, 1);
   ext_write_digital(PA_CTRL_PIN, 1);
   ext_write_digital(LCD_TP_RESET_PIN, 1);
   ext_write_digital(IR_EN_PIN, 0);

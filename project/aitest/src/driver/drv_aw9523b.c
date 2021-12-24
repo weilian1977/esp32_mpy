@@ -59,11 +59,13 @@ esp_err_t aw9523b_init(void)
     ext_pin_mode(LCD_CS_PIN, OUTPUT);
     ext_pin_mode(PA_CTRL_PIN, OUTPUT);
     ext_pin_mode(IR_EN_PIN, OUTPUT);
-    ext_pin_mode(SD_P_EN_PIN, OUTPUT);
     ext_pin_mode(LANG_CS_PIN, OUTPUT);
 
     set_p0_mode(PUSH_PULL);
-
+    
+    ext_pin_mode(USB_IN_PIN, INPUT);
+    ext_pin_mode(SD_P_EN_PIN, INPUT);
+    
     ext_pin_mode(HOME_PIN , INPUT);
 
 #endif     
