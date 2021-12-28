@@ -23,7 +23,11 @@ extern esp_err_t  camera_subpart_deinit(void);
  #define camera_subpart_deinit esp_camera_deinit 
  #define camera_subpart_reinit esp_camera_init 
 #endif
-#define BOARD_MATATALAB
+//#define BOARD_MATATALAB
+//#define BOARD_S3_DevKitC
+//#define BOARD_S3_KORVO_2
+#define BOARD_MATATALAB_SP4
+
 // WROVER-KIT PIN Map
 #if defined BOARD_WROVER_KIT
 
@@ -69,7 +73,6 @@ extern esp_err_t  camera_subpart_deinit(void);
 
 // ESP32Cam (AiThinker) PIN Map
 #elif defined BOARD_MATATALAB
-
 #define CAM_PIN_PWDN -1
 #define CAM_PIN_RESET -1 //software reset will be performed
 #define CAM_PIN_XCLK 46
@@ -88,6 +91,73 @@ extern esp_err_t  camera_subpart_deinit(void);
 #define CAM_PIN_HREF 47
 #define CAM_PIN_PCLK 42
 
+#elif defined BOARD_S3_DevKitC
+
+#define CAM_PIN_PWDN 42
+#define CAM_PIN_RESET 41
+
+#define CAM_PIN_VSYNC 6
+//#define CAM_PIN_HREF 7
+#define CAM_PIN_HREF 39
+#define CAM_PIN_PCLK 13
+//#define CAM_PIN_XCLK 15
+#define CAM_PIN_XCLK 40
+
+//#define CAM_PIN_SIOD 4
+#define CAM_PIN_SIOD 38
+#define CAM_PIN_SIOC 5
+
+#define CAM_PIN_D0 8
+#define CAM_PIN_D1 9
+#define CAM_PIN_D2 10
+#define CAM_PIN_D3 11
+#define CAM_PIN_D4 12
+#define CAM_PIN_D5 18
+#define CAM_PIN_D6 17
+#define CAM_PIN_D7 16
+
+#elif defined BOARD_MATATALAB_SP4
+#define CAM_PIN_PWDN -1
+#define CAM_PIN_RESET -1 //software reset will be performed
+
+#define CAM_PIN_VSYNC 21
+#define CAM_PIN_HREF 38
+#define CAM_PIN_PCLK 11
+#define CAM_PIN_XCLK 40
+
+#define CAM_PIN_SIOD 17
+#define CAM_PIN_SIOC 18
+
+#define CAM_PIN_D0 13
+#define CAM_PIN_D1 47
+#define CAM_PIN_D2 14
+#define CAM_PIN_D3 3
+#define CAM_PIN_D4 12
+#define CAM_PIN_D5 42
+#define CAM_PIN_D6 41
+#define CAM_PIN_D7 39
+
+#elif defined BOARD_S3_KORVO_2
+
+#define CAM_PIN_PWDN 1
+#define CAM_PIN_RESET 2
+
+#define CAM_PIN_VSYNC 21
+#define CAM_PIN_HREF 38
+#define CAM_PIN_PCLK 11
+#define CAM_PIN_XCLK 40
+
+#define CAM_PIN_SIOD 17
+#define CAM_PIN_SIOC 18
+
+#define CAM_PIN_D0 13
+#define CAM_PIN_D1 47
+#define CAM_PIN_D2 14
+#define CAM_PIN_D3 3
+#define CAM_PIN_D4 12
+#define CAM_PIN_D5 42
+#define CAM_PIN_D6 41
+#define CAM_PIN_D7 39
 #else
 #error "At least one Camera board defined!"
 #endif
@@ -123,11 +193,29 @@ static camera_config_t camera_config = {
     .jpeg_quality = 12, //0-63 lower number means higher quality
     .fb_count = 2       //if more than one, i2s runs in continuous mode. Use only with JPEG
 };
-
+#if defined BOARD_MATATALAB
 #define CAM_PWDN_HIGH()   ext_write_digital(CAMERA_PWDN_PIN, 1)
 #define CAM_PWDN_LOW()    ext_write_digital(CAMERA_PWDN_PIN, 0)
 #define CAM_RST_HIGH()    ext_write_digital(CAMERA_RESET_PIN, 1)
 #define CAM_RST_LOW()     ext_write_digital(CAMERA_RESET_PIN, 0)
+#elif defined BOARD_S3_DevKitC
+#define CAM_PWDN_HIGH()   gpio_set_level(camera_config.pin_pwdn, 1)
+#define CAM_PWDN_LOW()    gpio_set_level(camera_config.pin_pwdn, 0)
+#define CAM_RST_HIGH()    gpio_set_level(camera_config.pin_reset, 1)
+#define CAM_RST_LOW()     gpio_set_level(camera_config.pin_reset, 0)
+#elif defined BOARD_S3_KORVO_2
+#define CAM_PWDN_HIGH()   gpio_set_level(camera_config.pin_pwdn, 1)
+#define CAM_PWDN_LOW()    gpio_set_level(camera_config.pin_pwdn, 0)
+#define CAM_RST_HIGH()    gpio_set_level(camera_config.pin_reset, 1)
+#define CAM_RST_LOW()     gpio_set_level(camera_config.pin_reset, 0)
+#elif defined BOARD_MATATALAB_SP4
+#define CAM_PWDN_HIGH()   ext_write_digital(CAMERA_PWDN_PIN, 1)
+#define CAM_PWDN_LOW()    ext_write_digital(CAMERA_PWDN_PIN, 0)
+#define CAM_RST_HIGH()    ext_write_digital(CAMERA_RESET_PIN, 1)
+#define CAM_RST_LOW()     ext_write_digital(CAMERA_RESET_PIN, 0)
+#define CAM_IR_LED_HIGH()    ext_write_digital(IR_EN_PIN, 1)
+#define CAM_IR_LED_LOW()     ext_write_digital(IR_EN_PIN, 0)
+#endif
 
 #define ESP_SENSOR_OP(func) \
    if(!esp_sensor) {  \
@@ -258,7 +346,8 @@ static int omv_set_special_effect(omv_sensor_t *sensor, sde_t sde)
 #endif
 
 static void esp32_sensor_init(omv_sensor_t *sensor)
-{  
+{ 
+  #if defined BOARD_MATATALAB 
   aw9523b_init();    
   ext_write_digital(VIBRATION_MOTOR_PIN, 1);
   ext_write_digital(LCD_TP_RESET_PIN, 1);
@@ -267,7 +356,23 @@ static void esp32_sensor_init(omv_sensor_t *sensor)
   CAM_PWDN_LOW();
   CAM_RST_HIGH();
   i2c_driver_delete(SENSOR_I2C_PORT);
-  
+  #elif defined BOARD_S3_DevKitC
+  ESP_LOGI(TAG, "OMV_LAB esp32_sensor_init");
+  #elif defined BOARD_MATATALAB_SP4
+  aw9523b_init();    
+
+  ext_write_digital(LCD_TP_RESET_PIN, 0);
+  vTaskDelay(100 / portTICK_PERIOD_MS);
+  ext_write_digital(SD_P_EN_PIN, 1);
+  ext_write_digital(PA_CTRL_PIN, 1);
+  ext_write_digital(LCD_TP_RESET_PIN, 1);
+  ext_write_digital(IR_EN_PIN, 0);
+  ext_write_digital(LCD_LEDK_PIN, 0);
+  CAM_PWDN_LOW();
+  CAM_RST_HIGH();
+  i2c_driver_delete(SENSOR_I2C_PORT);
+  #endif
+
   esp_err_t err = esp_camera_init(&camera_config);
   if (err != ESP_OK)
   {

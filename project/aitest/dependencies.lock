@@ -1,0 +1,15 @@
+dependencies:
+  idf:
+    component_hash: null
+    source:
+      type: idf
+    version: 4.4.0
+  tinyusb:
+    component_hash: f63f79d4def7d9086fb26f81da11e888c9b0a0e53252b477f1f5adc65b5772be
+    source:
+      git: https://github.com/iot-components/tinyusb.git
+      type: git
+    version: a4c670653aeb5684a33fc7b4ee34f85bf216697a
+manifest_hash: 7182daa3a4d8107178d6b42baade2c157699e41fcf29c1bd4654b0c56fec64c8
+target: esp32s3
+version: 1.0.0

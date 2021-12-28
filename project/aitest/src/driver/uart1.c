@@ -33,22 +33,106 @@
 
 #include "py/runtime.h"
 #include "py/mphal.h"
-#include "string.h"
-#include "drv_ring_buf.h"
-#define UART1_TEST     0
-
-#if UART1_TEST
-#define DATA_TX_BUFSIZE      64
-#define DATA_RX_BUFSIZE      64
+#include "esp_err.h"
+#include "esp_log.h"
+#include "uart1.h"
 
 #define CMD_BUFSIZE      24
 uint8_t rx_buf[CMD_BUFSIZE] = {0};
-static RING_BUF_DEF_STRUCT s_tx_ring_buf;
-volatile uint8_t txcount = 0; 
-static uint8_t s_link_tx_buf[DATA_TX_BUFSIZE];
 
-RING_BUF_DEF_STRUCT s_rx_ring_buf;
-static uint8_t s_link_rx_buf[DATA_RX_BUFSIZE];
+void parseCmd(char * cmd);
+
+void parseGcode(char * cmd)
+{
+    char * tmp;
+    char * str;
+    //char g_code_cmd;
+
+    str = strtok_r(cmd, " ", &tmp);
+    //g_code_cmd = str[0];
+    
+    int cmd_id = atoi(str);
+
+    cmd_id = cmd_id & 0x00ff;
+    
+    if( cmd_id == 0x11)
+    {
+        printf("cmd_id = %d\n",cmd_id);
+    }
+    else if (cmd_id == 0x12)
+    {
+        printf("cmd_id = %d\n",cmd_id);
+    }
+    else if (cmd_id == 0x13)
+    {
+        printf("cmd_id = %d\n",cmd_id);
+    }
+    else if (cmd_id == 0x14)
+    {
+        printf("cmd_id = %d\n",cmd_id);
+    }
+    else if (cmd_id == 0x80)
+    {
+        printf("cmd_id = %d\n",cmd_id);   
+    }
+    else if (cmd_id == 0x81)
+    {
+        printf("cmd_id = %d\n",cmd_id);
+    }
+    else if (cmd_id == 0xff)
+    {
+        printf("cmd_id = %d\n",cmd_id);
+    }
+    else 
+    {
+        printf("num_id id error\n");
+    }
+
+    //printf("tmp %s\n",tmp);
+    while(tmp!=NULL)
+    {
+        str = strtok_r(0, " ", &tmp);
+
+        if((str[0]=='M') || (str[0]=='m'))
+        {
+            cmd_id = atoi(str+1);
+            printf("cmd_id = M%d\n",cmd_id);
+
+        }
+        else if((str[0]=='E') || (str[0]=='e'))
+        {
+            cmd_id = atoi(str+1);
+            printf("cmd_id = E%d\n",cmd_id);
+
+        }else if((str[0]=='P') || (str[0]=='p'))
+        {
+            cmd_id = atoi(str+1);
+            printf("cmd_id = P%d\n",cmd_id);
+
+        }
+        else if((str[0]=='D') || (str[0]=='d'))
+        {
+            cmd_id = atoi(str+1);
+            printf("cmd_id = D%d\n",cmd_id);
+
+        }
+        else if((str[0]=='M') || (str[0]=='m'))
+        {
+
+        }
+        
+        
+    }
+
+}
+
+void parseCmd(char * cmd)
+{
+    if((cmd[0]=='g') || (cmd[0]=='G'))
+    { 
+        parseGcode(cmd+1);
+    }
+}
 
 
 void uart_ringbuf_init(void)
@@ -67,60 +151,10 @@ void uart_ringbuf_init(void)
 #define ECHO_UART_BAUD_RATE     (115200)
 #define ECHO_TASK_STACK_SIZE    (CONFIG_EXAMPLE_TASK_STACK_SIZE)
 #define PACKET_READ_TICS        (100 / portTICK_RATE_MS)
-#define BUF_SIZE (1024)
+#define BUF_SIZE (256)
 #define ECHO_READ_TOUT          (3) // 3.5T * 8 = 28 ticks, TOUT=3 -> ~24..33 ticks
 
-#endif
 
-STATIC void uart_irq_handler(void *arg);
-
-void uart_init(void) {
-    uart_isr_handle_t handle;
-    uart_isr_register(UART_NUM_0, uart_irq_handler, NULL, ESP_INTR_FLAG_LOWMED | ESP_INTR_FLAG_IRAM, &handle);
-    uart_enable_rx_intr(UART_NUM_0);
-}
-
-void uart_puts(const char *str) {for(int i=0;str[i];i++) {uart_tx_one_char(str[i]);uart_tx_wait_idle(UART_NUM_0);}}
-void uart_printf(const char *fmt, ...)
-{
-  va_list ap;
-  char p_buf[256]; 
-  int p_len;
-
-  //vTaskSuspendAll();    
-  va_start(ap, fmt);
-  p_len = vsprintf(p_buf, fmt, ap);
-  va_end(ap);
-  
-  uart_puts(p_buf);
-}
-// all code executed in ISR must be in IRAM, and any const data must be in DRAM
-STATIC void IRAM_ATTR uart_irq_handler(void *arg) {
-    volatile uart_dev_t *uart = &UART0;
-    #if CONFIG_IDF_TARGET_ESP32S3
-    uart->int_clr.rxfifo_full_int_clr = 1;
-    uart->int_clr.rxfifo_tout_int_clr = 1;
-    #else
-    uart->int_clr.rxfifo_full = 1;
-    uart->int_clr.rxfifo_tout = 1;
-    uart->int_clr.frm_err = 1;
-    #endif
-    while (uart->status.rxfifo_cnt) {
-        #if CONFIG_IDF_TARGET_ESP32
-        uint8_t c = uart->fifo.rw_byte;
-        #elif CONFIG_IDF_TARGET_ESP32C3 || CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32S3
-        uint8_t c = READ_PERI_REG(UART_FIFO_AHB_REG(0)); // UART0
-        #endif
-        if (c == mp_interrupt_char) {
-            mp_sched_keyboard_interrupt();
-        } else {
-            // this is an inline function so will be in IRAM
-            ringbuf_put(&stdin_ringbuf, c);
-        }
-    }
-}
-
-#if UART1_TEST
 void uart1_init(void)
 {
     uart_ringbuf_init();
@@ -146,8 +180,14 @@ int uart1_read_data(void *read_data)
 {
     int len = uart_read_bytes(UART_NUM_1, read_data, BUF_SIZE, PACKET_READ_TICS);
     drv_ringbuf_write((RING_BUF_DEF_STRUCT*)&s_rx_ring_buf, read_data, len);
+    
     drv_ringbuf_read((RING_BUF_DEF_STRUCT*)&s_rx_ring_buf, CMD_BUFSIZE, rx_buf);
+
+    //printf("len = %d\n",sizeof(rx_buf));
     printf("rx_buf = %s\r\n",rx_buf);
+    parseCmd(&rx_buf);
+    printf("rx_buf1 = %s\r\n",rx_buf);
+
     drv_ringbuf_flush((RING_BUF_DEF_STRUCT*)&s_rx_ring_buf);
     ringbuff_rx_reset((RING_BUF_DEF_STRUCT*)&s_rx_ring_buf,CMD_BUFSIZE);
     return len;
@@ -158,4 +198,3 @@ void uart1_send_data(void *send_data,size_t length)
     uart_write_bytes(UART_NUM_1, send_data, length);
     
 }
-#endif

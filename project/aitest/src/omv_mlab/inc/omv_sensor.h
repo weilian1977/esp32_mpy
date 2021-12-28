@@ -335,4 +335,6 @@ const uint16_t *sensor_get_color_palette();
 // Default snapshot function.
 int sensor_snapshot(omv_sensor_t *sensor, image_t *image, uint32_t flags);
 
+// Sensor IR LED control
+void sensor_set_ir_led(bool enable);
 #endif /* __SENSOR_H__ */

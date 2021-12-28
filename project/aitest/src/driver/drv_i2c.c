@@ -65,6 +65,7 @@ esp_err_t i2c_master_init(uint8_t i2c_num)
             i2c_initialized[i2c_num] = true;
         }
     }
+    printf("i2c_init success i2c_num = %d\n\n\n\n",i2c_num);
     return ret;
 }
 

@@ -171,11 +171,13 @@ soft_reset:
     
     //pyexec_file_if_exists("system.py");
     usbdbg_init();
-    // int ret = pyexec_file_if_exists("main.py");
-    // if (ret & PYEXEC_FORCED_EXIT) {
-    //     printf("soft_reset_exit\r\n");
-    //     goto soft_reset_exit;
-    // }
+    
+     int ret = pyexec_file_if_exists("main.py");
+     if (ret & PYEXEC_FORCED_EXIT) {
+         printf("soft_reset_exit\r\n");
+         goto soft_reset_exit;
+     }
+     
  repl_again:
     ESP_LOGD("mp_task", "mp_interrupt_char 0x%X", mp_interrupt_char);
     // If there's no script ready, just re-exec REPL

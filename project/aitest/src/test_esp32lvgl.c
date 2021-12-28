@@ -46,6 +46,10 @@
     #endif
 #endif
 
+//#define BOARD_MATATALAB
+//#define BOARD_S3_DevKitC
+#define BOARD_MATATALAB_SP4
+
 /*********************
  *      DEFINES
  *********************/
@@ -145,7 +149,13 @@ static void wait_call(void)
 
 void enable_lcd_backlight(bool backlight)
 {
+    #if defined BOARD_MATATALAB
     ext_write_digital(LCD_LEDK_PIN, !backlight);
+    #elif defined BOARD_S3_DevKitC
+    //st7789_enable_backlight(true);
+    #elif defined BOARD_MATATALAB_SP4
+    ext_write_digital(LCD_LEDK_PIN, backlight);
+    #endif
     printf("%s backlight by extgpio.\n", backlight ? "Enabling" : "Disabling");
 }
 

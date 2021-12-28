@@ -16,8 +16,10 @@ static const char led_addr_table[] =
 };
 static bool aw9523b_initialized = false;
 
-#define I2C_MASTER_NUM I2C_NUM_1
+#define I2C_MASTER_NUM I2C_NUM_0
 
+//#define BOARD_MATATALAB
+#define BOARD_MATATALAB_SP4
 
 esp_err_t aw9523b_init(void)
 {
@@ -34,6 +36,8 @@ esp_err_t aw9523b_init(void)
     ESP_LOGD(TAG, "set_max_current");
     set_max_current(IMAX1_4);
     ESP_LOGD(TAG, "ext_pin_mode");
+
+#if defined BOARD_MATATALAB    
     ext_pin_mode(CAMERA_RESET_PIN, OUTPUT);
     ext_pin_mode(CAMERA_PWDN_PIN, OUTPUT);
     ext_pin_mode(VIBRATION_MOTOR_PIN, OUTPUT);
@@ -47,7 +51,25 @@ esp_err_t aw9523b_init(void)
 
     ext_pin_mode(HOME_PIN , INPUT);
     ext_pin_mode(BACK_PIN, INPUT);
-    
+#elif defined BOARD_MATATALAB_SP4
+    ext_pin_mode(CAMERA_RESET_PIN, OUTPUT);
+    ext_pin_mode(CAMERA_PWDN_PIN, OUTPUT);
+    ext_pin_mode(LCD_TP_RESET_PIN, OUTPUT);
+    ext_pin_mode(LCD_LEDK_PIN, OUTPUT);
+    ext_pin_mode(LCD_CS_PIN, OUTPUT);
+    ext_pin_mode(PA_CTRL_PIN, OUTPUT);
+
+
+
+    set_p0_mode(PUSH_PULL);
+    ext_pin_mode(USB_IN_PIN , INPUT);
+    ext_pin_mode(IR_EN_PIN, OUTPUT);
+    ext_pin_mode(HOME_PIN , INPUT);
+    ext_pin_mode(SD_P_EN_PIN, INPUT);
+    ext_pin_mode(PROGRAM_1_PIN, INPUT);
+    ext_pin_mode(PROGRAM_2_PIN, INPUT);
+
+#endif     
     aw9523b_initialized = true;
     return ret;
 }

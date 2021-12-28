@@ -709,7 +709,7 @@ int sensor_snapshot(omv_sensor_t *sensor, image_t *image, uint32_t flags)
     memcpy(buffer->data, pic->buf, pic->len);
     esp_camera_fb_return(pic);
     // use pic->buf to access the image
-    ESP_LOGI(TAG, "Picture taken! Its size was: %zu bytes jpeg size %d", pic->len, jpeg_framebuffer->size);
+    //ESP_LOGI(TAG, "Picture taken! Its size was: %zu bytes jpeg size %d", pic->len, jpeg_framebuffer->size);
 
     // Fix the BPP.
     switch (sensor->pixformat) {
@@ -718,7 +718,15 @@ int sensor_snapshot(omv_sensor_t *sensor, image_t *image, uint32_t flags)
             break;
         case OMV_PIXFORMAT_YUV422:
         case OMV_PIXFORMAT_RGB565: {
-            MAIN_FB()->bpp = 2;                   
+            MAIN_FB()->bpp = 2;
+            //*
+            for(int i = 0; i < pic->len; i+=2){
+                uint8_t temp = 0;
+                temp = buffer->data[i];
+                buffer->data[i] = buffer->data[i+1];
+                buffer->data[i+1] = temp;
+            }
+            //*/                   
             break;
         }
         case OMV_PIXFORMAT_BAYER:
@@ -741,4 +749,13 @@ int sensor_snapshot(omv_sensor_t *sensor, image_t *image, uint32_t flags)
     }
 
     return 0;
+}
+
+void sensor_set_ir_led(bool enable)
+{
+    if(enable)
+      CAM_IR_LED_HIGH();
+    else
+      CAM_IR_LED_LOW();
+    printf("%s IR LED by extgpio.\n", enable ? "Enabling" : "Disabling");
 }
