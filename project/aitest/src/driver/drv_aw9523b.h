@@ -99,11 +99,18 @@ typedef enum
 #define SD_P_EN_PIN               P04
 
 #define HOME_PIN                  P00
+#define LED_R_PIN                 P14
+#define LED_G_PIN                 P15
+#define LED_B_PIN                 P16
 #define LANG_CS_PIN               P17
 
 #endif
 
-
+typedef enum
+{
+    EXT_PORT0 = 0x00, 
+    EXT_PORT1 = 0x01
+}ext_port;
 
 typedef enum
 {
@@ -126,6 +133,6 @@ extern esp_err_t set_p0_mode(p0_port_mode mode);
 extern esp_err_t set_max_current(max_current_type current);
 extern esp_err_t set_led_dimming(ext_pin_num pin, uint8_t step);
 extern esp_err_t ext_write_digital(ext_pin_num pin, uint8_t val);
-extern uint32_t ext_read_digital(ext_pin_num pin);
+extern uint8_t ext_read_digital(ext_pin_num pin);
 
 #endif /* __DRV_AW9523B_H__ */ 

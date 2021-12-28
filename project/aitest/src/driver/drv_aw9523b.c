@@ -62,12 +62,15 @@ esp_err_t aw9523b_init(void)
     ext_pin_mode(LANG_CS_PIN, OUTPUT);
 
     set_p0_mode(PUSH_PULL);
-    
+
     ext_pin_mode(USB_IN_PIN, INPUT);
     ext_pin_mode(SD_P_EN_PIN, INPUT);
     
     ext_pin_mode(HOME_PIN , INPUT);
 
+    ext_pin_mode(LED_R_PIN , LED_MODE);
+    ext_pin_mode(LED_G_PIN , LED_MODE);
+    ext_pin_mode(LED_B_PIN , LED_MODE);
 #endif     
     aw9523b_initialized = true;
     return ret;
@@ -317,11 +320,11 @@ esp_err_t ext_write_digital(ext_pin_num pin, uint8_t val)
     return ret; 
 }
 
-uint32_t ext_read_digital(ext_pin_num pin)
+uint8_t ext_read_digital(ext_pin_num pin)
 {
     esp_err_t ret;
     uint8_t port_in_state_read;
-    uint32_t value;
+    uint8_t value;
     if(!is_aw9523b_initialized())
     {
         aw9523b_init();

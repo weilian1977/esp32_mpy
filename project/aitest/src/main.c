@@ -72,6 +72,8 @@
 #include "extmod/modbluetooth.h"
 #endif
 
+#include "system_management.h"
+
 // MicroPython runs as a task under FreeRTOS
 #define MP_TASK_PRIORITY        (ESP_TASK_PRIO_MIN + 1)
 #define MP_TASK_STACK_SIZE      (16 * 1024)
@@ -257,6 +259,7 @@ void app_main(void) {
         nvs_flash_init();
     }
     xTaskCreatePinnedToCore(mp_task, "mp_task", MP_TASK_STACK_SIZE / sizeof(StackType_t), NULL, MP_TASK_PRIORITY, &mp_main_task_handle, MP_TASK_COREID);
+    //xTaskCreatePinnedToCore(system_management_task, "system_management_task", SYSTEM_MANAGEMENT_TASK_STACK_SIZE / sizeof(StackType_t), NULL, SYSTEM_MANAGEMENT_TASK_PRIORITY, NULL, 0);
 }
 
 void nlr_jump_fail(void *val) {

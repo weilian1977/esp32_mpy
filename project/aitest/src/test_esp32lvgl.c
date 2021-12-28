@@ -18,6 +18,7 @@
 #include "esp_freertos_hooks.h"
 #include "freertos/semphr.h"
 #include "esp_system.h"
+#include "esp_log.h"
 #include "driver/gpio.h"
 
 /* Littlevgl specific */
@@ -29,6 +30,7 @@
 
 #include "lvgl_helpers.h"
 #include "drv_aw9523b.h"
+#include "drv_nvs.h"
 
 #ifndef CONFIG_LV_TFT_DISPLAY_MONOCHROME
     #if defined CONFIG_LV_USE_DEMO_WIDGETS
@@ -206,7 +208,10 @@ static void guiTask(void *pvParameter) {
       if(disp->screen_cnt == 1 || !scr->parent) printf("No GUI applications\n");
       printf("disp->screen_cnt %d, disp->refr_timer %p, scr->parent %p\n", disp->screen_cnt, scr->parent, disp->refr_timer);
     } while(0);
-      
+    
+    uint8_t key_num = 0;
+    set_rgb_led_pwm(0, 0, 80);
+
     while (true) {
         lv_obj_t * scr = lv_scr_act();
         lv_disp_t * disp = lv_disp_get_default();
@@ -216,6 +221,27 @@ static void guiTask(void *pvParameter) {
         } else {
           /* Delay 1 tick (assumes FreeRTOS tick is 10ms */
           vTaskDelay(pdMS_TO_TICKS(10));
+          uint8_t key_value = ext_read_digital(HOME_PIN);
+          if(!key_value){
+              key_num++;
+              if(key_num >200){
+              key_num = 0;
+              printf("key pressed");
+              int32_t start_py_value = 0;
+              nvs_read_i32(START_PY_NAMESPACE, START_PY_KEY, &start_py_value);
+              ESP_LOGI("app_main", "start_py_value:%d", start_py_value);
+              set_rgb_led_pwm(80, 0, 0);
+              start_py_value +=1;
+              if(start_py_value > 3){
+                  start_py_value = 0;
+              }
+              nvs_write_i32(START_PY_NAMESPACE, START_PY_KEY, start_py_value);
+              vTaskDelay(2000 / portTICK_PERIOD_MS);
+              esp_restart();
+              }
+
+              //esp_restart();
+            }
 
           /* Try to take the semaphore, call lvgl related function on success */
           if (pdTRUE == xSemaphoreTake(xGuiSemaphore, portMAX_DELAY)) {

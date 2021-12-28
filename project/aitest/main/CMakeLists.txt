@@ -88,12 +88,16 @@ set(MICROPY_SOURCE_PORT
     ${PROJECT_DIR}/src/adapter/machine_rtc.c
     ${PROJECT_DIR}/src/adapter/machine_sdcard.c
     ${PROJECT_DIR}/src/mpy_modules/modmatatalab.c
+    ${PROJECT_DIR}/src/mpy_modules/system/system_management.c
+    ${PROJECT_DIR}/src/mpy_modules/system/home_key.c
     ${PROJECT_DIR}/src/test_esp32lvgl.c
 )
 
 set(AITEST_SOURCE_DRIVERS
     ${PROJECT_DIR}/src/driver/drv_aw9523b.c
     ${PROJECT_DIR}/src/driver/drv_i2c.c
+    ${PROJECT_DIR}/src/driver/drv_rgb_led.c
+    ${PROJECT_DIR}/src/driver/drv_nvs.c
 )
 
 if(CONFIG_USB_CDC_ENABLED)
@@ -194,6 +198,7 @@ idf_component_register(
         ${LV_INCLUDE}
         ${PROJECT_DIR}/components/lvgl_esp32_drivers
         ${PROJECT_DIR}/components
+        ${PROJECT_DIR}/src/mpy_modules/system
     REQUIRES
         ${IDF_COMPONENTS}
 )
