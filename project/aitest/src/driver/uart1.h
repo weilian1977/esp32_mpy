@@ -25,12 +25,25 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_ESP32_UART_H
-#define MICROPY_INCLUDED_ESP32_UART_H
+#ifndef MICROPY_INCLUDED_ESP32_UART1_H
+#define MICROPY_INCLUDED_ESP32_UART1_H
 #include <stdio.h>
 #include "driver/uart.h"
-void uart_init(void);
-//void uart1_init(void);
-//int uart1_read_data(void *read_data);
-//void uart1_send_data(void *send_data,size_t length);
+#include "string.h"
+#include "drv_ring_buf.h"
+
+#define DATA_TX_BUFSIZE      64
+#define DATA_RX_BUFSIZE      64
+
+
+RING_BUF_DEF_STRUCT s_tx_ring_buf;
+uint8_t s_link_tx_buf[DATA_TX_BUFSIZE];
+
+RING_BUF_DEF_STRUCT s_rx_ring_buf;
+uint8_t s_link_rx_buf[DATA_RX_BUFSIZE];
+
+
+void uart1_init(void);
+int uart1_read_data(void *read_data);
+void uart1_send_data(void *send_data,size_t length);
 #endif // MICROPY_INCLUDED_ESP32_UART_H

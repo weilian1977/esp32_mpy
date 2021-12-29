@@ -90,12 +90,21 @@ set(MICROPY_SOURCE_PORT
     ${PROJECT_DIR}/src/mpy_modules/modmatatalab.c
     ${PROJECT_DIR}/src/mpy_modules/system/system_management.c
     ${PROJECT_DIR}/src/mpy_modules/system/home_key.c
+    ${PROJECT_DIR}/src/mpy_modules/helloword.c
+    ${PROJECT_DIR}/src/mpy_modules/my_sensor.c
+    ${PROJECT_DIR}/src/mpy_modules/my_motor.c
     ${PROJECT_DIR}/src/test_esp32lvgl.c
 )
 
 set(AITEST_SOURCE_DRIVERS
     ${PROJECT_DIR}/src/driver/drv_aw9523b.c
     ${PROJECT_DIR}/src/driver/drv_i2c.c
+    ${PROJECT_DIR}/src/driver/drv_qmc6310.c
+    ${PROJECT_DIR}/src/driver/drv_qmi8658.c
+    ${PROJECT_DIR}/src/driver/drv_button.c
+    ${PROJECT_DIR}/src/driver/drv_9_sensor.c
+    ${PROJECT_DIR}/src/driver/drv_ring_buf.c
+    ${PROJECT_DIR}/src/driver/uart1.c
     ${PROJECT_DIR}/src/driver/drv_rgb_led.c
     ${PROJECT_DIR}/src/driver/drv_nvs.c
 )

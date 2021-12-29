@@ -60,7 +60,7 @@ typedef enum
 #define VIBRATION_MOTOR_PIN       P12
 #define LCD_LEDK_PIN              P13
 #define LCD_TP_RESET_PIN          P14
-#define PA_CTRL_PIN               P15
+#define PA_CTRL_PIN               P11
 #define PERI_PWR_ON_PIN           P16
 #define LIGHT_SW_PIN              P17
 
@@ -74,11 +74,14 @@ typedef enum
 #define LCD_LEDK_PIN              P12
 #define LCD_TP_RESET_PIN          P11
 #define LCD_CS_PIN                P10
-#define PA_CTRL_PIN               P16
+#define PA_CTRL_PIN               P11
 #define IR_EN_PIN                 P07
-#define SD_P_EN_PIN               P06
+#define SD_P_EN_PIN               P04
+#define USB_IN_PIN                P03
 
 #define HOME_PIN                  P00
+#define PROGRAM_1_PIN             P01
+#define PROGRAM_2_PIN             P02
 //#define VIBRATION_MOTOR_PIN       P12
 //#define LCD_TP_RESET_PIN          P14
 //#define PERI_PWR_ON_PIN           P16
@@ -99,6 +102,8 @@ typedef enum
 #define SD_P_EN_PIN               P04
 
 #define HOME_PIN                  P00
+#define PROGRAM_1_PIN             P01
+#define PROGRAM_2_PIN             P02
 #define LED_R_PIN                 P14
 #define LED_G_PIN                 P15
 #define LED_B_PIN                 P16

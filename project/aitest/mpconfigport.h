@@ -209,6 +209,9 @@ extern const struct _mp_obj_module_t mp_module_machine;
 extern const struct _mp_obj_module_t mp_module_network;
 extern const struct _mp_obj_module_t mp_module_onewire;
 extern const struct _mp_obj_module_t matatalab_module;
+extern const struct _mp_obj_module_t helloword_module;
+extern const struct _mp_obj_module_t my_sensor_module;
+extern const struct _mp_obj_module_t my_motor_module;
 
 extern const struct _mp_obj_module_t mp_module_lvgl;
 extern const struct _mp_obj_module_t mp_module_espidf;
@@ -279,6 +282,9 @@ extern void lv_deinit(void);
     { MP_OBJ_NEW_QSTR(MP_QSTR_network), (mp_obj_t)&mp_module_network }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR__onewire), (mp_obj_t)&mp_module_onewire }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_matatalab), (mp_obj_t)&matatalab_module}, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_helloword), (mp_obj_t)&helloword_module}, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_my_sensor), (mp_obj_t)&my_sensor_module}, \ 
+    { MP_OBJ_NEW_QSTR(MP_QSTR_motor), (mp_obj_t)&my_motor_module}, \ 
     OMV_BUILTIN_MODULES \
     MICROPY_PORT_LVGL_DEF \
     MICROPY_PORT_ESPIDF_DEF \

@@ -17,8 +17,8 @@
 #define I2C_MASTER_TX_BUF_DISABLE 0          /*!< I2C master doesn't need buffer */
 #define I2C_MASTER_RX_BUF_DISABLE 0  
 
-#define I2C0_MASTER_SCL_IO  9                /*!< gpio number for I2C0 master clock */
-#define I2C0_MASTER_SDA_IO  8                /*!< gpio number for I2C0 master data  */
+#define I2C0_MASTER_SCL_IO  18                /*!< gpio number for I2C0 master clock */
+#define I2C0_MASTER_SDA_IO  17                /*!< gpio number for I2C0 master data  */
 #define I2C0_MASTER_NUM     I2C_NUMBER(0)    /*!< I2C0 port number for master dev */
 #define I2C0_MASTER_FREQ_HZ  200000          /*!< I2C master clock frequency */
 
