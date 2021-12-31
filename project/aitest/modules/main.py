@@ -11,7 +11,7 @@ if(value == 0):
 elif(value == 1):
     import Face_Dectect_LVGL_RGB565
 elif(value == 2):
-    import Animation_image_dat
+    import Animation_ZhaYan
 elif(value == 3):
     import Demo3_helloworld
 #import startup
