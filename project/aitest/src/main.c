@@ -58,6 +58,7 @@
 #include "shared/runtime/pyexec.h"
 #include "shared/readline/readline.h"
 #include "uart.h"
+#include "uart1.h"
 #include "usb_cdc.h"
 #include "modmachine.h"
 #include "modnetwork.h"
@@ -67,12 +68,12 @@
 #include "fb_alloc.h"
 #include "framebuffer.h"
 #include "usbdbg.h"
+#include "drv_qmi8658.h"
+#include "drv_qmc6310.h"
 
 #if MICROPY_BLUETOOTH_NIMBLE
 #include "extmod/modbluetooth.h"
 #endif
-
-#include "system_management.h"
 
 // MicroPython runs as a task under FreeRTOS
 #define MP_TASK_PRIORITY        (ESP_TASK_PRIO_MIN + 1)
@@ -96,6 +97,8 @@ void mp_task(void *pvParameter) {
     framebuffer_init0();
     fb_alloc_init0();
     sensor_init();
+    //Qmi8658_init();
+    //qmc6310_init();
     // TODO: CONFIG_SPIRAM_SUPPORT is for 3.3 compatibility, remove after move to 4.0.
     #if CONFIG_ESP32_SPIRAM_SUPPORT || CONFIG_SPIRAM_SUPPORT
     // Try to use the entire external SPIRAM directly for the heap
@@ -252,6 +255,19 @@ soft_reset_exit:
     goto soft_reset;
 }
 
+void get_cmd_data()
+{
+    vTaskDelay(2000 / portTICK_PERIOD_MS);
+    uart1_init();
+    while (1)
+    {
+        
+        uart1_read_data();
+        
+        vTaskDelay(50 / portTICK_PERIOD_MS);
+    }
+}
+
 void app_main(void) {
     esp_err_t ret = nvs_flash_init();
     if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
@@ -259,7 +275,7 @@ void app_main(void) {
         nvs_flash_init();
     }
     xTaskCreatePinnedToCore(mp_task, "mp_task", MP_TASK_STACK_SIZE / sizeof(StackType_t), NULL, MP_TASK_PRIORITY, &mp_main_task_handle, MP_TASK_COREID);
-    //xTaskCreatePinnedToCore(system_management_task, "system_management_task", SYSTEM_MANAGEMENT_TASK_STACK_SIZE / sizeof(StackType_t), NULL, SYSTEM_MANAGEMENT_TASK_PRIORITY, NULL, 0);
+    xTaskCreatePinnedToCore(get_cmd_data, "get_cmd_data", 4 * 1024, NULL, MP_TASK_PRIORITY, &mp_main_task_handle, MP_TASK_COREID);
 }
 
 void nlr_jump_fail(void *val) {

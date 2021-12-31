@@ -36,8 +36,10 @@
 #include "esp_err.h"
 #include "esp_log.h"
 #include "uart1.h"
-
-#define CMD_BUFSIZE      24
+#include "stdlib.h"
+int ir_val;
+int ir_cmd;
+#define CMD_BUFSIZE      256
 uint8_t rx_buf[CMD_BUFSIZE] = {0};
 
 void parseCmd(char * cmd);
@@ -73,11 +75,11 @@ void parseGcode(char * cmd)
     }
     else if (cmd_id == 0x80)
     {
-        printf("cmd_id = %d\n",cmd_id);   
+        //printf("cmd_id = %d\n",cmd_id);   
     }
     else if (cmd_id == 0x81)
     {
-        printf("cmd_id = %d\n",cmd_id);
+        //printf("cmd_id = %d\n",cmd_id);
     }
     else if (cmd_id == 0xff)
     {
@@ -85,7 +87,7 @@ void parseGcode(char * cmd)
     }
     else 
     {
-        printf("num_id id error\n");
+        //printf("num_id id error\n");
     }
 
     //printf("tmp %s\n",tmp);
@@ -95,8 +97,7 @@ void parseGcode(char * cmd)
 
         if((str[0]=='M') || (str[0]=='m'))
         {
-            cmd_id = atoi(str+1);
-            printf("cmd_id = M%d\n",cmd_id);
+
 
         }
         else if((str[0]=='E') || (str[0]=='e'))
@@ -112,11 +113,17 @@ void parseGcode(char * cmd)
         }
         else if((str[0]=='D') || (str[0]=='d'))
         {
-            cmd_id = atoi(str+1);
-            printf("cmd_id = D%d\n",cmd_id);
+            ir_cmd = atoi(str+1);
+            //printf("ir_cmd = %d\n",cmd_id);
 
         }
-        else if((str[0]=='M') || (str[0]=='m'))
+        else if((str[0]=='V') || (str[0]=='v'))
+        {
+            ir_val = atoi(str+1);
+            printf("cmd ir_val = %d\n",ir_val);
+            
+        }
+        else if((str[0]=='U') || (str[0]=='u'))
         {
 
         }
@@ -134,7 +141,6 @@ void parseCmd(char * cmd)
     }
 }
 
-
 void uart_ringbuf_init(void)
 {
     drv_ringbuf_init((RING_BUF_DEF_STRUCT*)&s_tx_ring_buf, s_link_tx_buf, DATA_TX_BUFSIZE);
@@ -150,7 +156,7 @@ void uart_ringbuf_init(void)
 #define ECHO_UART_PORT_NUM      (UART_NUM_1)
 #define ECHO_UART_BAUD_RATE     (115200)
 #define ECHO_TASK_STACK_SIZE    (CONFIG_EXAMPLE_TASK_STACK_SIZE)
-#define PACKET_READ_TICS        (100 / portTICK_RATE_MS)
+#define PACKET_READ_TICS        (5/ portTICK_RATE_MS)
 #define BUF_SIZE (256)
 #define ECHO_READ_TOUT          (3) // 3.5T * 8 = 28 ticks, TOUT=3 -> ~24..33 ticks
 
@@ -175,26 +181,271 @@ void uart1_init(void)
     ESP_ERROR_CHECK(uart_set_rx_timeout(UART_NUM_1, ECHO_READ_TOUT));
 
 }
-
-int uart1_read_data(void *read_data)
-{
-    int len = uart_read_bytes(UART_NUM_1, read_data, BUF_SIZE, PACKET_READ_TICS);
-    drv_ringbuf_write((RING_BUF_DEF_STRUCT*)&s_rx_ring_buf, read_data, len);
+//int gcode_process()
+int uart1_read_data()
+{   
     
-    drv_ringbuf_read((RING_BUF_DEF_STRUCT*)&s_rx_ring_buf, CMD_BUFSIZE, rx_buf);
-
-    //printf("len = %d\n",sizeof(rx_buf));
-    printf("rx_buf = %s\r\n",rx_buf);
-    parseCmd(&rx_buf);
-    printf("rx_buf1 = %s\r\n",rx_buf);
-
-    drv_ringbuf_flush((RING_BUF_DEF_STRUCT*)&s_rx_ring_buf);
-    ringbuff_rx_reset((RING_BUF_DEF_STRUCT*)&s_rx_ring_buf,CMD_BUFSIZE);
-    return len;
+    static char gcode_buf[64];
+    static bool gcode_start = false;
+    static bool gcode_finish = false;
+    static uint8_t gcode_index = 0;
+    static bool send_data_flag;
+    static double now_time = 0;
+    static double last_time = 0;
+    if(send_data_flag ==1)
+    {
+        send_data_flag = 0;
+        uart1_send_data("G128 M4\n",8);
+    }
+    else if(send_data_flag == 0)
+    {   
+        now_time = mp_hal_ticks_ms(); 
+        if(now_time - last_time > 4)
+        {
+            last_time = now_time;
+            send_data_flag = 1;
+        } 
+    }
+    int len = uart_read_bytes(UART_NUM_1, rx_buf, BUF_SIZE, PACKET_READ_TICS);
+    for(int i = 0;i<len;i++)
+    {
+        if(rx_buf[i] == 'G')
+        {
+            gcode_start = true;
+        }
+        if(gcode_start == true)
+        {
+            gcode_buf[gcode_index++] = rx_buf[i];
+            if(gcode_index > 63)
+            {
+                memset(gcode_buf, 0x00, 64);
+                gcode_start = false;
+                gcode_index = 0;
+                return;
+            }
+            if(rx_buf[i] =='\n')
+            {
+                gcode_finish = true;
+                gcode_buf[gcode_index++] = '\0';
+            }
+        }
+    }
+    if(gcode_finish == true)
+    {
+        send_data_flag = 1;
+        //printf("gcode_buf = %s\n",gcode_buf);
+        //gcodeprocess(gcode_buf);
+        parseCmd(&gcode_buf);
+        ir_control1();
+        gcode_finish = false;
+        gcode_start = false;
+        gcode_index = 0;
+    }
+    return 0;
 }
+
+
+
+int read_ir_cmd()
+{   
+    
+    static char gcode_buf[64];
+    static bool gcode_start = false;
+    static bool gcode_finish = false;
+    static uint8_t gcode_index = 0;
+    static bool send_data_flag;
+    static double now_time = 0;
+    static double last_time = 0;
+    static int time_out;
+    send_data_flag = 0;
+    now_time = mp_hal_ticks_ms(); 
+    uart1_send_data("G48 M1\n",7);
+    while(send_data_flag == 0)
+    {
+        if(mp_hal_ticks_ms() - now_time > 20)
+        {
+            return 0;
+        }
+        int len = uart_read_bytes(UART_NUM_1, rx_buf, BUF_SIZE, PACKET_READ_TICS);
+        for(int i = 0;i<len;i++)
+        {
+            if(rx_buf[i] == 'G')
+            {
+                gcode_start = true;
+            }
+            if(gcode_start == true)
+            {
+                gcode_buf[gcode_index++] = rx_buf[i];
+                if(gcode_index > 63)
+                {
+                    memset(gcode_buf, 0x00, 64);
+                    gcode_start = false;
+                    gcode_index = 0;
+                    return 0;
+                }
+                if(rx_buf[i] =='\n')
+                {
+                    gcode_finish = true;
+                    gcode_buf[gcode_index++] = '\0';
+                }
+            }
+        }
+        if(gcode_finish == true)
+        {
+            send_data_flag = 1;
+            //printf("gcode_buf = %s\n",gcode_buf);
+            //gcodeprocess(gcode_buf);
+            parseCmd(&gcode_buf);
+            //ir_control1();
+            gcode_finish = false;
+            gcode_start = false;
+            gcode_index = 0;
+            break;
+        }
+
+    }
+    return ir_cmd;
+}
+
 
 void uart1_send_data(void *send_data,size_t length)
 {
     uart_write_bytes(UART_NUM_1, send_data, length);
     
 }
+
+
+uint8_t get_ir_cmd(void)
+{
+    printf("ir_cmd = %d \n",ir_cmd);
+    return ir_cmd;
+}
+
+uint8_t get_ir_data(void)
+{
+    printf("ir_val = %d \n",ir_val);
+    return ir_val;
+}
+#include "drv_motor.h"
+
+#define S1_IN_S2_IN         0
+#define S1_IN_S2_OUT        2
+#define S1_OUT_S2_IN        4
+#define S1_OUT_S2_OUT       6
+int LineFollowFlag = 0;
+
+
+
+void ir_control1(void)
+{
+
+    ir_val &= 0x06;
+    printf("ir_val = %d\n",ir_val);
+    switch(ir_val)
+    {
+    case S1_IN_S2_IN:
+        forward("400");
+        LineFollowFlag = 10;
+        break;
+
+    case S1_IN_S2_OUT:
+
+        forward("400");
+        if (LineFollowFlag > 1)
+        {
+            LineFollowFlag--;
+        }
+        break;
+
+    case S1_OUT_S2_IN:
+        forward("400");
+        if (LineFollowFlag<20)
+        {
+            LineFollowFlag++;
+        }
+        break;
+
+    case S1_OUT_S2_OUT:
+        if(LineFollowFlag == 10) 
+        {
+            backward("400");
+        }
+        if(LineFollowFlag < 10)
+        {
+            //uart1_send_data("G129 M1 R-400 L-700\n",19);
+            turn_right("500");
+        }
+        if(LineFollowFlag > 10)
+        {
+            turn_left("500");
+            //uart1_send_data("G129 M1 R700 L400\n",19);
+
+        }
+        break;
+    }
+
+}
+#if 0 
+//1111
+#define S1_S2_IN        12
+#define ONLY_S2_IN      13
+#define S1_S2_S3_IN     8
+#define S2_S3_IN        9
+#define ONLY_S3_IN      11
+#define S3_S4_IN        3
+#define S2_S3_S4_IN     1
+#define ALL_OUT         15
+//12,2,123,23,3,34,234,0
+
+void ir_control2(void)
+{
+    
+    //ir_val &= 0x06;
+    //printf("ir_val = %d\n",ir_val);
+    //12,123,turn left.   2,turn turn left_little .23,forward    34,234,turn  left  3 turn left little
+    if(ir_val < 3){  if(ir_val >2); turn_left("500"); }
+    switch(ir_val)
+    {
+    case S1_IN_S2_IN:
+        forward("400");
+        LineFollowFlag = 10;
+        break;
+
+    case S1_IN_S2_OUT:
+
+        forward("400");
+        if (LineFollowFlag > 1)
+        {
+            LineFollowFlag--;
+        }
+        break;
+
+    case S1_OUT_S2_IN:
+        forward("400");
+        if (LineFollowFlag<20)
+        {
+            LineFollowFlag++;
+        }
+        break;
+
+    case S1_OUT_S2_OUT:
+        if(LineFollowFlag == 10) 
+        {
+            backward("400");
+        }
+        if(LineFollowFlag < 10)
+        {
+            //uart1_send_data("G129 M1 R-400 L-700\n",19);
+            turn_right("900");
+        }
+        if(LineFollowFlag > 10)
+        {
+            turn_left("900");
+            //uart1_send_data("G129 M1 R700 L400\n",19);
+            
+        }
+        break;
+    }
+
+}
+#endif

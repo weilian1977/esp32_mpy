@@ -41,9 +41,11 @@ uint8_t s_link_tx_buf[DATA_TX_BUFSIZE];
 
 RING_BUF_DEF_STRUCT s_rx_ring_buf;
 uint8_t s_link_rx_buf[DATA_RX_BUFSIZE];
-
-
+uint8_t get_ir_data(void);
+void ir_control1(void);
 void uart1_init(void);
-int uart1_read_data(void *read_data);
+int uart1_read_data();
 void uart1_send_data(void *send_data,size_t length);
+uint8_t get_ir_cmd(void);
+int read_ir_cmd();
 #endif // MICROPY_INCLUDED_ESP32_UART_H

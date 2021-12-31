@@ -38,10 +38,13 @@ STATIC mp_obj_t mpy_run(mp_obj_t arr)
 
 STATIC mp_obj_t mpy_button()
 {
+    /*
     bool ret;
     ret = is_home_button_pressed();
     
     return mp_obj_new_int(ret);
+*/
+    return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(mpy_button_obj, mpy_button);
 
@@ -145,9 +148,7 @@ STATIC mp_obj_t mpy_get_rotation()
 
 STATIC mp_obj_t mpy_qmi8658_init(void)
 {
-    uart1_init();
     Qmi8658_init();
-    //aw9523b_init();
     return mp_const_none;
 }
 
