@@ -89,8 +89,8 @@ set(MICROPY_SOURCE_PORT
     ${PROJECT_DIR}/src/adapter/machine_sdcard.c
     ${PROJECT_DIR}/src/mpy_modules/modmatatalab.c
     ${PROJECT_DIR}/src/mpy_modules/helloword.c
-    ${PROJECT_DIR}/src/mpy_modules/my_sensor.c
-    ${PROJECT_DIR}/src/mpy_modules/my_motor.c
+    ${PROJECT_DIR}/src/mpy_modules/mod_sensor.c
+    ${PROJECT_DIR}/src/mpy_modules/mod_motor.c
     ${PROJECT_DIR}/src/test_esp32lvgl.c
 )
 
@@ -103,6 +103,8 @@ set(AITEST_SOURCE_DRIVERS
     ${PROJECT_DIR}/src/driver/drv_9_sensor.c
     ${PROJECT_DIR}/src/driver/drv_ring_buf.c
     ${PROJECT_DIR}/src/driver/uart1.c
+    ${PROJECT_DIR}/src/driver/drv_motor.c
+    ${PROJECT_DIR}/src/driver/drv_hub.c
 )
 
 if(CONFIG_USB_CDC_ENABLED)
