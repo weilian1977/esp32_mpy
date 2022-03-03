@@ -89,13 +89,6 @@ void mp_task(void *pvParameter) {
     #if MICROPY_PY_THREAD
     mp_thread_init(pxTaskGetStackStart(NULL), MP_TASK_STACK_SIZE / sizeof(uintptr_t));
     #endif
-    #if CONFIG_USB_ENABLED
-    usb_init();
-    #elif CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG
-    usb_serial_jtag_init();
-    #else
-    uart_init();
-    #endif
     machine_init();
 
     size_t mp_task_heap_size;
@@ -160,8 +153,17 @@ soft_reset:
 
     // run boot-up scripts
     pyexec_frozen_module("_boot.py");
-    //usb_init2();
-    printf("_boot 2\n");
+
+    vTaskDelay(100 / portTICK_PERIOD_MS);
+    #if CONFIG_USB_ENABLED
+    //usb cdc&msc init
+    usb_init();
+    #elif CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG
+    usb_serial_jtag_init();
+    #else
+    uart_init();
+    #endif
+
     pyexec_file_if_exists("boot.py");
     if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL) {
         int ret = pyexec_file_if_exists("main.py");

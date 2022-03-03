@@ -47,6 +47,7 @@ set(MICROPY_SOURCE_PORT
     ${PROJECT_DIR}/src/main.c
     ${PROJECT_DIR}/src/adapter/uart.c
     ${PROJECT_DIR}/src/adapter/usb.c
+    ${PROJECT_DIR}/src/adapter/usb_msc.c
     ${PROJECT_DIR}/src/adapter/usb_serial_jtag.c
     ${PROJECT_DIR}/src/adapter/gccollect.c
     ${PROJECT_DIR}/src/adapter/mphalport.c
