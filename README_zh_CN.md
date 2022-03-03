@@ -66,7 +66,7 @@
    
    - 执行 `make deploy` 编译并烧录固件
 
-   - `oak_lite`初次使用时需要打包并上传fat格式的文件系统镜像。`make_fatfs`打包fat文件系统，`upload_fatfs`上传fat文件系统镜像。如果挂在成功后，不需要再次打包并上传fat格式的文件系统镜像。如果更改了partitions.csv，需同步更新Makefile中`upload_fatfs`的address.
+   - `oak_lite`初次使用时需要打包并上传fat格式的文件系统镜像。`make make_fatfs`打包fat文件系统，`make upload_fatfs`上传fat文件系统镜像。如果挂在成功后，不需要再次打包并上传fat格式的文件系统镜像。如果更改了partitions.csv，需同步更新Makefile中`upload_fatfs`的address.
 
 ## 6. 串口工具 ##
    因为本工程固件支持repl模式，所以可以使用 pytty等串口工具来进行repl调试。
