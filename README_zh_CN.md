@@ -37,10 +37,10 @@
    
    `make -C mpy-cross`
 ## 4. ESP-IDF 和 micropython 对应的版本 ##
-    
-    `ESP-IDF: commit-id 58022f8599401740979ac7657a57348285a70374  2021.07.28`
 
-    `micropython: commit-id 0f0006f4e15f710b4d2fa6a27cb932f580194729 2021.07.26`
+    `ESP-IDF: commit-id 000d3823bb2ff697c327958e41e9dfc6b772822a  2022.02.28`
+
+    `micropython: commit-id 3c2aa5ff93a3b12723c7ca794aa9c583891c349b 2022.02.28`
 
     `esp32-camera: commit-id d1f6b9c2af104e40b461a21884ec2db90a8e2d61 2021.07.29`
 
@@ -50,12 +50,11 @@
 
 ## 5. 编译工程 ##
 
-   进入目录 `esp32_mpy/submodule/esp-idf`，输入命令 `source ./export.sh` , 这个操作是初始化全部的环境变量
-
-
-   现在您可以从 `esp32_mpy/project/aitest` 启动编译您的固件
+   现在您可以从 `esp32_mpy/project/aitest` `esp32_mpy/project/oak_lite`或启动编译您的固件
    
-   首先进入 `/project/aitest` 文件目录
+   首先进入 `/project/aitest`或`/project/oak_lite` 文件目录
+
+   - 执行 `. ./set_idf.sh` 使用submodule中的esp-idf环境
 
    - 执行 `make` 编译代码(首次编译，需要先执行make)
    
@@ -66,6 +65,8 @@
    - 执行 `make erase` 擦除模块的flash
    
    - 执行 `make deploy` 编译并烧录固件
+
+   - `oak_lite`初次使用时需要打包并上传fat格式的文件系统镜像。`make_fatfs`打包fat文件系统，`upload_fatfs`上传fat文件系统镜像。如果挂在成功后，不需要再次打包并上传fat格式的文件系统镜像。如果更改了partitions.csv，需同步更新Makefile中`upload_fatfs`的address.
 
 ## 6. 串口工具 ##
    因为本工程固件支持repl模式，所以可以使用 pytty等串口工具来进行repl调试。
