@@ -158,10 +158,11 @@ soft_reset:
     #if CONFIG_USB_ENABLED
     //usb cdc&msc init
     usb_init();
+    uart_stdout_init();
     #elif CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG
     usb_serial_jtag_init();
     #else
-    uart_init();
+    uart_stdout_init();
     #endif
 
     pyexec_file_if_exists("boot.py");
