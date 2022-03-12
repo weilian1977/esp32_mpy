@@ -83,6 +83,18 @@ set(MICROPY_SOURCE_PORT
     ${PROJECT_DIR}/src/adapter/mpthreadport.c
     ${PROJECT_DIR}/src/adapter/machine_rtc.c
     ${PROJECT_DIR}/src/adapter/machine_sdcard.c
+    ${PROJECT_DIR}/src/driver/drv_i2c.c
+    ${PROJECT_DIR}/src/driver/drv_i2s.c
+    ${PROJECT_DIR}/src/driver/drv_motion_sensor.c
+    ${PROJECT_DIR}/src/driver/drv_qmi8658.c
+    ${PROJECT_DIR}/src/driver/vfs_stream.c
+    ${PROJECT_DIR}/src/audio/audio_player.c
+    ${PROJECT_DIR}/src/audio/audio_recorder.c
+    ${PROJECT_DIR}/src/audio/speech_cn.c
+    
+    
+    ${PROJECT_DIR}/mpy_modules/mod_sensor.c
+    ${PROJECT_DIR}/mpy_modules/modaudio.c
 )
 
 set(MICROPY_SOURCE_QSTR
@@ -122,6 +134,7 @@ set(IDF_COMPONENTS
     ulp
     vfs
     xtensa
+    json
 )
 
 if(IDF_VERSION_MINOR GREATER_EQUAL 1 OR IDF_VERSION_MAJOR GREATER_EQUAL 5)
@@ -150,6 +163,19 @@ elseif(IDF_TARGET STREQUAL "esp32s2")
 elseif(IDF_TARGET STREQUAL "esp32s3")
     list(APPEND IDF_COMPONENTS esp32s3)
     list(APPEND IDF_COMPONENTS tinyusb)
+    list(APPEND IDF_COMPONENTS audio_board)
+    list(APPEND IDF_COMPONENTS audio_hal)
+    list(APPEND IDF_COMPONENTS audio_pipeline)
+    list(APPEND IDF_COMPONENTS audio_recorder)
+    list(APPEND IDF_COMPONENTS audio_sal)
+    list(APPEND IDF_COMPONENTS audio_stream)
+    list(APPEND IDF_COMPONENTS display_service)
+    list(APPEND IDF_COMPONENTS esp_actions)
+    list(APPEND IDF_COMPONENTS esp_dispatcher)
+    list(APPEND IDF_COMPONENTS esp_peripherals)
+    list(APPEND IDF_COMPONENTS esp-adf-libs)
+    list(APPEND IDF_COMPONENTS esp-sr)
+    list(APPEND IDF_COMPONENTS tone_partition)
 endif()
 
 # Register the main IDF component.
@@ -167,10 +193,13 @@ idf_component_register(
         ${MICROPY_INC_USERMOD}
         ${MICROPY_PORT_DIR}
         ${MICROPY_PORT_DIR}/src/adapter/
+        ${MICROPY_PORT_DIR}/src/audio/
+        ${MICROPY_PORT_DIR}/src/driver/
         ${MICROPY_BOARD_DIR}
         ${CMAKE_BINARY_DIR}
         ${MICROPY_DIR}/py
         ${PROJECT_DIR}
+        ${PROJECT_DIR}/components
     REQUIRES
         ${IDF_COMPONENTS}
 )

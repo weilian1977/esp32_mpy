@@ -5,6 +5,7 @@ set(SDKCONFIG_DEFAULTS
     boards/OAK_LITE_V1/sdkconfig.usb
     boards/OAK_LITE_V1/sdkconfig.spiram_sx
     boards/OAK_LITE_V1/sdkconfig.board
+    boards/OAK_LITE_V1/sdkconfig.base_s3
 )
 
 if(NOT MICROPY_FROZEN_MANIFEST)

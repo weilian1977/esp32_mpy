@@ -53,10 +53,10 @@ erase:
 	idf.py $(IDFPY_FLAGS) -p $(PORT) -b $(BAUD) erase_flash
 
 make_fatfs:
-	./tools/mkfatfs/mkfatfs_linux_x86 -c ./tools/vfs/ -s 0x600000 -t fatfs ./tools/vfs.bin
+	./tools/mkfatfs/mkfatfs_linux_x86 -c ./tools/vfs/ -s 0x450000 -t fatfs ./tools/vfs.bin
 
 upload_fatfs:
-	./tools/esptool/esptool --before default_reset --after hard_reset -p $(PORT) -b $(BAUD) write_flash 0x200000 ./tools/vfs.bin
+	./tools/esptool/esptool --before default_reset --after hard_reset -p $(PORT) -b $(BAUD) write_flash 0x250000 ./tools/vfs.bin
 
 submodules:
 	git submodule update --init $(addprefix ../../,$(GIT_SUBMODULES))
