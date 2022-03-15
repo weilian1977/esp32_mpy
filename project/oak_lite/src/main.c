@@ -63,10 +63,14 @@
 #include "modmachine.h"
 #include "modnetwork.h"
 #include "mpthreadport.h"
+#include "speech_cn.h"
 
 #if MICROPY_BLUETOOTH_NIMBLE
 #include "extmod/modbluetooth.h"
 #endif
+
+#include "driver_update.h"
+#include "mt_event_mechanism.h"
 
 // MicroPython runs as a task under FreeRTOS
 #define MP_TASK_PRIORITY        (ESP_TASK_PRIO_MIN + 1)
@@ -164,10 +168,17 @@ soft_reset:
     #else
     uart_stdout_init();
     #endif
-
+    vTaskDelay(100 / portTICK_PERIOD_MS);
     pyexec_file_if_exists("boot.py");
     if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL) {
         int ret = pyexec_file_if_exists("main.py");
+        if (ret & PYEXEC_FORCED_EXIT) {
+            goto soft_reset_exit;
+        }
+    }
+
+    if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL) {
+        int ret = pyexec_file_if_exists("event_start.py");
         if (ret & PYEXEC_FORCED_EXIT) {
             goto soft_reset_exit;
         }
@@ -227,8 +238,11 @@ void app_main(void) {
     // Hook for a board to run code at start up.
     // This defaults to initialising NVS.
     MICROPY_BOARD_STARTUP();
-
+    mt_eve_init_t();
+    driver_update_task_init();
+    speech_cn_init();
     // Create and transfer control to the MicroPython task.
+    //xTaskCreatePinnedToCore(voice_read_task_c, "read_task", 4 * 1024, NULL, MP_TASK_PRIORITY, NULL, 0);
     xTaskCreatePinnedToCore(mp_task, "mp_task", MP_TASK_STACK_SIZE / sizeof(StackType_t), NULL, MP_TASK_PRIORITY, &mp_main_task_handle, MP_TASK_COREID);
 }
 
