@@ -4,7 +4,7 @@
 #include <stdint.h>
 //#include "esp_log.h"
 #include "drv_i2c.h"
-
+#include "mt_err.h"
 
 #define QMI8658_USE_FIFO
 
@@ -34,6 +34,22 @@
 
 #define QMI8658_STATUS1_CMD_DONE			(0x01)
 #define QMI8658_STATUS1_WAKEUP_EVENT		(0x04)
+
+typedef enum
+{
+  SHAKE = 0,
+  TILT_LEFT,
+  TILT_RIGHT,
+  TILT_FORWARD,
+  TILT_BACK,
+  SCREEN_UP,
+  SCREEN_DOWN,
+  UP_RIGHT,
+  FREE_FALL,
+  ROTATE_CLOCKWISE,
+  ROTATE_ANTICLOCKWISE,
+  EVENT_MAX
+}gyro_event_type_t; 
 
 enum Qmi8658Register
 {
@@ -409,4 +425,8 @@ extern unsigned short Qmi8658_read_fifo(unsigned char* data);
 extern void get_acc_gyro_angle(void);
 #endif
 
+mt_err_t mt_esp32_gyro_init_t(void);
+mt_err_t mt_esp32_gyro_update_t(void);
+mt_err_t mt_esp32_gyro_event_init_t(void);
+mt_err_t mt_esp32_gyro_get_tilt_status_t(uint16_t tilt_id, uint16_t *out_sta);
 #endif

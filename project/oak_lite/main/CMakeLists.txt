@@ -96,6 +96,7 @@ set(MICROPY_SOURCE_PORT
     ${PROJECT_DIR}/src/audio/speech_cn.c
     ${PROJECT_DIR}/src/mpy_modules/modmatatalab.c
     ${PROJECT_DIR}/src/mpy_modules/mt_mpy_event.c
+    ${PROJECT_DIR}/src/mpy_modules/mt_mpy_button.c
     ${PROJECT_DIR}/mpy_modules/mod_sensor.c
     ${PROJECT_DIR}/mpy_modules/modaudio.c
 )

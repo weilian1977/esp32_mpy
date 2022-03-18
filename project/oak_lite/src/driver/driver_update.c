@@ -30,6 +30,8 @@
 
 #include "driver_update.h"
 #include "mt_esp32_button.h"
+#include "drv_qmi8658.h"
+
 /******************************************************************************
  DEFINE MACROS
  ******************************************************************************/
@@ -79,6 +81,7 @@ void driver_update_t(void)
 
 #if MODULE_GYRO_ENABLE
   mt_esp32_gyro_update_t();
+  //get_acc_gyro_angle();
 #endif
 
 #if MODULE_BUTTON_ENABLE
@@ -92,8 +95,8 @@ void driver_event_listenning(void)
 {
   uint8_t para[EVE_PARAMETER_BYTE_MAX_SIZE];
 #if MODULE_GYRO_ENABLE
-  mt_esp32_gyro_is_shaked_t((bool *)&para[0]);
-  mt_eve_trigger_by_type_t(EVENT_SHAKED, para);
+  //mt_esp32_gyro_is_shaked_t((bool *)&para[0]);
+  //mt_eve_trigger_by_type_t(EVENT_SHAKED, para);
 
   mt_esp32_gyro_get_tilt_status_t(TILT_LEFT, (uint16_t *)&para[0]);
   mt_eve_trigger_by_type_t(EVENT_TILT_LEFT, para);
@@ -106,16 +109,6 @@ void driver_event_listenning(void)
 
   mt_esp32_gyro_get_tilt_status_t(TILT_BACK, (uint16_t *)&para[0]);
   mt_eve_trigger_by_type_t(EVENT_TILT_BACKWARD, para);
-
-  mt_esp32_gyro_get_tilt_status_t(FREE_FALL, (uint16_t *)&para[0]);
-  mt_eve_trigger_by_type_t(EVENT_FREE_FALL, para);
-
-  mt_esp32_gyro_get_tilt_status_t(ROTATE_CLOCKWISE, (uint16_t *)&para[0]);
-  mt_eve_trigger_by_type_t(EVENT_ROTATE_CLOCKWISE, para);
-
-  mt_esp32_gyro_get_tilt_status_t(ROTATE_ANTICLOCKWISE, (uint16_t *)&para[0]);
-  mt_eve_trigger_by_type_t(EVENT_ROTATE_ANTICLOCKWISE, para);
-  
 #endif
 
 #if MODULE_BUTTON_ENABLE

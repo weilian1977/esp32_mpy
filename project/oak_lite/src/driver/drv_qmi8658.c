@@ -6,6 +6,10 @@
 #include "py/runtime.h"
 #include "py/mphal.h"
 //#include "esp32/rom/ets_sys.h"
+
+#include "esp_log.h"
+#define   TAG                         ("GYRO")
+
 #define QMI8658_SLAVE_ADDR_L			0x6a
 #define QMI8658_SLAVE_ADDR_H			0x6a
 #define I2C_MASTER_NUM I2C_NUM_1
@@ -31,6 +35,17 @@ static unsigned short gyro_lsb_div = 0;
 
 static struct Qmi8658Config qmi8658_config;
 static unsigned char qmi8658_slave_addr = QMI8658_SLAVE_ADDR_L;
+
+typedef struct
+{ 
+  int16_t threshold_value_high;
+  int16_t threshold_value_low;
+  uint8_t event_occured_flag;
+}gyro_event_manager_t;
+
+gyro_event_manager_t gyro_event_info[EVENT_MAX];
+
+static mt_err_t mt_esp32_gyro_event_listening_t(float ax, float ay, float az);
 
 void delayMs(unsigned int ms)
 {
@@ -344,4 +359,101 @@ unsigned char Qmi8658_init(void)
     }
     
     return 0;
+}
+
+mt_err_t mt_esp32_gyro_init_t(void)
+{
+    Qmi8658_init();
+    return MT_OK;
+}
+
+mt_err_t mt_esp32_gyro_update_t(void)
+{
+    get_acc_gyro_angle();
+
+    /* detect acc event */
+    //mt_esp32_gyro_shake_detect_t();
+    mt_esp32_gyro_event_listening_t(acc_x, acc_y, acc_z);
+
+  return MT_OK;
+}
+
+
+/* for gyro event machanism */
+mt_err_t mt_esp32_gyro_event_init_t(void)
+{
+  /* 0 for shake */
+  gyro_event_info[SHAKE].event_occured_flag = false;
+  
+  /* 1 for tilt left */
+  gyro_event_info[TILT_LEFT].event_occured_flag = false;
+  
+  /* 2 for tilt right */
+  gyro_event_info[TILT_RIGHT].event_occured_flag = false;
+
+  /* 3 for tilt forward */
+  gyro_event_info[TILT_FORWARD].event_occured_flag = false;
+
+  /* 4 for tilt back */
+  gyro_event_info[TILT_BACK].event_occured_flag = false;
+
+  return MT_OK;
+}
+
+#define GRAVITY_DEFAULT_VALUE         (9.8)
+#define TILT_RANGE_GAIN               (0.2588) // cos(75)
+
+#define THRESHOLD_VALUE               GRAVITY_DEFAULT_VALUE*TILT_RANGE_GAIN
+
+static mt_err_t mt_esp32_gyro_event_listening_t(float ax, float ay, float az)
+{
+    //ESP_LOGI(TAG, "value:%f, %f, %f", ax, ay, az);
+
+    /* 1 for tilt left   2 for tilt right */
+    if (ax <= -1 * THRESHOLD_VALUE)
+    {
+        gyro_event_info[TILT_LEFT].event_occured_flag = true;
+        gyro_event_info[TILT_RIGHT].event_occured_flag = false;
+    }
+    else if (ax >= THRESHOLD_VALUE)
+    {
+        gyro_event_info[TILT_LEFT].event_occured_flag = false;
+        gyro_event_info[TILT_RIGHT].event_occured_flag = true;
+    }
+    else
+    {
+        gyro_event_info[TILT_LEFT].event_occured_flag = false;
+        gyro_event_info[TILT_RIGHT].event_occured_flag = false;
+    }
+
+    if (ay <= -1 * THRESHOLD_VALUE)
+    {
+        gyro_event_info[TILT_FORWARD].event_occured_flag = true;
+        gyro_event_info[TILT_BACK].event_occured_flag = false;
+    }
+    else if (ay >= THRESHOLD_VALUE)
+    {
+        gyro_event_info[TILT_FORWARD].event_occured_flag = false;
+        gyro_event_info[TILT_BACK].event_occured_flag = true;
+    }
+    else
+    {
+        gyro_event_info[TILT_FORWARD].event_occured_flag = false;
+        gyro_event_info[TILT_BACK].event_occured_flag = false;
+    }
+    return MT_OK;
+}
+
+mt_err_t mt_esp32_gyro_get_tilt_status_t(uint16_t tilt_id, uint16_t *out_sta)
+{
+
+  if(gyro_event_info[tilt_id].event_occured_flag == true)
+  {
+    (*out_sta) = 1;
+  }
+  else
+  {
+    (*out_sta) = 0;
+  }
+  return MT_OK;
 }
