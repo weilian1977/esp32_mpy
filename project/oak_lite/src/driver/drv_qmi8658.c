@@ -457,3 +457,49 @@ mt_err_t mt_esp32_gyro_get_tilt_status_t(uint16_t tilt_id, uint16_t *out_sta)
   }
   return MT_OK;
 }
+
+mt_err_t mt_esp32_gyro_get_acc_t(float *out_val, uint8_t axis)
+{
+  if(axis == AXIS_ID_X)
+  {
+    (*out_val) = acc_x;
+  }
+  else if(axis == AXIS_ID_Y)
+  {
+    (*out_val) = acc_y;
+
+  }
+  else if(axis == AXIS_ID_Z)
+  {
+    (*out_val) = acc_z;
+  }
+  else
+  { 
+    (*out_val) = 0;
+    return MT_ERR_INVALID_ARG;
+  }
+  return MT_OK;
+}
+
+mt_err_t mt_esp32_gyro_get_gyro_t(float *out_val, uint8_t axis)
+{
+  if(axis == AXIS_ID_X)
+  {
+    (*out_val) = gyro_x;
+  }
+  else if(axis == AXIS_ID_Y)
+  {
+    (*out_val) = gyro_y;
+
+  }
+  else if(axis == AXIS_ID_Z)
+  {
+    (*out_val) = gyro_z;
+  }
+  else
+  { 
+    (*out_val) = 0;
+    return MT_ERR_INVALID_ARG;
+  }
+  return MT_OK;
+}

@@ -393,6 +393,14 @@ enum Qmi8658_WakeOnMotionThreshold
     Qmi8658WomThreshold_high = 255
 };
 
+typedef enum
+{
+  AXIS_ID_X = 1,
+  AXIS_ID_Y,
+  AXIS_ID_Z,
+  AXIS_ID_MAX
+}gyro_acc_id_t;
+
 extern short gyroraw[3];
 extern short accelraw[3];
 float acc_x,acc_y,acc_z,acc_angle_x,acc_angle_y,acc_angle_z;
@@ -429,4 +437,6 @@ mt_err_t mt_esp32_gyro_init_t(void);
 mt_err_t mt_esp32_gyro_update_t(void);
 mt_err_t mt_esp32_gyro_event_init_t(void);
 mt_err_t mt_esp32_gyro_get_tilt_status_t(uint16_t tilt_id, uint16_t *out_sta);
+mt_err_t mt_esp32_gyro_get_acc_t(float *out_val, uint8_t axis);
+mt_err_t mt_esp32_gyro_get_gyro_t(float *out_val, uint8_t axis);
 #endif

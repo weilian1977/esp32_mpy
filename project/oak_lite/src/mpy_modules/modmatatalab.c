@@ -18,11 +18,12 @@
 #include "uart.h"
 
 #include "mt_err.h"
-#include "module_config.h"
+#include "mt_module_config.h"
 
 #include "mt_mpy_event.h"
 //#include "mt_mpy_stop_script.h"
 #include "mt_mpy_button.h"
+#include "mt_mpy_gyro.h"
 
 #define   TAG                         ("matatalab")
 
@@ -41,6 +42,13 @@ STATIC const mp_map_elem_t matatalab_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_BUTTON_ENABLE),                MP_OBJ_NEW_SMALL_INT(MODULE_DISABLE_VALUE) },    
 #endif /* MODULE_BUTTON_ENABLE */
     
+#if MODULE_GYRO_ENABLE
+    { MP_OBJ_NEW_QSTR(MP_QSTR_gyro),                        (mp_obj_t)&mt_mpy_gyro_type},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_GYRO_ENABLE),                  MP_OBJ_NEW_SMALL_INT(MODULE_ENABLE_VALUE) }, 
+#else
+    { MP_OBJ_NEW_QSTR(MP_QSTR_GYRO_ENABLE),                  MP_OBJ_NEW_SMALL_INT(MODULE_DISABLE_VALUE) }, 
+#endif /* MODULE_GYRO_ENABLE */
+
 };
 STATIC MP_DEFINE_CONST_DICT(matatalab_module_globals, matatalab_module_globals_table);
 
