@@ -9,7 +9,7 @@
 
 //#include "mt_err.h"
 //#include "mt_log.h"
-#include "module_config.h"
+#include "mt_module_config.h"
 #include "mt_esp32_button.h"
 #include "mt_mpy_button.h"
 
