@@ -413,6 +413,11 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(mpy_is_speech_commands_obj, is_speech_commands)
 STATIC mp_obj_t start_speech_recognition()
 {
     //i2s_stream_set_clk(i2s_stream_reader, 48000, 32, 2);
+    if(pipeline_rec ==NULL)
+    {
+        printf("pipeline_rec not set\n");
+        return mp_const_none;
+    }
     audio_pipeline_run(pipeline_rec);
     audio_pipeline_resume(pipeline_rec);
     return mp_const_none;
@@ -421,6 +426,11 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(mpy_start_speech_recognition_obj, start_speech_
 
 STATIC mp_obj_t stop_speech_recognition()
 {
+    if(pipeline_rec ==NULL)
+    {
+        printf("pipeline_rec not set\n");
+        return mp_const_none;
+    }
     audio_pipeline_pause(pipeline_rec);
     return mp_const_none;
 }

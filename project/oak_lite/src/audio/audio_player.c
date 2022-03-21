@@ -171,7 +171,7 @@ STATIC mp_obj_t audio_player_make_new(const mp_obj_type_t *type, size_t n_args, 
 
 void play_start(const char *uri)
 {
-    audio_pipeline_pause(pipeline_rec);
+    //audio_pipeline_pause(pipeline_rec);
     esp_audio_player_running = true;
     const char *uri_p;
     char *path = strstr(uri, ":");
@@ -239,8 +239,8 @@ STATIC void play_stop(void)
         ret = audio_pipeline_unlink(pipeline);
         ESP_LOGW(TAG, "audio_pipeline_unlink = %d\n", ret);
 
-        audio_pipeline_run(pipeline_rec);
-        audio_pipeline_resume(pipeline_rec);
+        //audio_pipeline_run(pipeline_rec);
+        //audio_pipeline_resume(pipeline_rec);
         //i2s_stream_set_clk(i2s_stream_reader, 48000, 32, 2);
         //i2s0_shdn_enable(0);
         esp_audio_player_running = false;
