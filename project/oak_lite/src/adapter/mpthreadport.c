@@ -120,7 +120,7 @@ STATIC void freertos_entry(void *arg) {
     }
 }
 
-void mp_thread_create_ex(void *(*entry)(void *), void *arg, size_t *stack_size, int priority, char *name) {
+void mp_thread_create_ex(void *(*entry)(void *), void *arg, size_t *stack_size, int priority, int thread_stack_type, char *name) {
     // store thread entry function into a global variable so we can access it
     ext_thread_entry = entry;
 
@@ -131,7 +131,23 @@ void mp_thread_create_ex(void *(*entry)(void *), void *arg, size_t *stack_size, 
     }
 
     // Allocate linked-list node (must be outside thread_mutex lock)
+ #if CONFIG_SPIRAM_SUPPORT
+    StaticTask_t *tcb = heap_caps_malloc(sizeof(StaticTask_t), MALLOC_CAP_8BIT); // malloc(sizeof(StaticTask_t));
+    StackType_t *stack = NULL;
+    if(thread_stack_type == MP_THREAD_STACK_TYPE_INTERNEL)
+    {
+      stack = heap_caps_malloc((*stack_size), MALLOC_CAP_8BIT);
+    }
+    else
+    {
+      stack = heap_caps_malloc((*stack_size), MALLOC_CAP_SPIRAM); 
+    }
     thread_t *th = m_new_obj(thread_t);
+#else /* CONFIG_SPIRAM_SUPPORT */
+    StaticTask_t *tcb = heap_caps_malloc(sizeof(StaticTask_t), MALLOC_CAP_8BIT);
+    StackType_t *stack = heap_caps_malloc((*stack_size), MALLOC_CAP_8BIT);
+    thread_t *th = m_new_obj(thread_t);
+#endif
 
     mp_thread_mutex_lock(&thread_mutex, 1);
 
@@ -156,8 +172,8 @@ void mp_thread_create_ex(void *(*entry)(void *), void *arg, size_t *stack_size, 
     mp_thread_mutex_unlock(&thread_mutex);
 }
 
-void mp_thread_create(void *(*entry)(void *), void *arg, size_t *stack_size) {
-    mp_thread_create_ex(entry, arg, stack_size, MP_THREAD_PRIORITY, "mp_thread");
+void mp_thread_create(void *(*entry)(void*), void *arg, int thread_priority, int thread_stack_type, size_t *stack_size){
+    mp_thread_create_ex(entry, arg, stack_size, thread_priority, thread_stack_type, "mp_thread");
 }
 
 void mp_thread_finish(void) {
