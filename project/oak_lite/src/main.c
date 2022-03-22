@@ -88,6 +88,8 @@ int vprintf_null(const char *format, va_list ap) {
     return 0;
 }
 
+int usb_init_state = 0;
+
 void mp_task(void *pvParameter) {
     volatile uint32_t sp = (uint32_t)get_sp();
     #if MICROPY_PY_THREAD
@@ -140,11 +142,13 @@ void mp_task(void *pvParameter) {
         mp_task_heap = malloc(mp_task_heap_size);
     }
 
-soft_reset:
+//soft_reset:
     // initialise the stack pointer for the main thread
     mp_stack_set_top((void *)sp);
     mp_stack_set_limit(MP_TASK_STACK_SIZE - MP_TASK_STACK_LIMIT_MARGIN);
     gc_init(mp_task_heap, mp_task_heap + mp_task_heap_size);
+
+for (;;) {
     mp_init();
     mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_lib));
     readline_init0();
@@ -158,17 +162,22 @@ soft_reset:
     // run boot-up scripts
     pyexec_frozen_module("_boot.py");
 
-    vTaskDelay(100 / portTICK_PERIOD_MS);
-    #if CONFIG_USB_ENABLED
-    //usb cdc&msc init
-    usb_init();
-    uart_stdout_init();
-    #elif CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG
-    usb_serial_jtag_init();
-    #else
-    uart_stdout_init();
-    #endif
-    vTaskDelay(100 / portTICK_PERIOD_MS);
+    //vTaskDelay(100 / portTICK_PERIOD_MS);
+
+    if (usb_init_state == 0)
+    {
+        usb_init_state = 1;
+        #if CONFIG_USB_ENABLED
+        // usb cdc&msc init
+        usb_init();
+        uart_stdout_init();
+        #elif CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG
+        usb_serial_jtag_init();
+        #else
+        uart_stdout_init();
+        #endif
+        //vTaskDelay(100 / portTICK_PERIOD_MS);
+    }
     pyexec_file_if_exists("boot.py");
     if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL) {
         int ret = pyexec_file_if_exists("main.py");
@@ -223,7 +232,8 @@ soft_reset_exit:
 
     mp_deinit();
     fflush(stdout);
-    goto soft_reset;
+    //goto soft_reset;
+}
 }
 
 void boardctrl_startup(void) {
