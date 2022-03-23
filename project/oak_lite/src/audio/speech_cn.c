@@ -70,7 +70,6 @@ static audio_rec_cfg_t cfg = AUDIO_RECORDER_DEFAULT_CFG();
 static esp_periph_set_handle_t set_recorder;
 char *ch_commands_str = NULL;
 static int speech_cmd_id = -1;
-void speech_init_end(void);
 static int commands_index = 0;
 static char *commands_str[MAX_COMMANDS_ID];
 void separate_commands(char *all_commands)
@@ -346,15 +345,7 @@ static void log_clear(void)
     esp_log_level_set("RSP_FILTER", ESP_LOG_ERROR);
     esp_log_level_set("AUDIO_EVT", ESP_LOG_ERROR);
 }
-void speech_init_end(void)
-{
 
-    
-    char err[200];
-    recorder_sr_reset_speech_cmd(cfg.sr_handle, ch_commands_str, err);
-    separate_commands(ch_commands_str);
-    recorder = audio_recorder_create(&cfg);
-}
 void speech_cn_init(void)
 {
     ch_commands_str = (char *)malloc(64*99);
@@ -371,7 +362,7 @@ void speech_cn_init(void)
     recorder_sr_reset_speech_cmd(cfg.sr_handle, ch_commands_str, err);
     separate_commands(ch_commands_str);
     recorder = audio_recorder_create(&cfg);
-    //speech_init_end();
+    audio_pipeline_pause(pipeline_rec);
 }
 
 
@@ -392,7 +383,7 @@ STATIC mp_obj_t is_speech_commands(mp_obj_t command)
     char *read_command = mp_obj_str_get_str(command);
     if(speech_cmd_id == -1)
     {
-        mp_obj_new_bool(false);
+        return mp_obj_new_bool(false);
     }
     else
     {

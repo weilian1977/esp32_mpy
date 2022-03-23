@@ -26,8 +26,7 @@ instruments_voice_table = {
 '21-synth-pad':[60],
 }
 
-resample_rate =22050.0
-tempo = 500.0
+
 note_offset = {
 1:0,
 2:2,
@@ -38,9 +37,20 @@ note_offset = {
 7:11,
 }
 
+music_dir_table = {
+    'system': ['1-off.mp3', '2-on.mp3', '3-start.mp3', '4-ulink.mp3', '5-link.mp3'],
+    'music': ['1-music.mp3', '2-music.mp3', '3-music.mp3', '4-music.mp3', '5-music.mp3', '6-music.mp3'],
+    'move': ['1-hi.mp3', '2-why.mp3', '3-dila.mp3', '4-zzz.mp3', '5-byebye.mp3', '6-woo.mp3', '7-applaud.mp3', '8-yoho.mp3', '9-aaa.mp3', '10-ao.mp3', '11-o-no.mp3', '12-du.mp3', '13-hello.mp3', '14-byebye.mp3', '15-waw.mp3'],
+    'melody': ['1-melody.mp3', '2-melody.mp3', '3-melody.mp3', '4-melody.mp3', '5-melody.mp3', '6-melody.mp3', '7-melody.mp3', '8-melody.mp3', '9-melody.mp3', '10-melody.mp3'],
+    'dance': ['1-dance.mp3', '2-dance.mp3', '3-dance.mp3', '4-dance.mp3', '5-dance.mp3', '6-dance.mp3'],
+}
 
+
+resample_rate =22050.0
+tempo = 500.0
 global instrument_type
 instrument_type = '1-piano'
+
 def rates(rate):
     if(rate > 480000):
         rate = 480000
@@ -97,8 +107,8 @@ def play_say(language,text):
         tpye = "sam://"
         set_play_info(20500)
     elif(language == "chinese"):
-        
-        set_play_info(16000)
+        set_play_info(8000)
+        mPlayer.say_speed(2)
         tpye = "hans://"
     else:
         print("language error")
@@ -158,7 +168,10 @@ def play_tone(tone, meter, instruments = ''):
     time_start = time.ticks_ms()
     if(instruments == ''):
         instruments = instrument_type
-    play_instrument_tone(instruments, tone)
+        play_instrument_tone(instruments, tone)
+    else:
+        set_instrument(instruments)
+        play_instrument_tone(instrument_type, tone)
 
     time_space = time.ticks_diff(time.ticks_ms(), time_start)
 
@@ -180,6 +193,28 @@ def play_treble(tone_id, beat = 1):
 def get_tone_offset(tone_id):
     return note_offset.get(tone_id, 0)
 
+def dir_find(path, name):
+    files = music_dir_table.get(path, [])
+    name = str(name)
+    for f in files:
+        if f.find('-') >= 0:
+            fsp = f.split('-', 1)
+            fstart = fsp[1].find(name)
+            if fsp[0] == name:
+                full_path = "%s%s%s%s" % ('/music/',path,'/',f)
+                return full_path
+            elif (fstart >= 0) and (fstart < (len(fsp[1])/2)):
+                full_path = "%s%s%s%s" % ('/music/',path,'/',f)
+                return full_path
+    for f in files:
+        if (f.find(name) >= 0):
+            full_path = "%s%s%s%s" % ('/music/',path,'/',f)
+            return full_path
+    return None
+
+def play_melody(name, sync = True, play_time = 0):
+    path = dir_find('melody', name)
+    play(path, 44100, 60, sync, play_time)
 
 
 
