@@ -14,43 +14,22 @@
 
 #include "esp_err.h"
 #include "esp_log.h"
-#include "lib/oofatfs/ffconf.h"
-#include "lib/oofatfs/ff.h"
-#include "lib/oofatfs/diskio.h"
-#include "usb_msc.h"
-#include "extmod/vfs_fat.h"
+#include "esp_partition.h"
 
-//extern bdev_t test;
-//bdev_t s_pdrv;
-typedef void *s_pdrv_t;
-s_pdrv_t s_pdrv;
-//static uint8_t s_pdrv = 0;
-static int s_disk_block_size = 0;
+#include "usb_msc.h"
+
+#define BLOCK_SIZE          CFG_TUD_MSC_BUFSIZE
 
 #define LOGICAL_DISK_NUM 1
 static bool ejected[LOGICAL_DISK_NUM] = {true};
 
-//extern void *bdev_t;
-//typedef void *s_pdrv;
-//s_pdrv;
+const esp_partition_t *partition;
+
 esp_err_t usb_msc_init()
 {
-    ESP_LOGI(__func__, "tusb_msc_init start");
-    //*
-    //(fs_user_mount_t *)bdev;
-    //char *path = "/vfs/";
-    char *path = "/a";
-    //char *path = "/sdcard/0205.txt";
-    //char *path = "/sdcard/";
-    //char *path = "/";
-    //char *path = "/vfs/data.txt";
-    //char *path = "/vfs";
-    const char *path_out = NULL;
-    mp_vfs_mount_t *vfs_mount = mp_vfs_lookup_path(path, &path_out);
-    s_pdrv = ((fs_user_mount_t *)vfs_mount->obj);
-    //ESP_LOGI(__func__, "1 pdrv test1:%d", test);
-    //*/
-    ESP_LOGI(__func__, "tusb_msc_init vfs_mount");
+    partition = esp_partition_find_first(ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_ANY, "vfs");
+    assert(partition != NULL);
+    ESP_LOGD(__func__, "");
     return ESP_OK;
 }
 
@@ -67,7 +46,7 @@ void tud_mount_cb(void)
         ejected[i] = false;
     }
 
-    ESP_LOGI(__func__, "");
+    ESP_LOGD(__func__, "");
 }
 
 // Invoked when device is unmounted
@@ -165,10 +144,9 @@ void tud_msc_capacity_cb(uint8_t lun, uint32_t *block_count, uint16_t *block_siz
         return;
     }
 
-    disk_ioctl(s_pdrv, GET_SECTOR_COUNT, block_count);
-    disk_ioctl(s_pdrv, GET_SECTOR_SIZE, block_size);
-    s_disk_block_size = *block_size;
-    ESP_LOGD(__func__, "GET_SECTOR_COUNT = %d，GET_SECTOR_SIZE = %d", *block_count, *block_size);
+    *block_size = BLOCK_SIZE;
+    *block_count = partition->size/BLOCK_SIZE;
+    ESP_LOGD(__func__, "GET_SECTOR_COUNT = %d, GET_SECTOR_SIZE = %d", *block_count, *block_size);
 }
 
 bool tud_msc_is_writable_cb(uint8_t lun)
@@ -188,7 +166,7 @@ bool tud_msc_is_writable_cb(uint8_t lun)
 // - Start = 1 : active mode, if load_eject = 1 : load disk storage
 bool tud_msc_start_stop_cb(uint8_t lun, uint8_t power_condition, bool start, bool load_eject)
 {
-    ESP_LOGI(__func__, "");
+    ESP_LOGD(__func__, "");
     (void) power_condition;
 
     if (lun >= LOGICAL_DISK_NUM) {
@@ -198,24 +176,12 @@ bool tud_msc_start_stop_cb(uint8_t lun, uint8_t power_condition, bool start, boo
 
     if (load_eject) {
         if (!start) {
-            // Eject but first flush.
-            if (disk_ioctl(s_pdrv, CTRL_SYNC, NULL) != RES_OK) {
-                return false;
-            } else {
-                ejected[lun] = true;
-            }
+            ejected[lun] = true;
         } else {
             // We can only load if it hasn't been ejected.
-            return !ejected[lun];
+            ejected[lun] = false;
         }
     } else {
-        if (!start) {
-            // Stop the unit but don't eject.
-            if (disk_ioctl(s_pdrv, CTRL_SYNC, NULL) != RES_OK) {
-                return false;
-            }
-        }
-
         // Always start the unit, even if ejected. Whether media is present is a separate check.
     }
 
@@ -233,9 +199,8 @@ int32_t tud_msc_read10_cb(uint8_t lun, uint32_t lba, uint32_t offset, void *buff
         return 0;
     }
 
-    const uint32_t block_count = bufsize / s_disk_block_size;
-    disk_read(s_pdrv, buffer, lba, block_count);
-    return block_count * s_disk_block_size;
+    ESP_ERROR_CHECK(esp_partition_read(partition, lba * BLOCK_SIZE, buffer, bufsize));
+    return bufsize;
 }
 
 // Callback invoked when received WRITE10 command.
@@ -250,9 +215,9 @@ int32_t tud_msc_write10_cb(uint8_t lun, uint32_t lba, uint32_t offset, uint8_t *
         return 0;
     }
 
-    const uint32_t block_count = bufsize / s_disk_block_size;
-    disk_write(s_pdrv, buffer, lba, block_count);
-    return block_count * s_disk_block_size;
+    ESP_ERROR_CHECK(esp_partition_erase_range(partition, lba * BLOCK_SIZE, bufsize));
+    ESP_ERROR_CHECK(esp_partition_write(partition, lba * BLOCK_SIZE, buffer, bufsize));
+    return bufsize;
 }
 
 // Callback invoked when received an SCSI command not in built-in list below

@@ -93,6 +93,15 @@ void mp_task(void *pvParameter) {
     #if MICROPY_PY_THREAD
     mp_thread_init(pxTaskGetStackStart(NULL), MP_TASK_STACK_SIZE / sizeof(uintptr_t));
     #endif
+    #if CONFIG_USB_ENABLED
+    // usb cdc&msc init
+    usb_init();
+    uart_stdout_init();
+    #elif CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG
+    usb_serial_jtag_init();
+    #else
+    uart_stdout_init();
+    #endif
     machine_init();
 
     size_t mp_task_heap_size;
@@ -140,90 +149,92 @@ void mp_task(void *pvParameter) {
         mp_task_heap = malloc(mp_task_heap_size);
     }
 
-soft_reset:
+//soft_reset:
     // initialise the stack pointer for the main thread
     mp_stack_set_top((void *)sp);
     mp_stack_set_limit(MP_TASK_STACK_SIZE - MP_TASK_STACK_LIMIT_MARGIN);
     gc_init(mp_task_heap, mp_task_heap + mp_task_heap_size);
-    mp_init();
-    mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_lib));
-    readline_init0();
 
-    // initialise peripherals
-    machine_pins_init();
-    #if MICROPY_PY_MACHINE_I2S
-    machine_i2s_init0();
-    #endif
+    for (;;)
+    {
+        mp_init();
+        mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_lib));
+        readline_init0();
 
-    // run boot-up scripts
-    pyexec_frozen_module("_boot.py");
+        // initialise peripherals
+        machine_pins_init();
+        #if MICROPY_PY_MACHINE_I2S
+        machine_i2s_init0();
+        #endif
 
-    vTaskDelay(100 / portTICK_PERIOD_MS);
-    #if CONFIG_USB_ENABLED
-    //usb cdc&msc init
-    usb_init();
-    uart_stdout_init();
-    #elif CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG
-    usb_serial_jtag_init();
-    #else
-    uart_stdout_init();
-    #endif
-    vTaskDelay(100 / portTICK_PERIOD_MS);
-    pyexec_file_if_exists("boot.py");
-    if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL) {
-        int ret = pyexec_file_if_exists("main.py");
-        if (ret & PYEXEC_FORCED_EXIT) {
-            goto soft_reset_exit;
-        }
-    }
-
-    if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL) {
-        int ret = pyexec_file_if_exists("event_start.py");
-        if (ret & PYEXEC_FORCED_EXIT) {
-            goto soft_reset_exit;
-        }
-    }
-
-    for (;;) {
-        if (pyexec_mode_kind == PYEXEC_MODE_RAW_REPL) {
-            vprintf_like_t vprintf_log = esp_log_set_vprintf(vprintf_null);
-            if (pyexec_raw_repl() != 0) {
-                break;
-            }
-            esp_log_set_vprintf(vprintf_log);
-        } else {
-            if (pyexec_friendly_repl() != 0) {
-                break;
+        // run boot-up scripts
+        pyexec_frozen_module("_boot.py");
+        pyexec_file_if_exists("boot.py");
+        if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL)
+        {
+            int ret = pyexec_file_if_exists("main.py");
+            if (ret & PYEXEC_FORCED_EXIT)
+            {
+                goto soft_reset_exit;
             }
         }
+
+        if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL)
+        {
+            int ret = pyexec_file_if_exists("event_start.py");
+            if (ret & PYEXEC_FORCED_EXIT)
+            {
+                goto soft_reset_exit;
+            }
+        }
+
+        for (;;)
+        {
+            if (pyexec_mode_kind == PYEXEC_MODE_RAW_REPL)
+            {
+                vprintf_like_t vprintf_log = esp_log_set_vprintf(vprintf_null);
+                if (pyexec_raw_repl() != 0)
+                {
+                    break;
+                }
+                esp_log_set_vprintf(vprintf_log);
+            }
+            else
+            {
+                if (pyexec_friendly_repl() != 0)
+                {
+                    break;
+                }
+            }
+        }
+
+        soft_reset_exit:
+
+        #if MICROPY_BLUETOOTH_NIMBLE
+        mp_bluetooth_deinit();
+        #endif
+
+        machine_timer_deinit_all();
+
+        #if MICROPY_PY_THREAD
+        mp_thread_deinit();
+        #endif
+
+        gc_sweep_all();
+
+        mp_hal_stdout_tx_str("MPY: soft reboot\r\n");
+
+        // deinitialise peripherals
+        machine_pwm_deinit_all();
+        // TODO: machine_rmt_deinit_all();
+        machine_pins_deinit();
+        machine_deinit();
+        usocket_events_deinit();
+
+        mp_deinit();
+        fflush(stdout);
+        // goto soft_reset;
     }
-
-soft_reset_exit:
-
-    #if MICROPY_BLUETOOTH_NIMBLE
-    mp_bluetooth_deinit();
-    #endif
-
-    machine_timer_deinit_all();
-
-    #if MICROPY_PY_THREAD
-    mp_thread_deinit();
-    #endif
-
-    gc_sweep_all();
-
-    mp_hal_stdout_tx_str("MPY: soft reboot\r\n");
-
-    // deinitialise peripherals
-    machine_pwm_deinit_all();
-    // TODO: machine_rmt_deinit_all();
-    machine_pins_deinit();
-    machine_deinit();
-    usocket_events_deinit();
-
-    mp_deinit();
-    fflush(stdout);
-    goto soft_reset;
 }
 
 void boardctrl_startup(void) {
