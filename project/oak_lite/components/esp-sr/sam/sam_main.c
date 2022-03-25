@@ -29,7 +29,7 @@ void WriteWav(char* filename, char* buffer, int bufferlength)
     fwrite(&format, 2, 1, file);
     unsigned short int channels=1;
     fwrite(&channels, 2, 1, file);
-    unsigned int samplerate = 11050;//22050;
+    unsigned int samplerate = 22050;//22050;
     fwrite(&samplerate, 4, 1, file);
     fwrite(&samplerate, 4, 1, file); // bytes/second
     unsigned short int blockalign = 1;
@@ -59,9 +59,9 @@ int sam_translate(const char *text,char *buffer,int buffersize)
     //SetMouth(DEFAULT_MOUTH);
     //SetThroat(DEFAULT_THROAT);
     //SetPitch(DEFAULT_PITCH);
-    //SetSpeed(DEFAULT_SPEED);
+    SetSpeed(DEFAULT_SPEED);
     SetPitch(DEFAULT_PITCH);
-    SetSpeed(100);
+    //SetSpeed(100);
     phonetic = 0;
     for(i=0; text[i] != 0; i++)input_[i] = toupper((int)text[i]);
     if (debug)
