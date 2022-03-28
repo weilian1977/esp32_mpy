@@ -27,11 +27,12 @@
 #include "board.h"
 #include "esp_log.h"
 #include "es8311.h"
+#include "drv_i2c.h"
 
 /* ES8311 address
  * 0x32:CE=1;0x30:CE=0
  */
-#define ES8311_ADDR         0x30
+#define ES8311_ADDR         (0x30 >> 1)
 
 /*
  * to define the clock soure of MCLK
@@ -199,16 +200,16 @@ int8_t get_es8311_mclk_src(void);
 
 static esp_err_t es8311_write_reg(uint8_t reg_addr, uint8_t data)
 {
-    return i2c_bus_write_bytes(i2c_handle, ES8311_ADDR, &reg_addr, sizeof(reg_addr), &data, sizeof(data));
+    return i2c_master_write_reg(I2C1_MASTER_NUM,ES8311_ADDR,reg_addr,data);
 }
 
 static int es8311_read_reg(uint8_t reg_addr)
 {
-    uint8_t data;
-    i2c_bus_read_bytes(i2c_handle, ES8311_ADDR, &reg_addr, sizeof(reg_addr), &data, sizeof(data));
+    uint8_t data = 0xff ;
+    i2c_master_read_reg(I2C1_MASTER_NUM, ES8311_ADDR, reg_addr, &data);
     return (int)data;
 }
-
+/*
 static int i2c_init()
 {
     int res = 0;
@@ -223,7 +224,7 @@ static int i2c_init()
     i2c_handle = i2c_bus_create(I2C_NUM_0, &es_i2c_cfg);
     return res;
 }
-
+*/
 /*
 * look for the coefficient in coeff_div[] table
 */
@@ -298,7 +299,7 @@ esp_err_t es8311_codec_init(audio_hal_codec_config_t *codec_cfg)
     uint8_t datmp, regv;
     int coeff;
     esp_err_t ret = ESP_OK;
-    i2c_init(); // ESP32 in master mode
+    i2c_master_init(I2C_NUM_1);
 
     ret |= es8311_write_reg(ES8311_CLK_MANAGER_REG01, 0x30);
     ret |= es8311_write_reg(ES8311_CLK_MANAGER_REG02, 0x00);

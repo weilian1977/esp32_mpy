@@ -48,6 +48,7 @@ music_dir_table = {
 
 resample_rate =22050.0
 tempo = 500.0
+volume_set = 60
 global instrument_type
 instrument_type = '1-piano'
 
@@ -78,13 +79,15 @@ def set_instrument(instrument_type_select):
                 instrument_type = f
                 return None
 
-def set_play_info(rate_info = 48000, speed_info = 1.0, pitch_info =1.0, volume_info = 60):
-    mPlayer.rates(rate_info)
+def set_play_info(rate_info = '', speed_info = 1.0, pitch_info =1.0, volume_info = volume_set):
+    if(rate_info != ''):
+        mPlayer.rates(rate_info)
     mPlayer.say_speed(speed_info)
     mPlayer.say_pitch(pitch_info)
     mPlayer.set_vol(volume_info)
+    volume_set = volume_info
             
-def play(path, rate = 48000, volume = 60, sync = True, play_time = 0, speed = 1.0, pitch =1.0):
+def play(path, volume = volume_set, sync = True, play_time = 0, speed = 1.0, pitch =1.0, rate = ''):
     tpye = "file:/"
     play_path = "%s%s" % (tpye,path)
     set_play_info(rate,speed,pitch,volume)
@@ -105,18 +108,19 @@ def play_until_done(path):
 def play_say(language,text):
     if(language == "english"):
         tpye = "sam://"
-        set_play_info(20500)
+        rates(11025)
+#        rates(22050)
     elif(language == "chinese"):
-        set_play_info(8000)
-        mPlayer.say_speed(2)
+        rates(8000)
+#        rates(16000)
         tpye = "hans://"
     else:
         print("language error")
         return
     end_text = "/.wav"
     play_path = "%s%s%s" % (tpye,text,end_text)
-    mPlayer.play(play_path, pos = 0, sync = False, time = 0)
-    
+    mPlayer.play(play_path, pos = 0, sync = True, time = 0)
+
 
 def play_pause():
     
@@ -130,20 +134,30 @@ def play_resume():
     
 def play_stop():
     mPlayer.stop()
+
+def set_volume(value):
+    temp = value
+    if(temp > 100):
+        temp = 100
+    if(temp < 0):
+        temp = 0
+    volume_set = value
+    mPlayer.set_vol(temp)
+    print("current volume is ",temp)
     
-def add_vol():
-    temp = mPlayer.get_vol()
-    temp += 5
+def add_volume(add_value = 5):
+    temp = volume_set + add_value
     if(temp > 100):
         temp = 100
     mPlayer.set_vol(temp)
-    
-def cut_vol():
-    temp = mPlayer.get_vol()
-    temp -= 5
+    print("current volume is ",temp)
+
+def cut_volume(cut_value = 5):
+    temp = volume_set - cut_value
     if(temp < 0):
         temp = 0
     mPlayer.set_vol(temp)
+    print("current volume is ",temp)
 
     
 def play_instrument_tone(instruments, tone):
@@ -161,7 +175,7 @@ def play_instrument_tone(instruments, tone):
     set_rate =resample_rate * pitch_interval
     print("find tone: %d, set_rate:%d" %(find_tone, set_rate))
     rates(round(set_rate))
-    play(path, round(set_rate), volume = 60,sync =False)
+    play(path, volume = volume_set,sync =False)
 
 def play_tone(tone, meter, instruments = ''):
     global play_rate
@@ -214,7 +228,15 @@ def dir_find(path, name):
 
 def play_melody(name, sync = True, play_time = 0):
     path = dir_find('melody', name)
-    play(path, 44100, 60, sync, play_time)
+    play(path, volume_set, sync, play_time)
 
-
+def say_info(mouth,throat,speed_info,pitch_info):
+    mPlayer.say_speed(speed_info)
+    mPlayer.say_pitch(pitch_info)
+    mPlayer.set_mouth_throat(mouth,throat)
+    
+def play_test(path):
+    tpye = "file:/"
+    play_path = "%s%s" % (tpye,path)
+    mPlayer.play(play_path, 0, True, 0)
 

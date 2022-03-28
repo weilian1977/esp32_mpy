@@ -82,7 +82,7 @@ static esp_periph_set_handle_t set;
 static audio_event_iface_handle_t evt;
 static bool esp_audio_player_running = false;
 static char path[MAX_PATH_LENGTH];
-static bool esp_audio_player_rate_change = true;
+static bool esp_audio_player_rate_change = false;
 STATIC void play_stop(void);
 
 typedef struct _audio_player_obj_t
@@ -93,10 +93,9 @@ typedef struct _audio_player_obj_t
     esp_audio_state_t state;
     audio_board_handle_t board_handle;
 } audio_player_obj_t;
-    static bool paly_init_flag = true;
 STATIC void audio_player_init(audio_player_obj_t *self)
 {
-    i2s0_init();
+    //i2s0_init();
     self->board_handle = audio_board_init();
     audio_hal_ctrl_codec(self->board_handle->audio_hal, AUDIO_HAL_CODEC_MODE_BOTH, AUDIO_HAL_CTRL_START);
     esp_periph_config_t periph_cfg = DEFAULT_ESP_PERIPH_SET_CONFIG();
@@ -105,7 +104,7 @@ STATIC void audio_player_init(audio_player_obj_t *self)
     audio_pipeline_cfg_t pipeline_cfg = DEFAULT_AUDIO_PIPELINE_CONFIG();
     pipeline = audio_pipeline_init(&pipeline_cfg);
     mem_assert(pipeline);
-    audio_hal_set_volume(self->board_handle->audio_hal, 40);
+    audio_hal_set_volume(self->board_handle->audio_hal, 60);
     vfs_stream_cfg_t fs_reader = VFS_STREAM_CFG_DEFAULT();
     fs_reader.type = AUDIO_STREAM_READER;
     fs_reader.task_core = 0;
@@ -172,12 +171,19 @@ STATIC mp_obj_t audio_player_make_new(const mp_obj_type_t *type, size_t n_args, 
 void play_start(const char *uri)
 {
     //audio_pipeline_pause(pipeline_rec);
+    
+    audio_element_info_t vfsfs_stream_reader_info = {0};
+    //audio_element_info_t i2s_test_info = {0};
+    audio_element_info_t mp3_info = {0};
+    audio_element_info_t wav_info = {0};
+    audio_element_info_t amr_info = {0};
     esp_audio_player_running = true;
     const char *uri_p;
     char *path = strstr(uri, ":");
     char *headend = strstr(uri, ":");
     char *end;
     char head[10];
+    bool get_music_info_flag = false;
     for(uri_p = uri; uri_p < headend; uri_p++)
     {
         head[uri_p - uri] = uri[uri_p - uri];
@@ -192,6 +198,8 @@ void play_start(const char *uri)
         audio_element_reset_state(mp3_decoder);
         audio_element_reset_state(wav_decoder);
         audio_element_reset_state(amr_decoder);
+
+        get_music_info_flag = true;
     }
     else if(strstr(head,"sam") > 0)
     {
@@ -200,7 +208,6 @@ void play_start(const char *uri)
         audio_element_set_uri(sam_stream_reader, path);
         sonic_set_pitch_and_speed_info(sonic_el, sonic_pitch, sonic_speed);
     }
-    
     else if(strstr(head,"hans") > 0)
     {
         const char *link_tag[4] = {head, end,"sonic","i2s"};
@@ -212,12 +219,39 @@ void play_start(const char *uri)
     if(esp_audio_player_rate_change)
     {
         
+        i2s_stream_set_clk(i2s_stream_writer, cur_rates, 16, 1);
         esp_audio_player_rate_change = false;
+        get_music_info_flag = false;
     }
-    i2s_stream_set_clk(i2s_stream_writer, cur_rates, 16, 1);
+
+    //audio_element_getinfo(i2s_stream_writer, &i2s_test_info);
+    //printf("i2s_stream_writer.sample_rates = %d\n",i2s_test_info.sample_rates);
     audio_pipeline_set_listener(pipeline, evt);
     //i2s0_shdn_enable(1);
     esp_err_t ret = audio_pipeline_run(pipeline);
+    if(get_music_info_flag)
+    {
+        get_music_info_flag = false;
+        if(strcmp(end,"mp3") == 0)
+        {
+            audio_element_getinfo(mp3_decoder, &mp3_info);
+            audio_element_setinfo(i2s_stream_writer,&mp3_info);
+            i2s_stream_set_clk(i2s_stream_writer, mp3_info.sample_rates, mp3_info.bits, mp3_info.channels);
+        }
+        if(strcmp(end,"wav") == 0)
+        {
+            audio_element_getinfo(wav_decoder, &wav_info);
+            audio_element_setinfo(i2s_stream_writer,&wav_info);
+            i2s_stream_set_clk(i2s_stream_writer, wav_info.sample_rates, wav_info.bits, wav_info.channels);
+        }
+        if(strcmp(end,"amr") == 0)
+        {
+            audio_element_getinfo(amr_decoder, &amr_info);
+            audio_element_setinfo(i2s_stream_writer,&amr_info);
+            i2s_stream_set_clk(i2s_stream_writer, amr_info.sample_rates, amr_info.bits, amr_info.channels);
+        }
+    }
+
     if(cur_rates == 8000)
     {
         mp_hal_delay_ms(300);
@@ -329,7 +363,7 @@ STATIC mp_obj_t audio_player_play_helper(audio_player_obj_t *self, mp_uint_t n_a
             //play_wait();
             return mp_const_none;
         }
-        else 
+        else
         {
             play_start(path);
             if(play_time)
@@ -397,11 +431,9 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(audio_player_resume_obj, audio_player_resume);
 STATIC mp_obj_t audio_player_rates(mp_obj_t self_in, mp_obj_t rates)
 {
     int value = mp_obj_get_int(rates);
-    if(cur_rates != value)
-    {
-        cur_rates = value;
-        esp_audio_player_rate_change = true;
-    }
+
+    cur_rates = value;
+    esp_audio_player_rate_change = true;
     
     return mp_obj_new_int(value);
 }

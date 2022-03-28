@@ -27,12 +27,13 @@
 #include "board.h"
 #include "i2c_bus.h"
 #include "es7210.h"
+#include "drv_i2c.h"
 
 #define  I2S_DSP_MODE   0
 #define  MCLK_DIV_FRE   256
 
 /* ES7210 address*/
-#define ES7210_ADDR                   ES7210_AD1_AD0_00
+#define ES7210_ADDR                   (ES7210_AD1_AD0_00 >> 1)
 #define ES7210_MCLK_SOURCE            FROM_CLOCK_DOUBLE_PIN                            /* In master mode, 0 : MCLK from pad    1 : MCLK from clock doubler */
 #define FROM_PAD_PIN                  0
 #define FROM_CLOCK_DOUBLE_PIN         1
@@ -138,7 +139,7 @@ static const struct _coeff_div coeff_div[] = {
 
 static esp_err_t es7210_write_reg(uint8_t reg_addr, uint8_t data)
 {
-    return i2c_bus_write_bytes(i2c_handle, ES7210_ADDR, &reg_addr, sizeof(reg_addr), &data, sizeof(data));
+    return i2c_master_write_reg(I2C1_MASTER_NUM,ES7210_ADDR,reg_addr,data);
 }
 
 static esp_err_t es7210_update_reg_bit(uint8_t reg_addr, uint8_t update_bits, uint8_t data)
@@ -181,7 +182,7 @@ int8_t get_es7210_mclk_src(void)
 int es7210_read_reg(uint8_t reg_addr)
 {
     uint8_t data;
-    i2c_bus_read_bytes(i2c_handle, ES7210_ADDR, &reg_addr, sizeof(reg_addr), &data, sizeof(data));
+    i2c_master_read_reg(I2C1_MASTER_NUM, ES7210_ADDR, reg_addr, &data);
     return (int)data;
 }
 
@@ -291,7 +292,7 @@ esp_err_t es7210_mic_select(es7210_input_mics_t mic)
 esp_err_t es7210_adc_init(audio_hal_codec_config_t *codec_cfg)
 {
     esp_err_t ret = ESP_OK;
-    i2c_init();
+    i2c_master_init(I2C_NUM_1);
     ret |= es7210_write_reg(ES7210_RESET_REG00, 0xff);
     ret |= es7210_write_reg(ES7210_RESET_REG00, 0x41);
     ret |= es7210_write_reg(ES7210_CLOCK_OFF_REG01, 0x1f);
