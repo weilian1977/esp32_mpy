@@ -78,7 +78,7 @@ STATIC void audio_recorder_init(audio_recorder_obj_t *self)
     i2s_cfg.type = AUDIO_STREAM_READER;
     i2s_cfg.uninstall_drv = false;
     i2s_cfg.i2s_config.sample_rate = 8000;
-    i2s_cfg.i2s_config.channel_format = I2S_CHANNEL_FMT_ONLY_LEFT;
+    i2s_cfg.i2s_config.channel_format = I2S_CHANNEL_FMT_RIGHT_LEFT;
     i2s_cfg.task_core = 0;
     i2s_cfg.task_prio = 23;
     self->i2s_stream = i2s_stream_init(&i2s_cfg);

@@ -9,7 +9,7 @@
 #include "py/runtime.h"
 #include "py/mphal.h"
 #include "esp_log.h"
-
+#include "audio_tone_uri.h"
 #include "amrnb_encoder.h"
 #include "audio_element.h"
 #include "audio_idf_version.h"
@@ -33,6 +33,7 @@
 #include "audio_mem.h"
 
 #define RECORDER_ENC_ENABLE (false)
+#define VOICE2FILE          (false)
 #define WAKENET_ENABLE      (true)
 
 #define MAX_COMMANDS_ID 99
@@ -74,27 +75,118 @@ static int commands_index = 0;
 static char *commands_str[MAX_COMMANDS_ID];
 void separate_commands(char *all_commands)
 {
+    
+    AUDIO_MEM_SHOW("TAG1");
     char * tmp;
     char * str;
-    memset(commands_str, 0x00, 64*commands_index);
+
+    //memset(commands_str[commands_index], 0x00, 64);
     commands_index = 0;
+    if(commands_str[commands_index] != NULL)
+        free(commands_str[commands_index]);
     commands_str[commands_index] = (char *)malloc(64);
     str = strtok_r(all_commands, ";", &tmp);
-    strcpy(commands_str[commands_index],str);
-    strcat(commands_str[commands_index],";");
+    //strcpy(commands_str[commands_index],str);
+    memcpy(commands_str[commands_index],str,strlen(str));
     while(tmp!=NULL)
     {
         str = strtok_r(0, ";", &tmp);
-        if(tmp==NULL) 
+        if(str == NULL)
+        {
+            printf("str == NULL\n");
             return;
-
+        }
         commands_index ++;
+        if(commands_str[commands_index] != NULL)
+            free(commands_str[commands_index]);
+        //memset(commands_str[commands_index], 0x00, 64);
         commands_str[commands_index] = (char *)malloc(64);
-        strcpy(commands_str[commands_index],str);
+        //strcpy(commands_str[commands_index],str);
+        memcpy(commands_str[commands_index],str,strlen(str));
     }
 }
 
 
+static esp_audio_handle_t setup_player()
+{
+    esp_audio_cfg_t cfg = DEFAULT_ESP_AUDIO_CONFIG();
+    audio_board_handle_t board_handle = audio_board_init();
+
+    cfg.vol_handle = board_handle->audio_hal;
+    cfg.vol_set = (audio_volume_set)audio_hal_set_volume;
+    cfg.vol_get = (audio_volume_get)audio_hal_get_volume;
+    cfg.resample_rate = 48000;
+    cfg.prefer_type = ESP_AUDIO_PREFER_MEM;
+
+    player = esp_audio_create(&cfg);
+    audio_hal_ctrl_codec(board_handle->audio_hal, AUDIO_HAL_CODEC_MODE_BOTH, AUDIO_HAL_CTRL_START);
+
+    // Create readers and add to esp_audio
+    tone_stream_cfg_t tone_cfg = TONE_STREAM_CFG_DEFAULT();
+    tone_cfg.type = AUDIO_STREAM_READER;
+    esp_audio_input_stream_add(player, tone_stream_init(&tone_cfg));
+
+    // Add decoders and encoders to esp_audio
+    mp3_decoder_cfg_t mp3_dec_cfg = DEFAULT_MP3_DECODER_CONFIG();
+    mp3_dec_cfg.task_core = 1;
+    esp_audio_codec_lib_add(player, AUDIO_CODEC_TYPE_DECODER, mp3_decoder_init(&mp3_dec_cfg));
+
+    // Create writers and add to esp_audio
+    i2s_stream_cfg_t i2s_writer = I2S_STREAM_CFG_DEFAULT();
+    i2s_writer.i2s_config.sample_rate = 48000;
+    i2s_writer.i2s_config.bits_per_sample = BITS_PER_SAMPLE;
+    i2s_writer.type = AUDIO_STREAM_WRITER;
+
+    esp_audio_output_stream_add(player, i2s_stream_init(&i2s_writer));
+
+    // Set default volume
+    esp_audio_vol_set(player, 60);
+    AUDIO_MEM_SHOW(TAG);
+
+    ESP_LOGI(TAG, "esp_audio instance is:%p\r\n", player);
+    return player;
+}
+
+#if VOICE2FILE == (true)
+static void voice_2_file(uint8_t *buffer, int len)
+{
+#define MAX_FNAME_LEN (50)
+
+    static FILE *fp = NULL;
+    static int fcnt = 0;
+
+    if (voice_reading) {
+        if (!fp) {
+            if (fp == NULL) {
+                char fname[MAX_FNAME_LEN] = { 0 };
+
+                if (RECORDER_ENC_ENABLE) {
+                    snprintf(fname, MAX_FNAME_LEN - 1, "/f%d.amr", fcnt++);
+                } else {
+                    snprintf(fname, MAX_FNAME_LEN - 1, "/f%d.pcm", fcnt++);
+                }
+                ESP_LOGE(TAG, "File open start");
+                printf("fname = %s\n",fname);
+                fp = fopen(fname, "wb");
+                
+                ESP_LOGE(TAG, "File open over");
+                if (!fp) {
+                    ESP_LOGE(TAG, "File open failed");
+                }
+            }
+        }
+        if (len) {
+            fwrite(buffer, len, 1, fp);
+        }
+    } else {
+        if (fp) {
+            ESP_LOGI(TAG, "File closed");
+            fclose(fp);
+            fp = NULL;
+        }
+    }
+}
+#endif /* VOICE2FILE == (true) */
 void voice_read_task()
 {
 
@@ -138,7 +230,9 @@ void voice_read_task()
             voice_reading = false;
         }
     }
-
+#if VOICE2FILE == (true)
+        voice_2_file(voiceData, ret);
+#endif /* VOICE2FILE == (true) */
 }
 
 void voice_read_task_c()
@@ -182,6 +276,9 @@ void voice_read_task_c()
                 voice_reading = false;
             }
         }
+#if VOICE2FILE == (true)
+    voice_2_file(voiceData, ret);
+#endif /* VOICE2FILE == (true) */
     }
 
     free(voiceData);
@@ -192,7 +289,7 @@ static esp_err_t rec_engine_cb(audio_rec_evt_t type, void *user_data)
 {
     if (AUDIO_REC_WAKEUP_START == type) {
         ESP_LOGI(TAG, "rec_engine_cb - REC_EVENT_WAKEUP_START");
-
+        esp_audio_sync_play(player, tone_uri[TONE_TYPE_DINGDONG], 0);
         if (voice_reading) {
             int msg = REC_CANCEL;
             if (xQueueSend(rec_q, &msg, 0) != pdPASS) {
@@ -222,6 +319,7 @@ static esp_err_t rec_engine_cb(audio_rec_evt_t type, void *user_data)
         speech_cmd_id = type;
         ESP_LOGI(TAG, "rec_engine_cb - AUDIO_REC_COMMAND_DECT");
         ESP_LOGW(TAG, "command %d", type);
+        esp_audio_sync_play(player, tone_uri[TONE_TYPE_HAODE], 0);
 
     } else {
         ESP_LOGE(TAG, "Unkown event");
@@ -357,12 +455,15 @@ void speech_cn_init(void)
     set_recorder = esp_periph_set_init(&periph_cfg_recorder);
     audio_board_init();
     start_recorder();
+    setup_player();
     rec_q = xQueueCreate(3, sizeof(int));
     char err[200];
     recorder_sr_reset_speech_cmd(cfg.sr_handle, ch_commands_str, err);
     separate_commands(ch_commands_str);
     recorder = audio_recorder_create(&cfg);
     audio_pipeline_pause(pipeline_rec);
+    
+    esp_audio_sync_play(player, tone_uri[TONE_TYPE_DINGDONG], 0);
 }
 
 

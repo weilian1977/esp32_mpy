@@ -12,7 +12,8 @@ set(COMPONENT_ADD_INCLUDEDIRS ./include
                             ./driver/zl38063/api_lib
                             ./driver/zl38063/example_apps
                             ./driver/zl38063/firmware
-                            ./driver/include)
+                            ./driver/include
+                            ../../src/driver)
 
 # Edit following two lines to set component requirements (see docs)
 set(COMPONENT_REQUIRES )
