@@ -20,15 +20,17 @@
 
 #define BLOCK_SIZE          CFG_TUD_MSC_BUFSIZE
 
-#define LOGICAL_DISK_NUM 1
+#define LOGICAL_DISK_NUM 2
 static bool ejected[LOGICAL_DISK_NUM] = {true};
 
-const esp_partition_t *partition;
-
+const esp_partition_t *partition1;
+const esp_partition_t *partition2;
 esp_err_t usb_msc_init()
 {
-    partition = esp_partition_find_first(ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_ANY, "vfs");
-    assert(partition != NULL);
+    partition1 = esp_partition_find_first(ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_ANY, "vfs1");
+    assert(partition1 != NULL);
+    partition2 = esp_partition_find_first(ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_ANY, "vfs2");
+    assert(partition2 != NULL);
     ESP_LOGD(__func__, "");
     return ESP_OK;
 }
@@ -36,6 +38,12 @@ esp_err_t usb_msc_init()
 //--------------------------------------------------------------------+
 // tinyusb callbacks
 //--------------------------------------------------------------------+
+
+// Invoked to determine max LUN
+uint8_t tud_msc_get_maxlun_cb(void)
+{
+  return 2; // dual LUN
+}
 
 // Invoked when device is mounted
 void tud_mount_cb(void)
@@ -103,14 +111,33 @@ void tud_msc_inquiry_cb(uint8_t lun, uint8_t vendor_id[8], uint8_t product_id[16
         ESP_LOGE(__func__, "invalid lun number %u", lun);
         return;
     }
-
     const char vid[] = "Espressif";
-    const char pid[] = "Mass Storage";
+    const char pid[] = "Mass Storage1";
     const char rev[] = "1.0";
 
     memcpy(vendor_id, vid, strlen(vid));
     memcpy(product_id, pid, strlen(pid));
     memcpy(product_rev, rev, strlen(rev));
+    // if (lun == 0)
+    // {
+    //     const char vid[] = "Espressif";
+    //     const char pid[] = "Mass Storage1";
+    //     const char rev[] = "1.0";
+
+    //     memcpy(vendor_id, vid, strlen(vid));
+    //     memcpy(product_id, pid, strlen(pid));
+    //     memcpy(product_rev, rev, strlen(rev));
+    // }
+    // if (lun == 1)
+    // {
+    //     const char vid[] = "Espressif";
+    //     const char pid[] = "Mass Storage2";
+    //     const char rev[] = "1.0";
+
+    //     memcpy(vendor_id, vid, strlen(vid));
+    //     memcpy(product_id, pid, strlen(pid));
+    //     memcpy(product_rev, rev, strlen(rev));
+    // }
 }
 
 // Invoked when received Test Unit Ready command.
@@ -129,7 +156,6 @@ bool tud_msc_test_unit_ready_cb(uint8_t lun)
         tud_msc_set_sense(lun, SCSI_SENSE_NOT_READY, 0x3A, 0x00);
         return false;
     }
-
     return true;
 }
 
@@ -143,9 +169,16 @@ void tud_msc_capacity_cb(uint8_t lun, uint32_t *block_count, uint16_t *block_siz
         ESP_LOGE(__func__, "invalid lun number %u", lun);
         return;
     }
-
-    *block_size = BLOCK_SIZE;
-    *block_count = partition->size/BLOCK_SIZE;
+    if (lun == 0)
+    {
+        *block_size = BLOCK_SIZE;
+        *block_count = partition1->size/BLOCK_SIZE;
+    }
+    if (lun == 1)
+    {
+        *block_size = BLOCK_SIZE;
+        *block_count = partition2->size/BLOCK_SIZE;
+    }
     ESP_LOGD(__func__, "GET_SECTOR_COUNT = %d, GET_SECTOR_SIZE = %d", *block_count, *block_size);
 }
 
@@ -157,7 +190,6 @@ bool tud_msc_is_writable_cb(uint8_t lun)
         ESP_LOGE(__func__, "invalid lun number %u", lun);
         return false;
     }
-
     return true;
 }
 
@@ -198,8 +230,14 @@ int32_t tud_msc_read10_cb(uint8_t lun, uint32_t lba, uint32_t offset, void *buff
         ESP_LOGE(__func__, "invalid lun number %u", lun);
         return 0;
     }
-
-    ESP_ERROR_CHECK(esp_partition_read(partition, lba * BLOCK_SIZE, buffer, bufsize));
+    if (lun == 0)
+    {
+        ESP_ERROR_CHECK(esp_partition_read(partition1, lba * BLOCK_SIZE, buffer, bufsize));
+    }
+    if (lun == 1)
+    {
+        ESP_ERROR_CHECK(esp_partition_read(partition2, lba * BLOCK_SIZE, buffer, bufsize));
+    }
     return bufsize;
 }
 
@@ -215,8 +253,16 @@ int32_t tud_msc_write10_cb(uint8_t lun, uint32_t lba, uint32_t offset, uint8_t *
         return 0;
     }
 
-    ESP_ERROR_CHECK(esp_partition_erase_range(partition, lba * BLOCK_SIZE, bufsize));
-    ESP_ERROR_CHECK(esp_partition_write(partition, lba * BLOCK_SIZE, buffer, bufsize));
+    if (lun == 0)
+    {
+        ESP_ERROR_CHECK(esp_partition_erase_range(partition1, lba * BLOCK_SIZE, bufsize));
+        ESP_ERROR_CHECK(esp_partition_write(partition1, lba * BLOCK_SIZE, buffer, bufsize));
+    }
+    if (lun == 1)
+    {
+        ESP_ERROR_CHECK(esp_partition_erase_range(partition2, lba * BLOCK_SIZE, bufsize));
+        ESP_ERROR_CHECK(esp_partition_write(partition2, lba * BLOCK_SIZE, buffer, bufsize));
+    }
     return bufsize;
 }
 

@@ -58,5 +58,14 @@ make_fatfs:
 upload_fatfs:
 	./tools/esptool/esptool --before default_reset --after hard_reset -p $(PORT) -b $(BAUD) write_flash 0x250000 ./tools/vfs.bin
 
+make_fatfs1:
+	./tools/mkfatfs/mkfatfs_linux_x86 -c ./tools/vfs1/ -s 0x300000 -t fatfs ./tools/vfs1.bin
+make_fatfs2:
+	./tools/mkfatfs/mkfatfs_linux_x86 -c ./tools/vfs2/ -s 0x1A0000 -t fatfs ./tools/vfs2.bin
+upload_fatfs1:
+	./tools/esptool/esptool --before default_reset --after hard_reset -p $(PORT) -b $(BAUD) write_flash 0x250000 ./tools/vfs1.bin
+upload_fatfs2:
+	./tools/esptool/esptool --before default_reset --after hard_reset -p $(PORT) -b $(BAUD) write_flash 0x550000 ./tools/vfs2.bin
+	
 submodules:
 	git submodule update --init $(addprefix ../../,$(GIT_SUBMODULES))
