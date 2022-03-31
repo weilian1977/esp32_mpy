@@ -34,8 +34,10 @@ bool is_i2c0_initialized(void);
 bool is_i2c1_initialized(void);
 esp_err_t i2c_master_read_reg(i2c_port_t i2c_num, uint8_t slaver_addr, uint8_t reg_addr, uint8_t *data);
 esp_err_t i2c_master_read_mem(i2c_port_t i2c_num, uint8_t slaver_addr, uint8_t reg_addr, uint8_t *buffer, uint16_t size);
+esp_err_t i2c_master_read_mem16(i2c_port_t i2c_num, uint8_t slaver_addr, uint16_t reg_addr, uint8_t *buffer, uint16_t size);
 esp_err_t i2c_master_write_reg(i2c_port_t i2c_num, uint8_t slaver_addr, uint8_t reg_addr, uint8_t data);
 esp_err_t i2c_master_write_mem(i2c_port_t i2c_num, uint8_t slaver_addr, uint8_t reg_addr, uint8_t *buffer, uint16_t size);
+esp_err_t i2c_master_write_mem16(i2c_port_t i2c_num, uint8_t slaver_addr, uint16_t reg_addr, uint8_t *buffer, uint16_t size);
 
 
 
