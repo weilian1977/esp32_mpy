@@ -86,14 +86,13 @@ void separate_commands(char *all_commands)
         free(commands_str[commands_index]);
     commands_str[commands_index] = (char *)malloc(64);
     str = strtok_r(all_commands, ";", &tmp);
-    //strcpy(commands_str[commands_index],str);
-    memcpy(commands_str[commands_index],str,strlen(str));
+    strcpy(commands_str[commands_index],str);
+    //memcpy(commands_str[commands_index],str,strlen(str));
     while(tmp!=NULL)
     {
         str = strtok_r(0, ";", &tmp);
         if(str == NULL)
         {
-            printf("str == NULL\n");
             return;
         }
         commands_index ++;
@@ -101,8 +100,8 @@ void separate_commands(char *all_commands)
             free(commands_str[commands_index]);
         //memset(commands_str[commands_index], 0x00, 64);
         commands_str[commands_index] = (char *)malloc(64);
-        //strcpy(commands_str[commands_index],str);
-        memcpy(commands_str[commands_index],str,strlen(str));
+        strcpy(commands_str[commands_index],str);
+        //memcpy(commands_str[commands_index],str,strlen(str));
     }
 }
 
@@ -319,7 +318,7 @@ static esp_err_t rec_engine_cb(audio_rec_evt_t type, void *user_data)
         speech_cmd_id = type;
         ESP_LOGI(TAG, "rec_engine_cb - AUDIO_REC_COMMAND_DECT");
         ESP_LOGW(TAG, "command %d", type);
-        esp_audio_sync_play(player, tone_uri[TONE_TYPE_HAODE], 0);
+        //esp_audio_sync_play(player, tone_uri[TONE_TYPE_HAODE], 0);
 
     } else {
         ESP_LOGE(TAG, "Unkown event");
@@ -462,8 +461,6 @@ void speech_cn_init(void)
     separate_commands(ch_commands_str);
     recorder = audio_recorder_create(&cfg);
     audio_pipeline_pause(pipeline_rec);
-    
-    esp_audio_sync_play(player, tone_uri[TONE_TYPE_DINGDONG], 0);
 }
 
 
