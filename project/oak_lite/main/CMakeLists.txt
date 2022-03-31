@@ -182,6 +182,7 @@ elseif(IDF_TARGET STREQUAL "esp32s3")
     list(APPEND IDF_COMPONENTS esp-adf-libs)
     list(APPEND IDF_COMPONENTS esp-sr)
     list(APPEND IDF_COMPONENTS tone_partition)
+    list(APPEND IDF_COMPONENTS ND03_SDK_V1.0.4)
 endif()
 
 # Register the main IDF component.
