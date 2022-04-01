@@ -124,6 +124,36 @@ esp_err_t i2c_master_read_mem(i2c_port_t i2c_num, uint8_t slaver_addr, uint8_t r
     return ret;
 }
 
+esp_err_t i2c_master_read_mem16(i2c_port_t i2c_num, uint8_t slaver_addr, uint16_t reg_addr, uint8_t *buffer, uint16_t size)
+{
+    I2C_HAL_ENTER
+    if (size == 0)
+    {
+        return ESP_OK;
+    }
+    i2c_cmd_handle_t cmd = i2c_cmd_link_create();
+    i2c_master_start(cmd);
+    i2c_master_write_byte(cmd, (slaver_addr << 1) | WRITE_BIT, ACK_CHECK_EN);
+    uint8_t reg_addr_high = (reg_addr >> 8) & 0xFF;
+    uint8_t reg_addr_low = (reg_addr) & 0xFF;
+    i2c_master_write(cmd, &reg_addr_high, 1, ACK_CHECK_EN);
+    i2c_master_write(cmd, &reg_addr_low, 1, ACK_CHECK_EN);
+    
+    i2c_master_start(cmd);
+    i2c_master_write_byte(cmd, (slaver_addr << 1) | READ_BIT, ACK_CHECK_EN);
+    if(size > 1) 
+    {
+        i2c_master_read(cmd, buffer, size - 1, ACK_VAL);
+    }
+    i2c_master_read_byte(cmd, buffer + size - 1, NACK_VAL); //the lastest byte will not give a ASK
+    i2c_master_stop(cmd);
+
+    esp_err_t ret = i2c_master_cmd_begin(i2c_num, cmd, 1000 / portTICK_RATE_MS);
+    i2c_cmd_link_delete(cmd);
+    I2C_HAL_EXIT
+    return ret;
+}
+
 esp_err_t i2c_master_write_reg(i2c_port_t i2c_num, uint8_t slaver_addr, uint8_t reg_addr, uint8_t data)
 {
     I2C_HAL_ENTER
@@ -163,3 +193,29 @@ esp_err_t i2c_master_write_mem(i2c_port_t i2c_num, uint8_t slaver_addr, uint8_t 
     return ret;
 }
 
+esp_err_t i2c_master_write_mem16(i2c_port_t i2c_num, uint8_t slaver_addr, uint16_t reg_addr, uint8_t *buffer, uint16_t size)
+{
+    I2C_HAL_ENTER
+    if (size == 0)
+    {
+        return ESP_OK;
+    }
+    i2c_cmd_handle_t cmd = i2c_cmd_link_create();
+    i2c_master_start(cmd);
+    i2c_master_write_byte(cmd, (slaver_addr << 1) | WRITE_BIT, ACK_CHECK_EN);
+    uint8_t reg_addr_high = (reg_addr >> 8) & 0xFF;
+    uint8_t reg_addr_low = (reg_addr) & 0xFF;
+    i2c_master_write(cmd, &reg_addr_high, 1, ACK_CHECK_EN);
+    i2c_master_write(cmd, &reg_addr_low, 1, ACK_CHECK_EN);
+
+    for(uint16_t i = 0; i < size; i++)
+    {
+        i2c_master_write(cmd, (buffer + i), 1, ACK_CHECK_EN);
+    }
+    i2c_master_stop(cmd);
+
+    esp_err_t ret = i2c_master_cmd_begin(i2c_num, cmd, 1000 / portTICK_RATE_MS);
+    i2c_cmd_link_delete(cmd);
+    I2C_HAL_EXIT
+    return ret;
+}

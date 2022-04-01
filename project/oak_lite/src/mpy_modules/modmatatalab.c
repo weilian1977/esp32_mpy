@@ -24,6 +24,7 @@
 //#include "mt_mpy_stop_script.h"
 #include "mt_mpy_button.h"
 #include "mt_mpy_gyro.h"
+#include "mt_mpy_tof.h"
 
 #define   TAG                         ("matatalab")
 
@@ -48,6 +49,13 @@ STATIC const mp_map_elem_t matatalab_module_globals_table[] = {
 #else
     { MP_OBJ_NEW_QSTR(MP_QSTR_GYRO_ENABLE),                  MP_OBJ_NEW_SMALL_INT(MODULE_DISABLE_VALUE) }, 
 #endif /* MODULE_GYRO_ENABLE */
+
+#if MODULE_TOF_ENABLE
+    { MP_OBJ_NEW_QSTR(MP_QSTR_tof),                        (mp_obj_t)&mt_mpy_tof_type},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_TOF_ENABLE),                  MP_OBJ_NEW_SMALL_INT(MODULE_ENABLE_VALUE) }, 
+#else
+    { MP_OBJ_NEW_QSTR(MP_QSTR_TOF_ENABLE),                  MP_OBJ_NEW_SMALL_INT(MODULE_DISABLE_VALUE) }, 
+#endif /* MODULE_TOF_ENABLE */
 
 };
 STATIC MP_DEFINE_CONST_DICT(matatalab_module_globals, matatalab_module_globals_table);
