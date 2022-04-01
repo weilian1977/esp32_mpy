@@ -132,14 +132,14 @@ mt_err_t mt_tof_init_t(void)
   /* 循环等待设备启动, 若模组或者IIC读写函数有问题则会报错 */
 	if(ND03_ERROR_NONE != ND03_WaitDeviceBootUp(&g_nd03_device))
 	{
-		NX_PRINTF("ND03_WaitDeviceBootUp error!\r\n");
+		//NX_PRINTF("ND03_WaitDeviceBootUp error!\r\n");
 		return -1;
 	}
 
 	/* 初始化模组设备 */
 	if(ND03_ERROR_NONE != ND03_InitDevice(&g_nd03_device))
 	{
-		NX_PRINTF("ND03_InitDevice error!!\r\n");
+		//NX_PRINTF("ND03_InitDevice error!!\r\n");
 		return -1;
 	}
   return MT_OK;
@@ -152,7 +152,7 @@ mt_err_t mt_tof_update_t(void)
   ND03_StartMeasurement(&g_nd03_device);
   /* 获取测量数据 */
   ND03_GetRangingData(&g_nd03_device, &data);
-  NX_PRINTF("depth:%d mm, amp:%d, exp:%d\r\n", data.depth, data.amp, ND03_GetCurrentExp(pNxDevice));
+  //NX_PRINTF("depth:%d mm, amp:%d, exp:%d\r\n", data.depth, data.amp, ND03_GetCurrentExp(&g_nd03_device));
   distance_tof = data.depth;
   return MT_OK;
 }
