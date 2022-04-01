@@ -9,3 +9,6 @@ led = led()
 
 from driver.tof import tof
 tof = tof()
+
+from driver.light_sensor import light_sensor
+light_sensor = light_sensor()

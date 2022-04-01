@@ -29,7 +29,7 @@ typedef int32_t mt_module_status_t;
 #define MODULE_EVENT_ENABLE                  1
 #define MODULE_GYRO_ENABLE                   1
 #define MODULE_TOF_ENABLE                    1
-
+#define MODULE_LIGHT_SENSOR_ENABLE           1
 /* module slect */
 /*
  * driver

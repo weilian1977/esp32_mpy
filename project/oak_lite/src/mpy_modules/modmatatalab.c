@@ -25,6 +25,7 @@
 #include "mt_mpy_button.h"
 #include "mt_mpy_gyro.h"
 #include "mt_mpy_tof.h"
+#include "mt_mpy_light_sensor.h"
 
 #define   TAG                         ("matatalab")
 
@@ -57,6 +58,12 @@ STATIC const mp_map_elem_t matatalab_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_TOF_ENABLE),                  MP_OBJ_NEW_SMALL_INT(MODULE_DISABLE_VALUE) }, 
 #endif /* MODULE_TOF_ENABLE */
 
+#if MODULE_LIGHT_SENSOR_ENABLE
+    { MP_OBJ_NEW_QSTR(MP_QSTR_light_sensor),                (mp_obj_t)&mt_mpy_light_sensor_type},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_LIGHT_SENSOR_ENABLE),         MP_OBJ_NEW_SMALL_INT(MODULE_ENABLE_VALUE) }, 
+#else
+    { MP_OBJ_NEW_QSTR(MP_QSTR_LIGHT_SENSOR_ENABLE),         MP_OBJ_NEW_SMALL_INT(MODULE_DISABLE_VALUE) }, 
+#endif /* MODULE_LIGHT_SENSOR_ENABLE */
 };
 STATIC MP_DEFINE_CONST_DICT(matatalab_module_globals, matatalab_module_globals_table);
 

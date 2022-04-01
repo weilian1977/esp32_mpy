@@ -32,6 +32,7 @@
 #include "mt_esp32_button.h"
 #include "drv_qmi8658.h"
 #include "mt_tof.h"
+#include "mt_light_sensor.h"
 
 /******************************************************************************
  DEFINE MACROS
@@ -74,6 +75,10 @@ void driver_init_t(void)
 #if MODULE_TOF_ENABLE
   mt_tof_init_t();
 #endif
+
+#if MODULE_TOF_ENABLE
+  mt_light_sensor_init_t();
+#endif
 }
 
 void driver_update_t(void)
@@ -94,6 +99,10 @@ void driver_update_t(void)
 
 #if MODULE_TOF_ENABLE
   mt_tof_update_t();
+#endif
+
+#if MODULE_LIGHT_SENSOR_ENABLE
+  mt_light_sensor_update_t();
 #endif
 }
 

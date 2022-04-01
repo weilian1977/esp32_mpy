@@ -91,6 +91,7 @@ set(MICROPY_SOURCE_PORT
     ${PROJECT_DIR}/src/driver/driver_update.c
     ${PROJECT_DIR}/src/driver/mt_esp32_button.c
     ${PROJECT_DIR}/src/driver/mt_tof.c
+    ${PROJECT_DIR}/src/driver/mt_light_sensor.c
     ${PROJECT_DIR}/src/driver/mt_event_mechanism.c
     ${PROJECT_DIR}/src/audio/audio_player.c
     ${PROJECT_DIR}/src/audio/audio_recorder.c
@@ -100,7 +101,8 @@ set(MICROPY_SOURCE_PORT
     ${PROJECT_DIR}/src/mpy_modules/mt_mpy_event.c
     ${PROJECT_DIR}/src/mpy_modules/mt_mpy_button.c
     ${PROJECT_DIR}/src/mpy_modules/mt_mpy_gyro.c
-     ${PROJECT_DIR}/src/mpy_modules/mt_mpy_tof.c
+    ${PROJECT_DIR}/src/mpy_modules/mt_mpy_tof.c
+    ${PROJECT_DIR}/src/mpy_modules/mt_mpy_light_sensor.c
     ${PROJECT_DIR}/mpy_modules/mod_sensor.c
     ${PROJECT_DIR}/mpy_modules/modaudio.c
 )
