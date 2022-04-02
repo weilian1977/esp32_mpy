@@ -4,7 +4,7 @@
 
 # Select the board to build for, defaulting to GENERIC.
 #BOARD ?= GENERIC_S3_SPIRAM
-BOARD ?= OAK_LITE_V1
+BOARD ?= $(notdir $(CURDIR))
 
 # If the build directory is not given, make it reflect the board name.
 BUILD ?= build-$(BOARD)
@@ -37,9 +37,9 @@ all:
 		$(BUILD)/sdkconfig \
 		$(BUILD)/bootloader/bootloader.bin \
 		$(BUILD)/partition_table/partition-table.bin \
-		$(BUILD)/micropython.bin \
+		$(BUILD)/${BOARD}.bin \
 		$(BUILD)/firmware.bin \
-		$(BUILD)/micropython.uf2
+		$(BUILD)/${BOARD}..uf2
 
 $(BUILD)/bootloader/bootloader.bin $(BUILD)/partition_table/partition-table.bin $(BUILD)/micropython.bin: FORCE
 

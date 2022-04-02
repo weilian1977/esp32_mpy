@@ -111,7 +111,7 @@ elseif(${IDF_TARGET} STREQUAL "esp32s3")
     add_custom_command(
          OUTPUT ${COMPONENT_DIR}/model/target/_MODEL_INFO_
          COMMENT "Running move model..."
-         COMMAND python ${MVMODEL_EXE} -d1 ${PROJECT_DIR} -d2 ${COMPONENT_PATH}
+         COMMAND python ${MVMODEL_EXE} -d1 ${CMAKE_BINARY_DIR} -d2 ${COMPONENT_PATH}
          DEPENDS ${COMPONENT_DIR}/model/
          VERBATIM)
 
