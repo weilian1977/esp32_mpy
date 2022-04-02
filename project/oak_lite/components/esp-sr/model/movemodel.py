@@ -19,7 +19,7 @@ if __name__ == '__main__':
     parser.add_argument('-d2', '--model_path')
     args = parser.parse_args()
 
-    sdkconfig_path = args.project_path + '/build-OAK_LITE_V1/sdkconfig'
+    sdkconfig_path = args.project_path + '/sdkconfig'
     model_path = args.model_path + '/model'
 
     print(sdkconfig_path)
