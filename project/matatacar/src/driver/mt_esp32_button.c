@@ -33,7 +33,7 @@
 #endif
 
 #ifndef PRODUCT_BUTTON_IO_0
-  #define BUTTON_IO_0 (48)
+  #define BUTTON_IO_0 (43)
   #define BUTTON_0_DEFAULT_LEVEL (1)
 #else
   #define BUTTON_IO_0 PRODUCT_BUTTON_IO_0

@@ -85,21 +85,18 @@ set(MICROPY_SOURCE_PORT
     ${PROJECT_DIR}/src/adapter/machine_sdcard.c
     ${PROJECT_DIR}/src/driver/drv_i2c.c
     ${PROJECT_DIR}/src/driver/drv_i2s.c
-    ${PROJECT_DIR}/src/driver/drv_motion_sensor.c
-    ${PROJECT_DIR}/src/driver/drv_qmi8658.c
     ${PROJECT_DIR}/src/driver/vfs_stream.c
-    ${PROJECT_DIR}/src/driver/driver_update.c
     ${PROJECT_DIR}/src/driver/mt_esp32_button.c
+    ${PROJECT_DIR}/src/driver/drv_step_motor.c
     ${PROJECT_DIR}/src/driver/mt_event_mechanism.c
     ${PROJECT_DIR}/src/audio/audio_player.c
     ${PROJECT_DIR}/src/audio/audio_recorder.c
     ${PROJECT_DIR}/src/audio/speech_cn.c
     ${PROJECT_DIR}/src/audio/audio_tone_uri.c
     ${PROJECT_DIR}/src/mpy_modules/modmatatalab.c
-    ${PROJECT_DIR}/src/mpy_modules/mt_mpy_event.c
     ${PROJECT_DIR}/src/mpy_modules/mt_mpy_button.c
-    ${PROJECT_DIR}/src/mpy_modules/mt_mpy_gyro.c
-    ${PROJECT_DIR}/mpy_modules/mod_sensor.c
+    ${PROJECT_DIR}/src/mpy_modules/mt_mpy_event.c
+    ${PROJECT_DIR}/src/mpy_modules/motion/mpy_motion.c
     ${PROJECT_DIR}/mpy_modules/modaudio.c
 )
 
@@ -201,6 +198,7 @@ idf_component_register(
         ${MICROPY_PORT_DIR}/src/adapter/
         ${MICROPY_PORT_DIR}/src/audio/
         ${MICROPY_PORT_DIR}/src/driver/
+        ${MICROPY_PORT_DIR}/src/mpy_modules/motion/
         ${MICROPY_BOARD_DIR}
         ${CMAKE_BINARY_DIR}
         ${MICROPY_DIR}/py

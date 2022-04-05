@@ -299,7 +299,7 @@ esp_err_t es8311_codec_init(audio_hal_codec_config_t *codec_cfg)
     uint8_t datmp, regv;
     int coeff;
     esp_err_t ret = ESP_OK;
-    i2c_master_init(I2C_NUM_1);
+    i2c_master_init(I2C_NUM_0);
 
     ret |= es8311_write_reg(ES8311_CLK_MANAGER_REG01, 0x30);
     ret |= es8311_write_reg(ES8311_CLK_MANAGER_REG02, 0x00);

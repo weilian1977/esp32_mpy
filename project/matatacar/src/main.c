@@ -71,6 +71,7 @@
 
 #include "driver_update.h"
 #include "mt_event_mechanism.h"
+#include "drv_step_motor.h"
 
 // MicroPython runs as a task under FreeRTOS
 #define MP_TASK_PRIORITY        (ESP_TASK_PRIO_MIN + 1)
@@ -254,6 +255,7 @@ void app_main(void) {
     // speech_cn_init();
     // Create and transfer control to the MicroPython task.
     //xTaskCreatePinnedToCore(voice_read_task_c, "read_task", 4 * 1024, NULL, MP_TASK_PRIORITY, NULL, 0);
+    xTaskCreatePinnedToCore(step_motor_task, "step_motor_task", STEP_MOTOR_TASK_STACK_SIZE / sizeof(StackType_t), NULL, STEP_MOTOR_TASK_PRIORITY, NULL, 0);
     xTaskCreatePinnedToCore(mp_task, "mp_task", MP_TASK_STACK_SIZE / sizeof(StackType_t), NULL, MP_TASK_PRIORITY, &mp_main_task_handle, MP_TASK_COREID);
 }
 
