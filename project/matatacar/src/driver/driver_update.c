@@ -59,6 +59,7 @@ void driver_init_t(void)
 #if MODULE_PIN_ENABLE
   mt_esp32_pin_init_t();
 #endif
+  i2c_master_init(I2C_NUM_0);
 }
 
 void driver_update_t(void)
@@ -111,7 +112,7 @@ void driver_update_task_init(void)
 {
   ESP_LOGI(TAG, "button false");
   driver_init_t();
-  xTaskCreatePinnedToCore(driver_update_task_t, "driver_update_task", 4 * 1024, NULL, 0, NULL, 0);
+  //xTaskCreatePinnedToCore(driver_update_task_t, "driver_update_task", 4 * 1024, NULL, 0, NULL, 0);
 }
 /******************************************************************************
  DEFINE PRIVATE FUNCTIONS

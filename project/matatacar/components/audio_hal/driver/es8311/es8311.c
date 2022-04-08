@@ -200,13 +200,13 @@ int8_t get_es8311_mclk_src(void);
 
 static esp_err_t es8311_write_reg(uint8_t reg_addr, uint8_t data)
 {
-    return i2c_master_write_reg(I2C1_MASTER_NUM,ES8311_ADDR,reg_addr,data);
+    return i2c_master_write_reg(I2C0_MASTER_NUM,ES8311_ADDR,reg_addr,data);
 }
 
 static int es8311_read_reg(uint8_t reg_addr)
 {
     uint8_t data = 0xff ;
-    i2c_master_read_reg(I2C1_MASTER_NUM, ES8311_ADDR, reg_addr, &data);
+    i2c_master_read_reg(I2C0_MASTER_NUM, ES8311_ADDR, reg_addr, &data);
     return (int)data;
 }
 /*
@@ -481,7 +481,7 @@ esp_err_t es8311_codec_init(audio_hal_codec_config_t *codec_cfg)
     ret |= es8311_write_reg(ES8311_ADC_REG1B, 0x0A);
     ret |= es8311_write_reg(ES8311_ADC_REG1C, 0x6A);
 
-    es8311_pa_power(true);
+    //es8311_pa_power(true);
     return ESP_OK;
 }
 

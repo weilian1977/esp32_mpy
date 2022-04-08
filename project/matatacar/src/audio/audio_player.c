@@ -218,14 +218,12 @@ void play_start(const char *uri)
     //i2s0_shdn_enable(0);
     if(esp_audio_player_rate_change)
     {
-        
         i2s_stream_set_clk(i2s_stream_writer, cur_rates, 16, 1);
         esp_audio_player_rate_change = false;
         get_music_info_flag = false;
     }
 
     //audio_element_getinfo(i2s_stream_writer, &i2s_test_info);
-    //printf("i2s_stream_writer.sample_rates = %d\n",i2s_test_info.sample_rates);
     audio_pipeline_set_listener(pipeline, evt);
     //i2s0_shdn_enable(1);
     esp_err_t ret = audio_pipeline_run(pipeline);

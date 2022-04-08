@@ -89,6 +89,7 @@ set(MICROPY_SOURCE_PORT
     ${PROJECT_DIR}/src/driver/mt_esp32_button.c
     ${PROJECT_DIR}/src/driver/drv_step_motor.c
     ${PROJECT_DIR}/src/driver/mt_event_mechanism.c
+    ${PROJECT_DIR}/src/driver/driver_update.c
     ${PROJECT_DIR}/src/audio/audio_player.c
     ${PROJECT_DIR}/src/audio/audio_recorder.c
     ${PROJECT_DIR}/src/audio/speech_cn.c

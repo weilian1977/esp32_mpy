@@ -192,6 +192,7 @@ static void step_motor_spwm_init(void)
     {
         ledc_channel_config(&motor_pwm_channel[ch]);
     }
+
     REG_CLR_BIT(LEDC_INT_ENA_REG, LEDC_LSTIMER0_OVF_INT_ENA);
     REG_CLR_BIT(LEDC_INT_ENA_REG, LEDC_LSTIMER1_OVF_INT_ENA);
     spwm_stop(MOTOR_LEFT);
@@ -239,6 +240,9 @@ static void step_left_start(void)
     }
     REG_WRITE(LEDC_LSCH1_DUTY_REG, map(sin_data[table_pos_inb], 0, 1000, 102, 921) << 4);
     REG_SET_BIT(LEDC_LSCH1_CONF1_REG, LEDC_DUTY_START_LSCH1);
+
+    ledc_set_duty(MOTOR_LEFT_SPEED_MODE, MOTOR_LEFT_INA_CHANNEL, map(sin_data[2 * table_pos_ina], 0, 1000, 102, 921));
+    // ledc_set_duty(MOTOR_LEFT_SPEED_MODE, MOTOR_LEFT_INB_CHANNEL, map(sin_data[table_pos_inb], 0, 1000, 102, 921));
 
     REG_SET_BIT(LEDC_INT_ENA_REG, LEDC_LSTIMER0_OVF_INT_ENA);
 }
@@ -532,7 +536,7 @@ void step_motor_init(void)
     step_motor_spwm_init();
 
     // register overflow interrupt handler for pwm timer
-    // ESP_INTR_FLAG_LEVEL1
+    // ESP_INTR_FLAG_LEVEL1 ESP_INTR_FLAG_IRAM
     ledc_isr_register(spwm_timer_overflow_isr, NULL, ESP_INTR_FLAG_LEVEL1, NULL);
 
     motion_data.motor_data[MOTOR_LEFT].step_pos = 0;
@@ -864,6 +868,8 @@ void step_motor_task(void *pvParameter)
     xSemaphoreGive(motion_data.motion_task_init_mutex);
     while(true)
     {
-        motor_run();
+        // printf("countA:%d, countB:%d\r\n", countA, countB);
+        vTaskDelay(20 / portTICK_PERIOD_MS);
+        //motor_run();
     }
 }
