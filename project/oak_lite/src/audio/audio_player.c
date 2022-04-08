@@ -171,12 +171,6 @@ STATIC mp_obj_t audio_player_make_new(const mp_obj_type_t *type, size_t n_args, 
 
 void play_start(const char *uri)
 {
-    /*
-    if(pipeline_rec != NULL)
-    {
-        audio_pipeline_pause(pipeline_rec);
-    }
-    */
     audio_element_info_t music_info = {0};
     esp_audio_player_running = true;
     const char *uri_p;
@@ -220,7 +214,7 @@ void play_start(const char *uri)
     if(esp_audio_player_rate_change)
     {
         
-        i2s_stream_set_clk(i2s_stream_writer, cur_rates, 16, 2);
+        i2s_stream_set_clk(i2s_stream_writer, cur_rates, 16, 1);
         esp_audio_player_rate_change = false;
         get_music_info_flag = false;
     }
@@ -243,9 +237,9 @@ void play_start(const char *uri)
         {
             audio_element_getinfo(amr_decoder, &music_info);
         }
-        music_info.channels = 2;
         audio_element_setinfo(i2s_stream_writer,&music_info);
         i2s_stream_set_clk(i2s_stream_writer, music_info.sample_rates, music_info.bits, music_info.channels);
+        //printf("music_info.sample_rates = %d\n,music_info.bits = %d, music_info.channels = %d\n",music_info.sample_rates,music_info.bits, music_info.channels);
     }
 
     if(cur_rates == 8000)
@@ -268,13 +262,7 @@ STATIC void play_stop(void)
         ESP_LOGW(TAG, "audio_pipeline_terminate = %d\n", ret);
         ret = audio_pipeline_unlink(pipeline);
         ESP_LOGW(TAG, "audio_pipeline_unlink = %d\n", ret);
-        /*
-        if(pipeline_rec != NULL)
-        {
-            audio_pipeline_run(pipeline_rec);
-            audio_pipeline_resume(pipeline_rec);
-        }
-        */
+        i2s_stream_set_clk(i2s_stream_writer, 48000, 32, 2);
         //i2s0_shdn_enable(0);
         esp_audio_player_running = false;
     }

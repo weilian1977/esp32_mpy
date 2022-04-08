@@ -48,20 +48,28 @@
 #else
 #define BITS_PER_SAMPLE     (I2S_BITS_PER_SAMPLE_16BIT)
 #endif
-
-#if defined(CONFIG_ESP_LYRAT_MINI_V1_1_BOARD) || defined(CONFIG_ESP32_S3_KORVO2_V3_BOARD) || defined CONFIG_ESP32_MY_BOARD
-#define AEC_ENABLE          (true)
-#else
-#define AEC_ENABLE          (false)
+#ifndef CODEC_ADC_SAMPLE_RATE
+#warning "Please define CODEC_ADC_SAMPLE_RATE first, default value is 48kHz may not correctly"
+#define CODEC_ADC_SAMPLE_RATE    48000
 #endif
-
+#ifndef CODEC_ADC_BITS_PER_SAMPLE
+#warning "Please define CODEC_ADC_BITS_PER_SAMPLE first, default value 16 bits may not correctly"
+#define CODEC_ADC_BITS_PER_SAMPLE  I2S_BITS_PER_SAMPLE_16BIT
+#endif
+#ifndef RECORD_HARDWARE_AEC
+#warning "The hardware AEC is disabled!"
+#define RECORD_HARDWARE_AEC  (false)
+#endif
+#ifndef CODEC_ADC_I2S_PORT
+#define CODEC_ADC_I2S_PORT  (0)
+#endif
 enum _rec_msg_id {
     REC_START = 1,
     REC_STOP,
     REC_CANCEL,
 };
 static char *TAG = "speech_recognition";
-
+static bool esp_audio_recorder_running = true;
 static esp_audio_handle_t     player        = NULL;
 static audio_rec_handle_t     recorder      = NULL;
 static audio_element_handle_t raw_read      = NULL;
@@ -133,7 +141,8 @@ static esp_audio_handle_t setup_player()
     // Create writers and add to esp_audio
     i2s_stream_cfg_t i2s_writer = I2S_STREAM_CFG_DEFAULT();
     i2s_writer.i2s_config.sample_rate = 48000;
-    i2s_writer.i2s_config.bits_per_sample = BITS_PER_SAMPLE;
+    i2s_writer.i2s_config.bits_per_sample = CODEC_ADC_BITS_PER_SAMPLE;
+    i2s_writer.need_expand = (CODEC_ADC_BITS_PER_SAMPLE != I2S_BITS_PER_SAMPLE_16BIT);
     i2s_writer.type = AUDIO_STREAM_WRITER;
 
     esp_audio_output_stream_add(player, i2s_stream_init(&i2s_writer));
@@ -345,15 +354,15 @@ static void start_recorder()
     i2s_cfg.i2s_port = 1;
     i2s_cfg.i2s_config.use_apll = 0;
 #endif
-    i2s_cfg.i2s_config.sample_rate = RECORDER_SAMPLE_RATE;
-    i2s_cfg.i2s_config.bits_per_sample = BITS_PER_SAMPLE;
+    i2s_cfg.i2s_config.sample_rate = CODEC_ADC_SAMPLE_RATE;
+    i2s_cfg.i2s_config.bits_per_sample = CODEC_ADC_BITS_PER_SAMPLE;
     i2s_cfg.type = AUDIO_STREAM_READER;
     i2s_stream_reader = i2s_stream_init(&i2s_cfg);
 
     audio_element_handle_t filter = NULL;
 #if RECORDER_SAMPLE_RATE == (48000)
     rsp_filter_cfg_t rsp_cfg = DEFAULT_RESAMPLE_FILTER_CONFIG();
-    rsp_cfg.src_rate = 48000;
+    rsp_cfg.src_rate = CODEC_ADC_SAMPLE_RATE;
     rsp_cfg.dest_rate = 16000;
     filter = rsp_filter_init(&rsp_cfg);
 #endif
@@ -388,7 +397,7 @@ static void start_recorder()
     recorder_sr_cfg_t recorder_sr_cfg = DEFAULT_RECORDER_SR_CFG();
     recorder_sr_cfg.afe_cfg.alloc_from_psram = 3;
     recorder_sr_cfg.afe_cfg.wakenet_init = WAKENET_ENABLE;
-    recorder_sr_cfg.afe_cfg.aec_init = AEC_ENABLE;
+    recorder_sr_cfg.afe_cfg.aec_init = RECORD_HARDWARE_AEC;
 #if (ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(4, 0, 0))
     recorder_sr_cfg.input_order[0] = DAT_CH_REF0;
     recorder_sr_cfg.input_order[1] = DAT_CH_0;
@@ -446,7 +455,7 @@ static void log_clear(void)
 void speech_cn_init(void)
 {
     ch_commands_str = (char *)malloc(64*99);
-    strcpy(ch_commands_str, "zai de;zai ma;guan bi dian deng;guan dian deng;hao de;ni hao;huan ying;xiao che;qian jin;hou tui;da kai dian nao;dian nao;ting ge;bo fang yin yue;");
+    strcpy(ch_commands_str, "ni hao");
 
     log_clear();
     esp_periph_config_t periph_cfg_recorder = DEFAULT_ESP_PERIPH_SET_CONFIG();
@@ -460,7 +469,6 @@ void speech_cn_init(void)
     recorder_sr_reset_speech_cmd(cfg.sr_handle, ch_commands_str, err);
     separate_commands(ch_commands_str);
     recorder = audio_recorder_create(&cfg);
-    audio_pipeline_pause(pipeline_rec);
 }
 
 
@@ -501,26 +509,34 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(mpy_is_speech_commands_obj, is_speech_commands)
 
 STATIC mp_obj_t start_speech_recognition()
 {
-    //i2s_stream_set_clk(i2s_stream_reader, 48000, 32, 2);
-    if(pipeline_rec ==NULL)
+    if(esp_audio_recorder_running == false)
     {
-        printf("pipeline_rec not set\n");
-        return mp_const_none;
+        const char *link_tag[3] = {"i2s_recoder", "filter", "raw"};
+        audio_pipeline_link(pipeline_rec, &link_tag[0], 3);
+        audio_pipeline_run(pipeline_rec);
+        recorder_sr_enable(cfg.sr_handle,true);
+        esp_audio_recorder_running = true;
     }
-    audio_pipeline_run(pipeline_rec);
-    audio_pipeline_resume(pipeline_rec);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(mpy_start_speech_recognition_obj, start_speech_recognition);
 
 STATIC mp_obj_t stop_speech_recognition()
 {
-    if(pipeline_rec ==NULL)
+    if(esp_audio_recorder_running == true)
     {
-        printf("pipeline_rec not set\n");
-        return mp_const_none;
+        
+        recorder_sr_enable(cfg.sr_handle,false);
+        esp_err_t ret = audio_pipeline_stop(pipeline_rec);
+        ESP_LOGW(TAG, "audio_pipeline_rec_stop = %d\n", ret);
+        ret = audio_pipeline_wait_for_stop(pipeline_rec);
+        ESP_LOGW(TAG, "audio_pipeline_rec_wait_for_stop = %d\n", ret);
+        ret = audio_pipeline_terminate(pipeline_rec);
+        ESP_LOGW(TAG, "audio_pipeline_rec_terminate = %d\n", ret);
+        ret = audio_pipeline_unlink(pipeline_rec);
+        ESP_LOGW(TAG, "audio_pipeline_rec_unlink = %d\n", ret);
+        esp_audio_recorder_running = false;
     }
-    audio_pipeline_pause(pipeline_rec);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(mpy_stop_speech_recognition_obj, stop_speech_recognition);

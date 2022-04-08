@@ -126,6 +126,7 @@ recorder_sr_handle_t recorder_sr_create(recorder_sr_cfg_t *cfg, recorder_sr_ifac
  */
 esp_err_t recorder_sr_destroy(recorder_sr_handle_t handle);
 esp_err_t recorder_sr_reset_speech_cmd(recorder_sr_handle_t handle, char *command_str, char *err_phrase_id);
+esp_err_t recorder_sr_enable(void *handle, bool enable);
 #ifdef __cplusplus
 }
 #endif

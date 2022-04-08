@@ -51,6 +51,8 @@ typedef struct {
     bool                    stack_in_ext;       /*!< Try to allocate stack in external memory */
     int                     multi_out_num;      /*!< The number of multiple output */
     bool                    uninstall_drv;      /*!< whether uninstall the i2s driver when stream destroyed*/
+    bool                    need_expand;        /*!< whether to expand i2s data */
+    i2s_bits_per_sample_t   expand_src_bits;    /*!< The source bits per sample when data expand */
 } i2s_stream_cfg_t;
 
 #define I2S_STREAM_TASK_STACK           (3072+512)
@@ -85,6 +87,8 @@ typedef struct {
     .stack_in_ext = false,                                                      \
     .multi_out_num = 0,                                                         \
     .uninstall_drv = true,                                                      \
+    .need_expand = false,                                                       \
+    .expand_src_bits = I2S_BITS_PER_SAMPLE_16BIT,                               \
 }
 
 #define I2S_STREAM_INTERNAL_DAC_CFG_DEFAULT() {                                 \
@@ -112,6 +116,8 @@ typedef struct {
     .stack_in_ext = false,                                                      \
     .multi_out_num = 0,                                                         \
     .uninstall_drv = false,                                                     \
+    .need_expand = false,                                                       \
+    .expand_src_bits = I2S_BITS_PER_SAMPLE_16BIT,                               \
 }
 
 #define I2S_STREAM_TX_PDM_CFG_DEFAULT() {                                       \
@@ -138,6 +144,8 @@ typedef struct {
     .stack_in_ext = false,                                                      \
     .multi_out_num = 0,                                                         \
     .uninstall_drv = false,                                                     \
+    .need_expand = false,                                                       \
+    .expand_src_bits = I2S_BITS_PER_SAMPLE_16BIT,                               \
 }
 #else
 #define I2S_STREAM_CFG_DEFAULT() {                                              \
@@ -165,6 +173,8 @@ typedef struct {
     .stack_in_ext = false,                                                      \
     .multi_out_num = 0,                                                         \
     .uninstall_drv = true,                                                      \
+    .need_expand = false,                                                       \
+    .expand_src_bits = I2S_BITS_PER_SAMPLE_16BIT,                               \
 }
 
 #define I2S_STREAM_INTERNAL_DAC_CFG_DEFAULT() {                                 \
@@ -192,6 +202,8 @@ typedef struct {
     .stack_in_ext = false,                                                      \
     .multi_out_num = 0,                                                         \
     .uninstall_drv = false,                                                     \
+    .need_expand = false,                                                       \
+    .expand_src_bits = I2S_BITS_PER_SAMPLE_16BIT,                               \
 }
 
 #define I2S_STREAM_TX_PDM_CFG_DEFAULT() {                                       \
@@ -218,6 +230,8 @@ typedef struct {
     .stack_in_ext = false,                                                      \
     .multi_out_num = 0,                                                         \
     .uninstall_drv = false,                                                     \
+    .need_expand = false,                                                       \
+    .expand_src_bits = I2S_BITS_PER_SAMPLE_16BIT,                               \
 }
 #endif
 
@@ -270,6 +284,18 @@ esp_err_t i2s_alc_volume_set(audio_element_handle_t i2s_stream, int volume);
  *     - ESP_FAIL
  */
 esp_err_t i2s_alc_volume_get(audio_element_handle_t i2s_stream, int *volume);
+
+/**
+ * @brief      Set sync delay of stream
+ *
+ * @param[in]  i2s_stream   The i2s element handle
+ * @param[in]  delay_ms     The delay of stream
+ *
+ * @return
+ *     - ESP_OK
+ *     - ESP_FAIL
+ */
+esp_err_t i2s_stream_sync_delay(audio_element_handle_t i2s_stream, int delay_ms);
 
 #ifdef __cplusplus
 }

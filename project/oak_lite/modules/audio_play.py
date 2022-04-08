@@ -79,40 +79,44 @@ def set_instrument(instrument_type_select):
                 instrument_type = f
                 return None
 
-def set_play_info(rate_info = '', speed_info = 1.0, pitch_info =1.0, volume_info = volume_set):
+def set_play_info(volume_info,rate_info = '', speed_info = 1.0, pitch_info = 1.0,):
     if(rate_info != ''):
         mPlayer.rates(rate_info)
     mPlayer.say_speed(speed_info)
     mPlayer.say_pitch(pitch_info)
     mPlayer.set_vol(volume_info)
-    volume_set = volume_info
+    #volume_set = volume_info
             
-def play(path, volume = volume_set, sync = True, play_time = 0, speed = 1.0, pitch =1.0, rate = ''):
+def play(path, volume = '', sync = True, play_time = 0, speed = 1.0, pitch =1.0, rate = ''):
+    global volume_set
     tpye = "file:/"
     play_path = "%s%s" % (tpye,path)
-    set_play_info(rate,speed,pitch,volume)
+    if(volume !=''):
+        #volume = volume_set
+        volume_set = volume
+    set_play_info(volume_set,rate,speed,pitch)
     mPlayer.play(play_path, 0, sync, play_time)
     
 def play_time(path, play_time = 0):
+    global volume_set
     tpye = "file:/"
     play_path = "%s%s" % (tpye,path)
-    set_play_info()
+    set_play_info(volume_set)
     mPlayer.play(play_path, 0, True, play_time)
     
 def play_until_done(path):
+    global volume_set
     tpye = "file:/"
     play_path = "%s%s" % (tpye,path)
-    set_play_info()
+    set_play_info(volume_set)
     mPlayer.play(play_path, 0, sync = True, time = 0)
     
 def play_say(language,text):
     if(language == "english"):
         tpye = "sam://"
-        rates(11025)
-#        rates(22050)
+        rates(22050)
     elif(language == "chinese"):
-        rates(8000)
-#        rates(16000)
+        rates(16000)
         tpye = "hans://"
     else:
         print("language error")
@@ -136,6 +140,7 @@ def play_stop():
     mPlayer.stop()
 
 def set_volume(value):
+    global volume_set
     temp = value
     if(temp > 100):
         temp = 100
@@ -146,6 +151,7 @@ def set_volume(value):
     print("current volume is ",temp)
     
 def add_volume(add_value = 5):
+    global volume_set
     temp = volume_set + add_value
     if(temp > 100):
         temp = 100
@@ -153,6 +159,7 @@ def add_volume(add_value = 5):
     print("current volume is ",temp)
 
 def cut_volume(cut_value = 5):
+    global volume_set
     temp = volume_set - cut_value
     if(temp < 0):
         temp = 0
@@ -161,7 +168,7 @@ def cut_volume(cut_value = 5):
 
     
 def play_instrument_tone(instruments, tone):
-    global instruments_voice_table,  pre_rate
+    global instruments_voice_table, pre_rate , volume_set
     voice_file = instruments_voice_table[instruments]
     find_tone = voice_file[0]
     for f in voice_file[::-1]:
@@ -227,6 +234,7 @@ def dir_find(path, name):
     return None
 
 def play_melody(name, sync = True, play_time = 0):
+    global volume_set
     path = dir_find('melody', name)
     play(path, volume_set, sync, play_time)
 

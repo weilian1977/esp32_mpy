@@ -1118,6 +1118,7 @@ static inline esp_err_t __audio_element_term(audio_element_handle_t el, TickType
         ESP_LOGE(TAG, "[%s] Send destroy command failed", el->tag);
         return ESP_FAIL;
     }
+    vTaskDelay(5 / portTICK_PERIOD_MS);
     EventBits_t uxBits = xEventGroupWaitBits(el->state_event, TASK_DESTROYED_BIT, false, true, ticks_to_wait);
     esp_err_t ret = ESP_FAIL;
     if (uxBits & TASK_DESTROYED_BIT ) {
@@ -1250,41 +1251,56 @@ int audio_element_size(audio_element_handle_t el, int type)
 
 esp_err_t audio_element_stop(audio_element_handle_t el)
 {
+    
+    //printf("stop start,el = %s\n",el->tag);
     if (!el->task_run) {
         ESP_LOGD(TAG, "[%s] Element has not create when AUDIO_ELEMENT_STOP", el->tag);
         return ESP_FAIL;
     }
+    //printf("is run fault\n");
     if (el->is_running == false) {
         xEventGroupSetBits(el->state_event, STOPPED_BIT);
         audio_element_report_status(el, AEL_STATUS_STATE_STOPPED);
         ESP_LOGE(TAG, "[%s] Element already stopped", el->tag);
         return ESP_OK;
     }
+    //printf("clear out\n");
     audio_element_abort_output_ringbuf(el);
+    //printf("clear in\n");
     audio_element_abort_input_ringbuf(el);
+    //printf("clear out success\n");
     if (el->state == AEL_STATE_RUNNING) {
+        //printf("claerbits el = %s\n",el->tag);
         xEventGroupClearBits(el->state_event, STOPPED_BIT);
+        
+        //printf("claerbits el success = %s\n",el->tag);
     }
     if (el->task_stack <= 0) {
         el->is_running = false;
+    //printf("wait bits el = %s\n",el->tag);
         audio_element_force_set_state(el, AEL_STATE_STOPPED);
         xEventGroupSetBits(el->state_event, STOPPED_BIT);
         audio_element_report_status(el, AEL_STATUS_STATE_STOPPED);
+    //printf("wait bits el success = %s\n",el->tag);
         return ESP_OK;
     }
+    //printf("set cmd\n");
     if (el->state == AEL_STATE_PAUSED) {
         audio_event_iface_set_cmd_waiting_timeout(el->iface_event, 0);
     }
+    //printf("set cmd success\n");
     if (el->stopping) {
         ESP_LOGD(TAG, "[%s] Stop command has already sent, %d", el->tag, el->stopping);
         return ESP_OK;
     }
     el->stopping = true;
+    //printf("set cmd sendc cmd\n");
     if (audio_element_cmd_send(el, AEL_MSG_CMD_STOP) != ESP_OK) {
         el->stopping = false;
         ESP_LOGW(TAG, "[%s-%p] Send stop command failed", el->tag, el);
         return ESP_FAIL;
     }
+    //printf("stop success\n");
     ESP_LOGD(TAG, "[%s-%p] Send stop command", el->tag, el);
     return ESP_OK;
 }
