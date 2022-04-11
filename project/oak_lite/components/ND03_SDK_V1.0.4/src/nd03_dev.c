@@ -546,7 +546,7 @@ int32_t ND03_GetDevInfo(ND03_Dev_t *pNxDevice)
 int32_t ND03_WaitDeviceBootUp(ND03_Dev_t *pNxDevice)
 {
     int32_t     ret = ND03_ERROR_NONE;
-    int32_t     try_times = 2000;
+    int32_t     try_times = 10;
     uint32_t    rbuf;
 
     NX_PRINTF("%s Start!\r\n", __func__);

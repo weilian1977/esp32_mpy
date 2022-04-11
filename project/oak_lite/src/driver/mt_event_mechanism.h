@@ -52,7 +52,8 @@ typedef enum
   EVE_SYSTEM_RUN_APP = 7,
   /* 1 - 10 is reserved, please add event type larger then 10 */
   /* ex: EVE_BUTTON_PRESS = 11 */
-  EVENT_BUTTON = 11,
+  EVENT_BUTTON_PRESSED = 11,
+  EVENT_BUTTON_RELEASED,
   EVENT_TOUCHPAD_0,
   EVENT_TOUCHPAD_1,
   EVENT_TOUCHPAD_2,
