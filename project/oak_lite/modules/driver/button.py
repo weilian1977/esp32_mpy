@@ -8,3 +8,6 @@ class button(object):
 
     def is_pressed(self):
         return bool(button_o.is_pressed())
+    
+    def is_released(self):
+        return bool(button_o.is_released())

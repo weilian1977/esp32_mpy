@@ -132,7 +132,9 @@ void driver_event_listenning(void)
   for(uint8_t i = 0; i < BUTTON_NUM; i++)
   {
     mt_esp32_button_is_pressed_t(i, (bool *)&para[0]);
-    mt_eve_trigger_by_type_t(EVENT_BUTTON + i, para);
+    mt_eve_trigger_by_type_t(EVENT_BUTTON_PRESSED + i, para);
+    mt_esp32_button_is_released_t(i, (bool *)&para[0]);
+    mt_eve_trigger_by_type_t(EVENT_BUTTON_RELEASED + i, para);
 
   }
 #endif
