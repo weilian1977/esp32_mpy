@@ -48,7 +48,7 @@ music_dir_table = {
 
 resample_rate =22050.0
 tempo = 500.0
-volume_set = 60
+volume_set = 70
 global instrument_type
 instrument_type = '1-piano'
 

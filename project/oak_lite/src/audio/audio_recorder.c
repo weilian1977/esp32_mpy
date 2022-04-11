@@ -78,7 +78,7 @@ STATIC void audio_recorder_init(audio_recorder_obj_t *self)
     i2s_cfg.type = AUDIO_STREAM_READER;
     i2s_cfg.uninstall_drv = false;
     i2s_cfg.i2s_config.sample_rate = 8000;
-    i2s_cfg.i2s_config.channel_format = I2S_CHANNEL_FMT_RIGHT_LEFT;
+    i2s_cfg.i2s_config.channel_format = I2S_CHANNEL_FMT_ONLY_RIGHT;
     i2s_cfg.task_core = 0;
     i2s_cfg.task_prio = 23;
     self->i2s_stream = i2s_stream_init(&i2s_cfg);
@@ -139,6 +139,7 @@ STATIC mp_obj_t audio_recorder_start(mp_uint_t n_args, const mp_obj_t *args_in, 
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     audio_recorder_obj_t *self = args_in[0];
+    i2s_stream_set_clk(self->i2s_stream, 8000, 16, 1);
     mp_arg_parse_all(n_args - 1, args_in + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     ESP_LOGW(TAG, "audio_recorder_start");
@@ -236,7 +237,9 @@ STATIC mp_obj_t audio_recorder_stop(mp_obj_t self_in)
             }
             mp_hal_delay_ms(50);
             count_time++;
-        }   
+        }
+        
+        i2s_stream_set_clk(self->i2s_stream, 48000, 32, 2);
         esp_audio_recorder_running = false; 
     }
     return mp_obj_new_bool(true);
