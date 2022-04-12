@@ -148,7 +148,7 @@ static esp_audio_handle_t setup_player()
     esp_audio_output_stream_add(player, i2s_stream_init(&i2s_writer));
 
     // Set default volume
-    esp_audio_vol_set(player, 60);
+    esp_audio_vol_set(player, 70);
     AUDIO_MEM_SHOW(TAG);
 
     ESP_LOGI(TAG, "esp_audio instance is:%p\r\n", player);

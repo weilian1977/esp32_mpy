@@ -103,7 +103,7 @@ STATIC void audio_player_init(audio_player_obj_t *self)
     audio_pipeline_cfg_t pipeline_cfg = DEFAULT_AUDIO_PIPELINE_CONFIG();
     pipeline = audio_pipeline_init(&pipeline_cfg);
     mem_assert(pipeline);
-    audio_hal_set_volume(self->board_handle->audio_hal, 60);
+    audio_hal_set_volume(self->board_handle->audio_hal, 70);
     vfs_stream_cfg_t fs_reader = VFS_STREAM_CFG_DEFAULT();
     fs_reader.type = AUDIO_STREAM_READER;
     fs_reader.task_core = 0;
