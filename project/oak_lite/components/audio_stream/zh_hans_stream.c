@@ -225,7 +225,7 @@ static esp_err_t _zh_hans_open(audio_element_handle_t self)
         zh_hans->buffer=write_wav2ram(zh_hans->buffer,info.total_bytes,&info.total_bytes);
         printf("info.total_bytes=%d,ZH_HANS_USER_BUF_SIZE=%d\n", (int)info.total_bytes,ZH_HANS_USER_BUF_SIZE);
         zh_hans->length=ZH_HANS_USER_BUF_SIZE;
-        ESP_LOGI(TAG, "File size is %d byte,pos:%d", (int)info.total_bytes, (int)info.byte_pos);
+        //ESP_LOGI(TAG, "File size is %d byte,pos:%d", (int)info.total_bytes, (int)info.byte_pos);
         zh_hans->is_open = true;
         if(zh_hans->speed>5)zh_hans->speed=5;
         if(zh_hans->speed<0)zh_hans->speed=0;

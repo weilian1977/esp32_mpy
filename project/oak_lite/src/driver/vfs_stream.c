@@ -117,8 +117,6 @@ static esp_err_t _vfs_open(audio_element_handle_t self)
     if (vfs->type == AUDIO_STREAM_READER) {
         err = f_open(&(((fs_user_mount_t *)vfs_mount->obj)->fatfs), &vfs->file, path_out, FA_READ);
         info.total_bytes = get_len(&vfs->file);
-        
-        printf("test read path = %s,path_out =%s\n",path,path_out);
         ESP_LOGI(TAG, "File size is %d byte,pos:%d", (int)info.total_bytes, (int)info.byte_pos);
         if (err == 0 && (info.byte_pos > 0)) {
             if (f_lseek(&vfs->file, info.byte_pos) != 0) {

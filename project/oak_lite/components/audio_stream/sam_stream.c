@@ -159,7 +159,7 @@ static esp_err_t _sam_open(audio_element_handle_t self)
         }
         sam->buffer=write_wav2ram(sam->buffer,info.total_bytes,&info.total_bytes);
         sam->length=SAM_USER_BUF_SIZE;
-        ESP_LOGI(TAG, "File size is %d byte,pos:%d", (int)info.total_bytes, (int)info.byte_pos);
+        //ESP_LOGI(TAG, "File size is %d byte,pos:%d", (int)info.total_bytes, (int)info.byte_pos);
     } 
     sam->is_open = true;
 

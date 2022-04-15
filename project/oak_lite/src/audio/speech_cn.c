@@ -43,11 +43,7 @@
 #define RECORDER_SAMPLE_RATE (48000)
 #endif
 
-#if defined (CONFIG_ESP32_S3_KORVO2_V3_BOARD) || defined (CONFIG_ESP32_MY_BOARD)
-#define BITS_PER_SAMPLE     (I2S_BITS_PER_SAMPLE_32BIT)
-#else
-#define BITS_PER_SAMPLE     (I2S_BITS_PER_SAMPLE_16BIT)
-#endif
+
 #ifndef CODEC_ADC_SAMPLE_RATE
 #warning "Please define CODEC_ADC_SAMPLE_RATE first, default value is 48kHz may not correctly"
 #define CODEC_ADC_SAMPLE_RATE    48000
@@ -301,7 +297,7 @@ static esp_err_t rec_engine_cb(audio_rec_evt_t type, void *user_data)
         if (voice_reading) {
             int msg = REC_CANCEL;
             if (xQueueSend(rec_q, &msg, 0) != pdPASS) {
-                ESP_LOGE(TAG, "rec cancel send failed");
+                //ESP_LOGE(TAG, "rec cancel send failed");
             }
         }
     } else if (AUDIO_REC_VAD_START == type) {
@@ -309,7 +305,7 @@ static esp_err_t rec_engine_cb(audio_rec_evt_t type, void *user_data)
         if (!voice_reading) {
             int msg = REC_START;
             if (xQueueSend(rec_q, &msg, 0) != pdPASS) {
-                ESP_LOGE(TAG, "rec start send failed");
+                //ESP_LOGE(TAG, "rec start send failed");
             }
         }
     } else if (AUDIO_REC_VAD_END == type) {
@@ -317,7 +313,7 @@ static esp_err_t rec_engine_cb(audio_rec_evt_t type, void *user_data)
         if (voice_reading) {
             int msg = REC_STOP;
             if (xQueueSend(rec_q, &msg, 0) != pdPASS) {
-                ESP_LOGE(TAG, "rec stop send failed");
+                //ESP_LOGE(TAG, "rec stop send failed");
             }
         }
 
@@ -325,7 +321,7 @@ static esp_err_t rec_engine_cb(audio_rec_evt_t type, void *user_data)
         ESP_LOGI(TAG, "rec_engine_cb - REC_EVENT_WAKEUP_END");
     } else if (AUDIO_REC_COMMAND_DECT <= type) {
         speech_cmd_id = type;
-        ESP_LOGI(TAG, "rec_engine_cb - AUDIO_REC_COMMAND_DECT");
+        //ESP_LOGI(TAG, "rec_engine_cb - AUDIO_REC_COMMAND_DECT");
         ESP_LOGW(TAG, "command %d", type);
         //esp_audio_sync_play(player, tone_uri[TONE_TYPE_HAODE], 0);
 
@@ -350,17 +346,15 @@ static void start_recorder()
     }
 
     i2s_stream_cfg_t i2s_cfg = I2S_STREAM_CFG_DEFAULT();
-#if RECORDER_SAMPLE_RATE == (16000)
-    i2s_cfg.i2s_port = 1;
+    i2s_cfg.i2s_port = CODEC_ADC_I2S_PORT;
     i2s_cfg.i2s_config.use_apll = 0;
-#endif
     i2s_cfg.i2s_config.sample_rate = CODEC_ADC_SAMPLE_RATE;
     i2s_cfg.i2s_config.bits_per_sample = CODEC_ADC_BITS_PER_SAMPLE;
     i2s_cfg.type = AUDIO_STREAM_READER;
     i2s_stream_reader = i2s_stream_init(&i2s_cfg);
 
     audio_element_handle_t filter = NULL;
-#if RECORDER_SAMPLE_RATE == (48000)
+#if CODEC_ADC_SAMPLE_RATE != (16000)
     rsp_filter_cfg_t rsp_cfg = DEFAULT_RESAMPLE_FILTER_CONFIG();
     rsp_cfg.src_rate = CODEC_ADC_SAMPLE_RATE;
     rsp_cfg.dest_rate = 16000;
@@ -515,6 +509,7 @@ STATIC mp_obj_t start_speech_recognition()
         audio_pipeline_link(pipeline_rec, &link_tag[0], 3);
         audio_pipeline_run(pipeline_rec);
         recorder_sr_enable(cfg.sr_handle,true);
+        ESP_LOGW(TAG, "start_speech_recognition\n");
         esp_audio_recorder_running = true;
     }
     return mp_const_none;
@@ -528,13 +523,10 @@ STATIC mp_obj_t stop_speech_recognition()
         
         recorder_sr_enable(cfg.sr_handle,false);
         esp_err_t ret = audio_pipeline_stop(pipeline_rec);
-        ESP_LOGW(TAG, "audio_pipeline_rec_stop = %d\n", ret);
         ret = audio_pipeline_wait_for_stop(pipeline_rec);
-        ESP_LOGW(TAG, "audio_pipeline_rec_wait_for_stop = %d\n", ret);
         ret = audio_pipeline_terminate(pipeline_rec);
-        ESP_LOGW(TAG, "audio_pipeline_rec_terminate = %d\n", ret);
         ret = audio_pipeline_unlink(pipeline_rec);
-        ESP_LOGW(TAG, "audio_pipeline_rec_unlink = %d\n", ret);
+        ESP_LOGW(TAG, "stop_speech_recognition\n");
         esp_audio_recorder_running = false;
     }
     return mp_const_none;

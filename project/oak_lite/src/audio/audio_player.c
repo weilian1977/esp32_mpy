@@ -247,7 +247,7 @@ void play_start(const char *uri)
         mp_hal_delay_ms(300);
     }
 
-    AUDIO_MEM_SHOW("PRINT_MEM_RUN");
+    //AUDIO_MEM_SHOW("PRINT_MEM_RUN");
     ESP_LOGW(TAG, "audio_pipeline_run = %d\n", ret);
 }
 STATIC void play_stop(void)
@@ -255,13 +255,10 @@ STATIC void play_stop(void)
     if(esp_audio_player_running == true)
     {
         esp_err_t ret = audio_pipeline_stop(pipeline);
-        ESP_LOGW(TAG, "audio_pipeline_stop = %d\n", ret);
         ret = audio_pipeline_wait_for_stop(pipeline);
-        ESP_LOGW(TAG, "audio_pipeline_wait_for_stop = %d\n", ret);
         ret = audio_pipeline_terminate(pipeline);
-        ESP_LOGW(TAG, "audio_pipeline_terminate = %d\n", ret);
         ret = audio_pipeline_unlink(pipeline);
-        ESP_LOGW(TAG, "audio_pipeline_unlink = %d\n", ret);
+        ESP_LOGW(TAG, "audio_play_stop");
         i2s_stream_set_clk(i2s_stream_writer, 48000, 32, 2);
         //i2s0_shdn_enable(0);
         esp_audio_player_running = false;
