@@ -93,6 +93,11 @@ set(MICROPY_SOURCE_PORT
     ${PROJECT_DIR}/src/driver/mt_tof.c
     ${PROJECT_DIR}/src/driver/mt_light_sensor.c
     ${PROJECT_DIR}/src/driver/mt_event_mechanism.c
+    ${PROJECT_DIR}/src/driver/drv_ble.c
+    ${PROJECT_DIR}/src/driver/ble_prph/bleprph.c
+    ${PROJECT_DIR}/src/driver/ble_prph/gatt_svr.c
+    ${PROJECT_DIR}/src/driver/ble_prph/misc.c
+    #${PROJECT_DIR}/src/driver/ble_prph/scli.c
     ${PROJECT_DIR}/src/audio/audio_player.c
     ${PROJECT_DIR}/src/audio/audio_recorder.c
     ${PROJECT_DIR}/src/audio/speech_cn.c
@@ -103,6 +108,8 @@ set(MICROPY_SOURCE_PORT
     ${PROJECT_DIR}/src/mpy_modules/mt_mpy_gyro.c
     ${PROJECT_DIR}/src/mpy_modules/mt_mpy_tof.c
     ${PROJECT_DIR}/src/mpy_modules/mt_mpy_light_sensor.c
+    ${PROJECT_DIR}/src/mpy_modules/mt_mpy_light_sensor.c
+    ${PROJECT_DIR}/src/mpy_modules/mt_mpy_ble.c
     ${PROJECT_DIR}/mpy_modules/mod_sensor.c
     ${PROJECT_DIR}/mpy_modules/modaudio.c
 )
@@ -206,6 +213,7 @@ idf_component_register(
         ${MICROPY_PORT_DIR}/src/adapter/
         ${MICROPY_PORT_DIR}/src/audio/
         ${MICROPY_PORT_DIR}/src/driver/
+        ${MICROPY_PORT_DIR}/src/driver/ble_prph
         ${MICROPY_BOARD_DIR}
         ${CMAKE_BINARY_DIR}
         ${MICROPY_DIR}/py
