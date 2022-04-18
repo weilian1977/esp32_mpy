@@ -215,6 +215,7 @@ static esp_err_t recorder_mn_detect(recorder_sr_t *recorder_sr, int16_t *buffer,
             esp_afe->enable_wakenet(recorder_sr->afe_handle);
             esp_afe->enable_aec(recorder_sr->afe_handle);
             detect_flag = 0;
+            ESP_LOGI(TAG,"MN dect quit");
         }
     }
     return ESP_OK;
@@ -330,7 +331,7 @@ static esp_err_t recorder_sr_suspend(void *handle, bool suspend)
     return ESP_OK;
 }
 
-static esp_err_t recorder_sr_enable(void *handle, bool enable)
+esp_err_t recorder_sr_enable(void *handle, bool enable)
 {
     AUDIO_CHECK(TAG, handle, return ESP_ERR_INVALID_ARG, "Handle is NULL");
     recorder_sr_t *recorder_sr = (recorder_sr_t *)handle;

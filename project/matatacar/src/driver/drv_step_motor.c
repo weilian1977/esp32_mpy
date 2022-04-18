@@ -192,7 +192,6 @@ static void step_motor_spwm_init(void)
     {
         ledc_channel_config(&motor_pwm_channel[ch]);
     }
-
     REG_CLR_BIT(LEDC_INT_ENA_REG, LEDC_LSTIMER0_OVF_INT_ENA);
     REG_CLR_BIT(LEDC_INT_ENA_REG, LEDC_LSTIMER1_OVF_INT_ENA);
     spwm_stop(MOTOR_LEFT);
@@ -226,9 +225,12 @@ static void step_left_start(void)
 
     table_pos_ina = motion_data.motor_data[MOTOR_LEFT].step_pos % MICRO_STEP;
     set_spwm_freq(MOTOR_LEFT_TIME, DEFAULT_MIN_SPEED);
+
     // update duty, shift the duty 4 bits to the left due to ESP32 register format
     REG_WRITE(LEDC_LSCH0_DUTY_REG, map(sin_data[2 * table_pos_ina], 0, 1000, 102, 921) << 4);
     REG_SET_BIT(LEDC_LSCH0_CONF1_REG, LEDC_DUTY_START_LSCH0);
+
+    // ledc_set_duty(MOTOR_LEFT_SPEED_MODE, MOTOR_LEFT_INA_CHANNEL, map(sin_data[2 * table_pos_ina], 0, 1000, 102, 921));
 
     if(table_pos_ina < (MICRO_STEP >> 2) * 3)
     {
@@ -238,10 +240,10 @@ static void step_left_start(void)
     {
         table_pos_inb = 2 * (table_pos_ina - (MICRO_STEP >> 2) * 3);
     }
+    // update duty, shift the duty 4 bits to the left due to ESP32 register format
     REG_WRITE(LEDC_LSCH1_DUTY_REG, map(sin_data[table_pos_inb], 0, 1000, 102, 921) << 4);
     REG_SET_BIT(LEDC_LSCH1_CONF1_REG, LEDC_DUTY_START_LSCH1);
 
-    ledc_set_duty(MOTOR_LEFT_SPEED_MODE, MOTOR_LEFT_INA_CHANNEL, map(sin_data[2 * table_pos_ina], 0, 1000, 102, 921));
     // ledc_set_duty(MOTOR_LEFT_SPEED_MODE, MOTOR_LEFT_INB_CHANNEL, map(sin_data[table_pos_inb], 0, 1000, 102, 921));
 
     REG_SET_BIT(LEDC_INT_ENA_REG, LEDC_LSTIMER0_OVF_INT_ENA);
@@ -261,6 +263,8 @@ static void step_right_start(void)
     REG_WRITE(LEDC_LSCH2_DUTY_REG, map(sin_data[2 * table_pos_ina], 0, 1000, 102, 921) << 4);
     REG_SET_BIT(LEDC_LSCH2_CONF1_REG, LEDC_DUTY_START_LSCH2);
 
+    // ledc_set_duty(MOTOR_RIGHT_SPEED_MODE, MOTOR_RIGHT_INA_CHANNEL, map(sin_data[2 * table_pos_ina], 0, 1000, 102, 921));
+
     if(table_pos_ina < (MICRO_STEP >> 2) * 3)
     {
         table_pos_inb = 2 * (table_pos_ina + (MICRO_STEP >> 2));
@@ -269,8 +273,11 @@ static void step_right_start(void)
     {
         table_pos_inb = 2 * (table_pos_ina - (MICRO_STEP >> 2) * 3);
     }
+    // update duty, shift the duty 4 bits to the left due to ESP32 register format
     REG_WRITE(LEDC_LSCH3_DUTY_REG, map(sin_data[table_pos_inb], 0, 1000, 102, 921) << 4);
     REG_SET_BIT(LEDC_LSCH3_CONF1_REG, LEDC_DUTY_START_LSCH3);
+
+    // ledc_set_duty(MOTOR_RIGHT_SPEED_MODE, MOTOR_RIGHT_INB_CHANNEL, map(sin_data[table_pos_inb], 0, 1000, 102, 921));
 
     REG_SET_BIT(LEDC_INT_ENA_REG, LEDC_LSTIMER1_OVF_INT_ENA);
 }
@@ -463,8 +470,10 @@ void IRAM_ATTR spwm_timer_overflow_isr(void *arg)
             table_pos_ina = table_pos_ina + MICRO_STEP;
         }
         // update duty, shift the duty 4 bits to the left due to ESP32 register format
-        REG_WRITE(LEDC_LSCH0_DUTY_REG, map(sin_data[2 * table_pos_ina], 0, 1000, 102, 921) << 4);
-        REG_SET_BIT(LEDC_LSCH0_CONF1_REG, LEDC_DUTY_START_LSCH0);
+        // REG_WRITE(LEDC_LSCH0_DUTY_REG, map(sin_data[2 * table_pos_ina], 0, 1000, 102, 921) << 4);
+        // REG_SET_BIT(LEDC_LSCH0_CONF1_REG, LEDC_DUTY_START_LSCH0);
+
+        ledc_set_duty(MOTOR_LEFT_SPEED_MODE, MOTOR_LEFT_INA_CHANNEL, map(sin_data[2 * table_pos_ina], 0, 1000, 102, 921));
 
         if(table_pos_ina < (MICRO_STEP >> 2) * 3)
         {
@@ -474,9 +483,11 @@ void IRAM_ATTR spwm_timer_overflow_isr(void *arg)
         {
             table_pos_inb = 2 * (table_pos_ina - (MICRO_STEP >> 2) * 3);
         }
+        // update duty, shift the duty 4 bits to the left due to ESP32 register format
+        // REG_WRITE(LEDC_LSCH1_DUTY_REG, map(sin_data[table_pos_inb], 0, 1000, 102, 921) << 4);
+        // REG_SET_BIT(LEDC_LSCH1_CONF1_REG, LEDC_DUTY_START_LSCH1);
 
-        REG_WRITE(LEDC_LSCH1_DUTY_REG, map(sin_data[table_pos_inb], 0, 1000, 102, 921) << 4);
-        REG_SET_BIT(LEDC_LSCH1_CONF1_REG, LEDC_DUTY_START_LSCH1);
+        ledc_set_duty(MOTOR_LEFT_SPEED_MODE, MOTOR_LEFT_INB_CHANNEL, map(sin_data[table_pos_inb], 0, 1000, 102, 921));
     }
 
     if(REG_GET_BIT(LEDC_INT_RAW_REG, LEDC_LSTIMER1_OVF_INT_CLR) != 0)
@@ -511,8 +522,10 @@ void IRAM_ATTR spwm_timer_overflow_isr(void *arg)
             table_pos_ina = table_pos_ina + MICRO_STEP;
         }
         // update duty, shift the duty 4 bits to the left due to ESP32 register format
-        REG_WRITE(LEDC_LSCH2_DUTY_REG, map(sin_data[2 * table_pos_ina], 0, 1000, 102, 921) << 4);
-        REG_SET_BIT(LEDC_LSCH2_CONF1_REG, LEDC_DUTY_START_LSCH2);
+        // REG_WRITE(LEDC_LSCH2_DUTY_REG, map(sin_data[2 * table_pos_ina], 0, 1000, 102, 921) << 4);
+        // REG_SET_BIT(LEDC_LSCH2_CONF1_REG, LEDC_DUTY_START_LSCH2);
+
+        ledc_set_duty(MOTOR_RIGHT_SPEED_MODE, MOTOR_RIGHT_INA_CHANNEL, map(sin_data[2 * table_pos_ina], 0, 1000, 102, 921));
 
         if(table_pos_ina < (MICRO_STEP >> 2) * 3)
         {
@@ -522,9 +535,11 @@ void IRAM_ATTR spwm_timer_overflow_isr(void *arg)
         {
             table_pos_inb = 2 * (table_pos_ina - (MICRO_STEP >> 2) * 3);
         }
+        // update duty, shift the duty 4 bits to the left due to ESP32 register format
+        // REG_WRITE(LEDC_LSCH3_DUTY_REG, map(sin_data[table_pos_inb], 0, 1000, 102, 921) << 4);
+        // REG_SET_BIT(LEDC_LSCH3_CONF1_REG, LEDC_DUTY_START_LSCH3);
 
-        REG_WRITE(LEDC_LSCH3_DUTY_REG, map(sin_data[table_pos_inb], 0, 1000, 102, 921) << 4);
-        REG_SET_BIT(LEDC_LSCH3_CONF1_REG, LEDC_DUTY_START_LSCH3);
+        ledc_set_duty(MOTOR_RIGHT_SPEED_MODE, MOTOR_RIGHT_INB_CHANNEL, map(sin_data[table_pos_inb], 0, 1000, 102, 921));
     }
 }
 
@@ -857,19 +872,16 @@ void step_motor_task(void *pvParameter)
     }
 
     xSemaphoreTake(motion_data.motion_task_init_mutex, portMAX_DELAY);
+    step_motor_init();
     set_max_speed(MOTOR_LEFT, 1000 * STEP_SUBDIVISION);
     set_max_speed(MOTOR_RIGHT, 1000 * STEP_SUBDIVISION);
     set_acceleration(MOTOR_LEFT, DEFALUT_ACCELERATION);
     set_acceleration(MOTOR_RIGHT, DEFALUT_ACCELERATION);
     set_current_position(MOTOR_LEFT, 0);
     set_current_position(MOTOR_RIGHT, 0);
-    step_motor_init();
-    vTaskDelay(100);
     xSemaphoreGive(motion_data.motion_task_init_mutex);
     while(true)
     {
-        // printf("countA:%d, countB:%d\r\n", countA, countB);
-        vTaskDelay(20 / portTICK_PERIOD_MS);
-        //motor_run();
+        motor_run();
     }
 }

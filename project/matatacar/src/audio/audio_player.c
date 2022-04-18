@@ -70,7 +70,6 @@
 #include "periph_spiffs.h"
 #include "speech_cn.h"
 static const char *TAG = "audio_player.c";
-
 #define SYNC_PLAY_MAX_TIMEOUT      30                 // 30 second
 #define MAX_PATH_LENGTH            (64)
 static int cur_rates = 24000;
@@ -139,12 +138,14 @@ STATIC void audio_player_init(audio_player_obj_t *self)
     wav_dec_cfg.task_core = 0;
     wav_dec_cfg.stack_in_ext = true;
     wav_decoder = wav_decoder_init(&wav_dec_cfg);
+
     sonic_cfg_t sonic_cfg = DEFAULT_SONIC_CONFIG();
     sonic_cfg.sonic_info.samplerate = 16000;
     sonic_cfg.task_core = 0;
     sonic_cfg.sonic_info.channel = 1;
     sonic_cfg.sonic_info.resample_linear_interpolate = 1;
     sonic_el=sonic_init(&sonic_cfg);
+    
     audio_pipeline_register(pipeline, sam_stream_reader, "sam");
     audio_pipeline_register(pipeline, vfsfs_stream_reader, "file");
     audio_pipeline_register(pipeline, zh_hans_stream_reader, "hans");
@@ -170,13 +171,7 @@ STATIC mp_obj_t audio_player_make_new(const mp_obj_type_t *type, size_t n_args, 
 
 void play_start(const char *uri)
 {
-    //audio_pipeline_pause(pipeline_rec);
-    
-    audio_element_info_t vfsfs_stream_reader_info = {0};
-    //audio_element_info_t i2s_test_info = {0};
-    audio_element_info_t mp3_info = {0};
-    audio_element_info_t wav_info = {0};
-    audio_element_info_t amr_info = {0};
+    audio_element_info_t music_info = {0};
     esp_audio_player_running = true;
     const char *uri_p;
     char *path = strstr(uri, ":");
@@ -218,36 +213,33 @@ void play_start(const char *uri)
     //i2s0_shdn_enable(0);
     if(esp_audio_player_rate_change)
     {
+        
         i2s_stream_set_clk(i2s_stream_writer, cur_rates, 16, 1);
         esp_audio_player_rate_change = false;
         get_music_info_flag = false;
     }
 
-    //audio_element_getinfo(i2s_stream_writer, &i2s_test_info);
     audio_pipeline_set_listener(pipeline, evt);
     //i2s0_shdn_enable(1);
     esp_err_t ret = audio_pipeline_run(pipeline);
     if(get_music_info_flag)
     {
         get_music_info_flag = false;
-        if(strcmp(end,"mp3") == 0)
+        if(strcmp(end,"mp3") == 0 || strcmp(end,"MP3") == 0 )
         {
-            audio_element_getinfo(mp3_decoder, &mp3_info);
-            audio_element_setinfo(i2s_stream_writer,&mp3_info);
-            i2s_stream_set_clk(i2s_stream_writer, mp3_info.sample_rates, mp3_info.bits, mp3_info.channels);
+            audio_element_getinfo(mp3_decoder, &music_info);
         }
-        if(strcmp(end,"wav") == 0)
+        else if(strcmp(end,"wav") == 0 || strcmp(end,"WAV") == 0 )
         {
-            audio_element_getinfo(wav_decoder, &wav_info);
-            audio_element_setinfo(i2s_stream_writer,&wav_info);
-            i2s_stream_set_clk(i2s_stream_writer, wav_info.sample_rates, wav_info.bits, wav_info.channels);
+            audio_element_getinfo(wav_decoder, &music_info);
         }
-        if(strcmp(end,"amr") == 0)
+        else if(strcmp(end,"amr") == 0 || strcmp(end,"AMR") == 0 )
         {
-            audio_element_getinfo(amr_decoder, &amr_info);
-            audio_element_setinfo(i2s_stream_writer,&amr_info);
-            i2s_stream_set_clk(i2s_stream_writer, amr_info.sample_rates, amr_info.bits, amr_info.channels);
+            audio_element_getinfo(amr_decoder, &music_info);
         }
+        audio_element_setinfo(i2s_stream_writer,&music_info);
+        i2s_stream_set_clk(i2s_stream_writer, music_info.sample_rates, music_info.bits, music_info.channels);
+        //printf("music_info.sample_rates = %d\n,music_info.bits = %d, music_info.channels = %d\n",music_info.sample_rates,music_info.bits, music_info.channels);
     }
 
     if(cur_rates == 8000)
@@ -270,10 +262,7 @@ STATIC void play_stop(void)
         ESP_LOGW(TAG, "audio_pipeline_terminate = %d\n", ret);
         ret = audio_pipeline_unlink(pipeline);
         ESP_LOGW(TAG, "audio_pipeline_unlink = %d\n", ret);
-
-        //audio_pipeline_run(pipeline_rec);
-        //audio_pipeline_resume(pipeline_rec);
-        //i2s_stream_set_clk(i2s_stream_reader, 48000, 32, 2);
+        i2s_stream_set_clk(i2s_stream_writer, 48000, 32, 2);
         //i2s0_shdn_enable(0);
         esp_audio_player_running = false;
     }

@@ -105,6 +105,8 @@ typedef struct __audio_recorder {
     audio_recorder_state_t    state;
 } audio_recorder_t;
 
+static void audio_recorder_reset(audio_recorder_t *recorder);
+
 static const char *TAG = "AUDIO_RECORDER";
 
 static esp_err_t audio_recorder_send_msg(audio_recorder_t *recorder, int msg_id, void *data, int len)
@@ -237,6 +239,10 @@ static void audio_recorder_update_state(audio_recorder_t *recorder, int event)
         last_event = event;
     }
 
+    if (event == RECORDER_EVENT_WWE_DECT && recorder->state != RECORDER_ST_IDLE) {
+        audio_recorder_reset(recorder);
+    }
+
     switch (recorder->state) {
         case RECORDER_ST_IDLE: {
             if (event == RECORDER_EVENT_WWE_DECT) {
@@ -336,6 +342,7 @@ static void audio_recorder_reset(audio_recorder_t *recorder)
 {
     esp_timer_stop(recorder->wakeup_timer);
     esp_timer_stop(recorder->vad_timer);
+    audio_recorder_encoder_enable(recorder, false);
     recorder->state = RECORDER_ST_IDLE;
 }
 
@@ -366,11 +373,11 @@ static void audio_recorder_task(void *parameters)
             case RECORDER_CMD_TRIGGER_STOP: {
                 ESP_LOGI(TAG, "RECORDER_CMD_TRIGGER_STOP [state %d]", recorder->state);
                 if ((recorder->state >= RECORDER_ST_SPEECHING) && (recorder->state <= RECORDER_ST_WAIT_FOR_SILENCE)) {
-                    recorder->event_cb(AUDIO_REC_VAD_END, recorder);
+                    recorder->event_cb(AUDIO_REC_VAD_END, recorder->user_data);
                     audio_recorder_encoder_enable(recorder, false);
                 }
                 if (recorder->state != RECORDER_ST_IDLE) {
-                    recorder->event_cb(AUDIO_REC_WAKEUP_END, recorder);
+                    recorder->event_cb(AUDIO_REC_WAKEUP_END, recorder->user_data);
                 }
                 audio_recorder_reset(recorder);
                 if (recorder->sr_handle && recorder->sr_iface) {
@@ -661,4 +668,12 @@ int audio_recorder_data_read(audio_rec_handle_t handle, void *buffer, int length
     }
 
     return ret;
+}
+
+bool audio_recorder_get_wakeup_state(audio_rec_handle_t handle)
+{
+    AUDIO_NULL_CHECK(TAG, handle, return ESP_FAIL);
+    audio_recorder_t *recorder = (audio_recorder_t *)handle;
+
+    return recorder->state >= RECORDER_ST_WAKEUP ? true : false;
 }

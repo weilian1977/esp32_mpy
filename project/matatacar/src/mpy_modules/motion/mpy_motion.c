@@ -37,10 +37,10 @@ STATIC mp_obj_t mpy_motion_make_new(const mp_obj_type_t *type, size_t n_args, si
     return self;
 }
 
-STATIC mp_obj_t mpy_forward(mp_obj_t self_in, mp_obj_t step, mp_obj_t sync)
+STATIC mp_obj_t mpy_forward(mp_obj_t self_in, mp_obj_t distance, mp_obj_t sync)
 {
-    int16_t step_value = mp_obj_get_int(step);
-    long pulse = (long)(STEP_TO_PULSE * step_value);
+    int32_t distance_value = mp_obj_get_int(distance);
+    long pulse = (long)(MM_TO_PULSE * distance_value);
     bool sync_flag = mp_obj_get_int(sync);
     if(sync_flag)
     {
@@ -57,10 +57,10 @@ STATIC mp_obj_t mpy_forward(mp_obj_t self_in, mp_obj_t step, mp_obj_t sync)
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(forward_obj, mpy_forward);
 
-STATIC mp_obj_t mpy_backward(mp_obj_t self_in, mp_obj_t step, mp_obj_t sync)
+STATIC mp_obj_t mpy_backward(mp_obj_t self_in, mp_obj_t distance, mp_obj_t sync)
 {
-    int16_t step_value = mp_obj_get_int(step);
-    long pulse = (long)(STEP_TO_PULSE * step_value);
+    int32_t distance_value = mp_obj_get_int(distance);
+    long pulse = (long)(MM_TO_PULSE * distance_value);
     bool sync_flag = mp_obj_get_int(sync);
     if(sync_flag)
     {
