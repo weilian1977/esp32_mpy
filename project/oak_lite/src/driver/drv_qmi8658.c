@@ -426,12 +426,12 @@ static mt_err_t mt_esp32_gyro_event_listening_t(float ax, float ay, float az)
         gyro_event_info[TILT_RIGHT].event_occured_flag = false;
     }
 
-    if (ay <= -1 * THRESHOLD_VALUE)
+    if (ay >= THRESHOLD_VALUE)
     {
         gyro_event_info[TILT_FORWARD].event_occured_flag = true;
         gyro_event_info[TILT_BACK].event_occured_flag = false;
     }
-    else if (ay >= THRESHOLD_VALUE)
+    else if (ay <= -1 * THRESHOLD_VALUE)
     {
         gyro_event_info[TILT_FORWARD].event_occured_flag = false;
         gyro_event_info[TILT_BACK].event_occured_flag = true;

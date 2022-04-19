@@ -2,6 +2,11 @@ import gc
 import uos, machine
 from flashbdev import bdev1, bdev2
 
+from oak_lite import *
+import time
+import audio_play
+import speech
+
 try:
     if bdev1:
         uos.mount(bdev1, "/")
