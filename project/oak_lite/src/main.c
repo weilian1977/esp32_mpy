@@ -83,6 +83,8 @@
 #define MP_TASK_STACK_LIMIT_MARGIN (1024)
 #endif
 
+extern void ble_prph_main(void);
+
 int vprintf_null(const char *format, va_list ap) {
     // do nothing: this is used as a log target during raw repl mode
     return 0;
@@ -149,6 +151,7 @@ void mp_task(void *pvParameter) {
         mp_task_heap = malloc(mp_task_heap_size);
     }
 
+    ble_prph_main();
 //soft_reset:
     // initialise the stack pointer for the main thread
     mp_stack_set_top((void *)sp);

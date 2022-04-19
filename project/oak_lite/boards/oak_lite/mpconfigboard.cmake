@@ -9,6 +9,7 @@ set(SDKCONFIG_DEFAULTS
     boards/${CURRENT_FOLDER}/sdkconfig.spiram_sx
     boards/${CURRENT_FOLDER}/sdkconfig.board
     boards/${CURRENT_FOLDER}/sdkconfig.base_s3
+    boards/${CURRENT_FOLDER}/sdkconfig.ble
 )
 
 if(NOT MICROPY_FROZEN_MANIFEST)
