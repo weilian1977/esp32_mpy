@@ -72,8 +72,8 @@ class motion_sensor(object):
     def is_tilted_right(self):
         return bool(gyro_o.get_tilt(TILE_RIGHT_ID))
 
-    def is_arrow_up(self):
-        return bool(gyro_o.get_tilt(TILE_BACKWARD_ID))
-
-    def is_arrow_down(self):
+    def is_tilted_forward(self):
         return bool(gyro_o.get_tilt(TILE_FORWARD_ID))
+
+    def is_tilted_backward(self):
+        return bool(gyro_o.get_tilt(TILE_BACKWARD_ID))
