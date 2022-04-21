@@ -65,10 +65,9 @@ static mp_obj_t mt_mpy_light_sensor_make_new(const mp_obj_type_t *type, mp_uint_
   return self;
 }
 
-static mp_obj_t mt_mpy_light_sensor_get_value(mp_obj_t self_in,  mp_obj_t arg1)
+static mp_obj_t mt_mpy_light_sensor_get_value(mp_obj_t self_in)
 {
-  int value = 0;  
-  uint8_t axis;
+  int value = 0;
 
   mt_light_sensor_get_value_t(&value);
 

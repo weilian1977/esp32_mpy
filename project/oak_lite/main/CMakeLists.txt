@@ -102,6 +102,10 @@ set(MICROPY_SOURCE_PORT
     ${PROJECT_DIR}/src/audio/audio_recorder.c
     ${PROJECT_DIR}/src/audio/speech_cn.c
     ${PROJECT_DIR}/src/audio/audio_tone_uri.c
+    ${PROJECT_DIR}/src/system/battery_check.c
+    ${PROJECT_DIR}/src/system/system_management.c
+    ${PROJECT_DIR}/src/system/power_management.c
+    ${PROJECT_DIR}/src/system/usb_detect.c
     ${PROJECT_DIR}/src/mpy_modules/modmatatalab.c
     ${PROJECT_DIR}/src/mpy_modules/mt_mpy_event.c
     ${PROJECT_DIR}/src/mpy_modules/mt_mpy_button.c
@@ -212,6 +216,7 @@ idf_component_register(
         ${MICROPY_PORT_DIR}
         ${MICROPY_PORT_DIR}/src/adapter/
         ${MICROPY_PORT_DIR}/src/audio/
+        ${MICROPY_PORT_DIR}/src/system/
         ${MICROPY_PORT_DIR}/src/driver/
         ${MICROPY_PORT_DIR}/src/driver/ble_prph
         ${MICROPY_BOARD_DIR}

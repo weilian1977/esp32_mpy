@@ -20,6 +20,9 @@
 #include "mt_err.h"
 #include "mt_module_config.h"
 
+#include "battery_check.h"
+#include "usb_detect.h"
+
 #include "mt_mpy_event.h"
 //#include "mt_mpy_stop_script.h"
 #include "mt_mpy_button.h"
@@ -33,7 +36,44 @@
 #define MODULE_ENABLE_VALUE   (1)
 #define MODULE_DISABLE_VALUE  (0)
 
+STATIC mp_obj_t mpy_is_usb_detected(void)
+{
+    bool usb_detected = false;
+    usb_detected = is_usb_detected();
+    if(usb_detected == true)
+    {
+        return mp_const_true;
+    }
+    else
+    {
+        return mp_const_false;
+    }
+}
+
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(is_usb_detected_obj, mpy_is_usb_detected);
+
+STATIC mp_obj_t mpy_get_battery_voltage(void)
+{
+    float battery_voltage = 0.0f;
+    battery_voltage = get_battery_voltage();
+    return mp_obj_new_float(battery_voltage);
+}
+
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(get_battery_voltage_obj, mpy_get_battery_voltage);
+
+STATIC mp_obj_t mpy_get_battery_capacity(void)
+{
+    uint8_t battery_capacity = 0;
+    battery_capacity = get_battery_capacity();
+    return mp_obj_new_int(battery_capacity);
+}
+
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(get_battery_capacity_obj, mpy_get_battery_capacity);
+
 STATIC const mp_map_elem_t matatalab_module_globals_table[] = {
+    { MP_OBJ_NEW_QSTR(MP_QSTR_is_usb_detected),            (mp_obj_t)(&is_usb_detected_obj) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_get_battery_voltage),        (mp_obj_t)(&get_battery_voltage_obj) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_get_battery_capacity),       (mp_obj_t)(&get_battery_capacity_obj) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_event),                      (mp_obj_t)&mt_mpy_event_type},
     { MP_OBJ_NEW_QSTR(MP_QSTR_EVENT_ENABLE),               MP_OBJ_NEW_SMALL_INT(MODULE_ENABLE_VALUE) },
     //{ MP_OBJ_NEW_QSTR(MP_QSTR_stop_script),                (mp_obj_t)&mt_mpy_stop_thread_type},

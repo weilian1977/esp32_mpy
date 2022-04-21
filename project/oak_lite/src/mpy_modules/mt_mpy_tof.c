@@ -65,7 +65,7 @@ static mp_obj_t mt_mpy_tof_make_new(const mp_obj_type_t *type, mp_uint_t n_args,
   return self;
 }
 
-static mp_obj_t mt_mpy_tof_get_distance(mp_obj_t self_in,  mp_obj_t arg1)
+static mp_obj_t mt_mpy_tof_get_distance(mp_obj_t self_in)
 {
   float value = 0;  
   uint8_t axis;
