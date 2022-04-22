@@ -4,7 +4,7 @@
 #include "freertos/task.h"
 #include "esp_err.h"
 #include "esp_log.h"
-#include "gpio.h"
+#include "driver/gpio.h"
 #include "usb_detect.h"
 #include "system_management.h"
 #include "indicator_led.h"

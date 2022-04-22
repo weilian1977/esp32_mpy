@@ -7,7 +7,7 @@
 #define LED_SINGLE_FAST_FLASH_PERIODIC_TIME             140
 #define LED_DOUBLE_FLASH_PERIODIC_TIME                  35
 #define LED_DOUBLE_FLASH_GAP_TIME                       (LED_DOUBLE_FLASH_PERIODIC_TIME * 20)
-#define INDICATOR_LED_PIN                               (21)
+#define INDICATOR_LED_PIN                               (41)
 
 typedef enum name
 {

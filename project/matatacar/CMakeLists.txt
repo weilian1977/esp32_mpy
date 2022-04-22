@@ -12,7 +12,7 @@ endif()
 
 # Set the board directory and check that it exists.
 if(NOT MICROPY_BOARD_DIR)
-    set(MICROPY_BOARD_DIR ${MICROPY_PORT_DIR}/boards/${MICROPY_BOARD})
+    set(MICROPY_BOARD_DIR ${MICROPY_PORT_DIR}/config)
 endif()
 if(NOT EXISTS ${MICROPY_BOARD_DIR}/mpconfigboard.cmake)
     message(FATAL_ERROR "Invalid MICROPY_BOARD specified: ${MICROPY_BOARD}")
@@ -26,9 +26,9 @@ include(${MICROPY_BOARD_DIR}/mpconfigboard.cmake)
 
 # Add sdkconfig fragments that depend on the IDF version.
 if(IDF_VERSION_MAJOR EQUAL 4 AND IDF_VERSION_MINOR LESS 2)
-    set(SDKCONFIG_DEFAULTS ${SDKCONFIG_DEFAULTS} boards/sdkconfig.nimble_core0)
+    set(SDKCONFIG_DEFAULTS ${SDKCONFIG_DEFAULTS} config/sdkconfig.nimble_core0)
 else()
-    set(SDKCONFIG_DEFAULTS ${SDKCONFIG_DEFAULTS} boards/sdkconfig.nimble_core1)
+    set(SDKCONFIG_DEFAULTS ${SDKCONFIG_DEFAULTS} config/sdkconfig.nimble_core1)
 endif()
 
 # Concatenate all sdkconfig files into a combined one for the IDF to use.

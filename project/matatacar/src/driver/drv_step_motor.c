@@ -227,10 +227,10 @@ static void step_left_start(void)
     set_spwm_freq(MOTOR_LEFT_TIME, DEFAULT_MIN_SPEED);
 
     // update duty, shift the duty 4 bits to the left due to ESP32 register format
-    REG_WRITE(LEDC_LSCH0_DUTY_REG, map(sin_data[2 * table_pos_ina], 0, 1000, 102, 921) << 4);
-    REG_SET_BIT(LEDC_LSCH0_CONF1_REG, LEDC_DUTY_START_LSCH0);
+    // REG_WRITE(LEDC_LSCH0_DUTY_REG, map(sin_data[2 * table_pos_ina], 0, 1000, 102, 921) << 4);
+    // REG_SET_BIT(LEDC_LSCH0_CONF1_REG, LEDC_DUTY_START_LSCH0);
 
-    // ledc_set_duty(MOTOR_LEFT_SPEED_MODE, MOTOR_LEFT_INA_CHANNEL, map(sin_data[2 * table_pos_ina], 0, 1000, 102, 921));
+    ledc_set_duty(MOTOR_LEFT_SPEED_MODE, MOTOR_LEFT_INA_CHANNEL, map(sin_data[2 * table_pos_ina], 0, 1000, 102, 921));
 
     if(table_pos_ina < (MICRO_STEP >> 2) * 3)
     {
@@ -241,10 +241,10 @@ static void step_left_start(void)
         table_pos_inb = 2 * (table_pos_ina - (MICRO_STEP >> 2) * 3);
     }
     // update duty, shift the duty 4 bits to the left due to ESP32 register format
-    REG_WRITE(LEDC_LSCH1_DUTY_REG, map(sin_data[table_pos_inb], 0, 1000, 102, 921) << 4);
-    REG_SET_BIT(LEDC_LSCH1_CONF1_REG, LEDC_DUTY_START_LSCH1);
+    // REG_WRITE(LEDC_LSCH1_DUTY_REG, map(sin_data[table_pos_inb], 0, 1000, 102, 921) << 4);
+    // REG_SET_BIT(LEDC_LSCH1_CONF1_REG, LEDC_DUTY_START_LSCH1);
 
-    // ledc_set_duty(MOTOR_LEFT_SPEED_MODE, MOTOR_LEFT_INB_CHANNEL, map(sin_data[table_pos_inb], 0, 1000, 102, 921));
+    ledc_set_duty(MOTOR_LEFT_SPEED_MODE, MOTOR_LEFT_INB_CHANNEL, map(sin_data[table_pos_inb], 0, 1000, 102, 921));
 
     REG_SET_BIT(LEDC_INT_ENA_REG, LEDC_LSTIMER0_OVF_INT_ENA);
 }
@@ -260,10 +260,10 @@ static void step_right_start(void)
     table_pos_ina = motion_data.motor_data[MOTOR_RIGHT].step_pos % MICRO_STEP;
     set_spwm_freq(MOTOR_RIGHT_TIME, DEFAULT_MIN_SPEED);
     // update duty, shift the duty 4 bits to the left due to ESP32 register format
-    REG_WRITE(LEDC_LSCH2_DUTY_REG, map(sin_data[2 * table_pos_ina], 0, 1000, 102, 921) << 4);
-    REG_SET_BIT(LEDC_LSCH2_CONF1_REG, LEDC_DUTY_START_LSCH2);
+    // REG_WRITE(LEDC_LSCH2_DUTY_REG, map(sin_data[2 * table_pos_ina], 0, 1000, 102, 921) << 4);
+    // REG_SET_BIT(LEDC_LSCH2_CONF1_REG, LEDC_DUTY_START_LSCH2);
 
-    // ledc_set_duty(MOTOR_RIGHT_SPEED_MODE, MOTOR_RIGHT_INA_CHANNEL, map(sin_data[2 * table_pos_ina], 0, 1000, 102, 921));
+    ledc_set_duty(MOTOR_RIGHT_SPEED_MODE, MOTOR_RIGHT_INA_CHANNEL, map(sin_data[2 * table_pos_ina], 0, 1000, 102, 921));
 
     if(table_pos_ina < (MICRO_STEP >> 2) * 3)
     {
@@ -274,10 +274,10 @@ static void step_right_start(void)
         table_pos_inb = 2 * (table_pos_ina - (MICRO_STEP >> 2) * 3);
     }
     // update duty, shift the duty 4 bits to the left due to ESP32 register format
-    REG_WRITE(LEDC_LSCH3_DUTY_REG, map(sin_data[table_pos_inb], 0, 1000, 102, 921) << 4);
-    REG_SET_BIT(LEDC_LSCH3_CONF1_REG, LEDC_DUTY_START_LSCH3);
+    // REG_WRITE(LEDC_LSCH3_DUTY_REG, map(sin_data[table_pos_inb], 0, 1000, 102, 921) << 4);
+    // REG_SET_BIT(LEDC_LSCH3_CONF1_REG, LEDC_DUTY_START_LSCH3);
 
-    // ledc_set_duty(MOTOR_RIGHT_SPEED_MODE, MOTOR_RIGHT_INB_CHANNEL, map(sin_data[table_pos_inb], 0, 1000, 102, 921));
+    ledc_set_duty(MOTOR_RIGHT_SPEED_MODE, MOTOR_RIGHT_INB_CHANNEL, map(sin_data[table_pos_inb], 0, 1000, 102, 921));
 
     REG_SET_BIT(LEDC_INT_ENA_REG, LEDC_LSTIMER1_OVF_INT_ENA);
 }

@@ -6,8 +6,8 @@
 #define MININUM_BATTERY_VOLTAGE      3.40f
 #define LOW_POWER_ALARM_VOLTAGE      3.55f
 
-#define POWER_PIN                    (39)
-#define SW_PIN                       (27)
+#define POWER_PIN                    (21)
+#define SW_PIN                       (48)
 
 void power_pin_init(void);
 bool get_power_pin_state(void);

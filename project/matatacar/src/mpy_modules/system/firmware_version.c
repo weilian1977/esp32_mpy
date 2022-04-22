@@ -19,7 +19,7 @@
 /********************************************************************
  DEFINE PUBLIC DATAS
  ********************************************************************/
-static char s_firmware_version[FIRMWARE_VERSION_LENGTH_MAX] = FIREFLY_VERSION;
+static char s_firmware_version[FIRMWARE_VERSION_LENGTH_MAX] = SOFT_VERSION;
 
 /********************************************************************
  DEFINE PUBLIC FUNCTIONS

@@ -3,7 +3,7 @@
 
 #include "esp_err.h"
 
-#define USB_DETECT_PIN     34
+#define USB_DETECT_PIN     47
 
 extern void usb_pin_init(void);
 extern void usb_status_update(void);

@@ -64,6 +64,9 @@
 #include "modnetwork.h"
 #include "mpthreadport.h"
 #include "speech_cn.h"
+#include "system_management.h"
+#include "power_management.h"
+#include "usb_detect.h"
 
 #if MICROPY_BLUETOOTH_NIMBLE
 #include "extmod/modbluetooth.h"
@@ -83,6 +86,8 @@
 #else
 #define MP_TASK_STACK_LIMIT_MARGIN (1024)
 #endif
+
+extern void ble_prph_main(void);
 
 int vprintf_null(const char *format, va_list ap) {
     // do nothing: this is used as a log target during raw repl mode
@@ -150,6 +155,7 @@ void mp_task(void *pvParameter) {
         mp_task_heap = malloc(mp_task_heap_size);
     }
 
+    // ble_prph_main();
 //soft_reset:
     // initialise the stack pointer for the main thread
     mp_stack_set_top((void *)sp);
@@ -173,16 +179,7 @@ void mp_task(void *pvParameter) {
         pyexec_file_if_exists("boot.py");
         if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL)
         {
-            int ret = pyexec_file_if_exists("main.py");
-            if (ret & PYEXEC_FORCED_EXIT)
-            {
-                goto soft_reset_exit;
-            }
-        }
-
-        if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL)
-        {
-            int ret = pyexec_file_if_exists("event_start.py");
+            int ret = pyexec_file_if_exists("system_call.py");
             if (ret & PYEXEC_FORCED_EXIT)
             {
                 goto soft_reset_exit;
@@ -256,6 +253,7 @@ void app_main(void) {
     // Create and transfer control to the MicroPython task.
     //xTaskCreatePinnedToCore(voice_read_task_c, "read_task", 4 * 1024, NULL, MP_TASK_PRIORITY, NULL, 0);
     xTaskCreatePinnedToCore(step_motor_task, "step_motor_task", STEP_MOTOR_TASK_STACK_SIZE / sizeof(StackType_t), NULL, STEP_MOTOR_TASK_PRIORITY, NULL, 0);
+    xTaskCreatePinnedToCore(system_management_task, "system_management_task", SYSTEM_MANAGEMENT_TASK_STACK_SIZE / sizeof(StackType_t), NULL, SYSTEM_MANAGEMENT_TASK_PRIORITY, NULL, 0);
     xTaskCreatePinnedToCore(mp_task, "mp_task", MP_TASK_STACK_SIZE / sizeof(StackType_t), NULL, MP_TASK_PRIORITY, &mp_main_task_handle, MP_TASK_COREID);
 }
 

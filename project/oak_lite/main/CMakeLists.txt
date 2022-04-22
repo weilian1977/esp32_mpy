@@ -114,8 +114,8 @@ set(MICROPY_SOURCE_PORT
     ${PROJECT_DIR}/src/mpy_modules/mt_mpy_light_sensor.c
     ${PROJECT_DIR}/src/mpy_modules/mt_mpy_light_sensor.c
     ${PROJECT_DIR}/src/mpy_modules/mt_mpy_ble.c
-    ${PROJECT_DIR}/mpy_modules/mod_sensor.c
-    ${PROJECT_DIR}/mpy_modules/modaudio.c
+    ${PROJECT_DIR}/src/mpy_modules/mod_sensor.c
+    ${PROJECT_DIR}/src/mpy_modules/modaudio.c
 )
 
 set(MICROPY_SOURCE_QSTR
@@ -218,7 +218,7 @@ idf_component_register(
         ${MICROPY_PORT_DIR}/src/audio/
         ${MICROPY_PORT_DIR}/src/system/
         ${MICROPY_PORT_DIR}/src/driver/
-        ${MICROPY_PORT_DIR}/src/driver/ble_prph
+        ${MICROPY_PORT_DIR}/src/driver/ble_prph/
         ${MICROPY_BOARD_DIR}
         ${CMAKE_BINARY_DIR}
         ${MICROPY_DIR}/py

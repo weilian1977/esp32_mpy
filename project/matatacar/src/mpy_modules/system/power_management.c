@@ -8,7 +8,7 @@
 #include "esp_err.h"
 #include "esp_log.h"
 
-static const char *TAG = "power management";
+// static const char *TAG = "power management";
 
 static void power_keep(bool keep_power)
 {

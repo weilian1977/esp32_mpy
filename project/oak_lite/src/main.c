@@ -176,16 +176,7 @@ void mp_task(void *pvParameter) {
         pyexec_file_if_exists("boot.py");
         if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL)
         {
-            int ret = pyexec_file_if_exists("main.py");
-            if (ret & PYEXEC_FORCED_EXIT)
-            {
-                goto soft_reset_exit;
-            }
-        }
-
-        if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL)
-        {
-            int ret = pyexec_file_if_exists("event_start.py");
+            int ret = pyexec_file_if_exists("system_call.py");
             if (ret & PYEXEC_FORCED_EXIT)
             {
                 goto soft_reset_exit;

@@ -4,8 +4,8 @@
 #include "esp_err.h"
 #include "driver/adc.h"
 
-#define BATTERY_CHECK_CHANNEL               (ADC1_CHANNEL_1)
-#define HARDWARE_VERSION_CHECK_CHANNEL      (ADC1_CHANNEL_0)
+#define BATTERY_CHECK_CHANNEL               (ADC1_CHANNEL_0)
+#define HARDWARE_VERSION_CHECK_CHANNEL      (ADC1_CHANNEL_1)
 #define DEFAULT_VREF               (1100) 
 #define BATTERY_VOLTAGE_DAMPING    ((180 * 1000.0f) / (100 + 180))
 
