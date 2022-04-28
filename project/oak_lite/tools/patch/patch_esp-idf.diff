@@ -1,15 +1,20 @@
-From 37f768cfbf6ec8857917afc2435dc33aa22448e4 Mon Sep 17 00:00:00 2001
-From: xutao <xutao@espressif.com>
-Date: Mon, 7 Mar 2022 18:12:56 +0800
-Subject: [PATCH] add task create API for allocated stack in
-
----
- components/freertos/include/freertos/task.h | 11 +++++
- components/freertos/tasks.c                 | 48 +++++++++++++++++++++
- 2 files changed, 59 insertions(+)
-
+diff --git a/components/esp32s3/Kconfig b/components/esp32s3/Kconfig
+index cfdebd2c5e..f9e2e1759c 100644
+--- a/components/esp32s3/Kconfig
++++ b/components/esp32s3/Kconfig
+@@ -173,6 +173,10 @@ menu "ESP32S3-Specific"
+     menu "SPI RAM config"
+         depends on ESP32S3_SPIRAM_SUPPORT
+ 
++        config SPIRAM_ALLOW_STACK_EXTERNAL_MEMORY
++            bool
++            default "y"
++
+         choice SPIRAM_MODE
+             prompt "Mode (QUAD/OCT) of SPI RAM chip in use"
+             default SPIRAM_MODE_QUAD
 diff --git a/components/freertos/include/freertos/task.h b/components/freertos/include/freertos/task.h
-index 73fa040526..6a5a7ad0e7 100644
+index 125a924d06..971ee9e15f 100644
 --- a/components/freertos/include/freertos/task.h
 +++ b/components/freertos/include/freertos/task.h
 @@ -351,6 +351,17 @@ typedef enum
@@ -31,10 +36,10 @@ index 73fa040526..6a5a7ad0e7 100644
   * Create a new task and add it to the list of tasks that are ready to run.
   *
 diff --git a/components/freertos/tasks.c b/components/freertos/tasks.c
-index 8035025480..26d6b441b0 100644
+index 24eb47b948..baa9967c82 100644
 --- a/components/freertos/tasks.c
 +++ b/components/freertos/tasks.c
-@@ -981,6 +981,54 @@ BaseType_t xTaskCreateRestrictedStaticPinnedToCore(TaskFunction_t pxTaskCode,
+@@ -911,6 +911,54 @@ void taskYIELD_OTHER_CORE( BaseType_t xCoreID, UBaseType_t uxPriority )
  #endif /* configSUPPORT_DYNAMIC_ALLOCATION */
  /*-----------------------------------------------------------*/
  
@@ -89,6 +94,3 @@ index 8035025480..26d6b441b0 100644
  static void prvInitialiseNewTask( TaskFunction_t pxTaskCode,
                                    const char * const pcName, /*lint !e971 Unqualified char types are allowed for strings and single characters only. */
                                    const uint32_t ulStackDepth,
--- 
-2.17.1
-
