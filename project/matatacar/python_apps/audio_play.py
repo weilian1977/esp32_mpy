@@ -215,10 +215,10 @@ def get_tone_offset(tone_id):
     return note_offset.get(tone_id, 0)
 
 def dir_find(path, name):
-    files = music_dir_table[path]
+    files = music_dir_table.get(path, [])
     full_path = '%s%s' %('/sdcard/music/', path)
     name = str(name)
-    print("%s%s" %(full_path, name))
+    print("path:%s, file:%s" %(full_path, name))
     for f in files:
         if (f.find(name) >= 0):
             file_full_path = '%s%c%s' %(full_path, '/', f)
@@ -237,25 +237,24 @@ def dir_find(path, name):
 def play_melody(name, sync = True, play_time = 0):
     global volume_set
     path = dir_find('melody', name)
-    print("path:%s")
     play(path, volume_set, sync, play_time)
 
-def play_move(self, name, sync = True, play_time = 0):
+def play_move(name, sync = True, play_time = 0):
     global volume_set
     path = dir_find('move', name)
     play(path, volume_set, sync, play_time)
 
-def play_music(self, name, sync = True, play_time = 0):
+def play_music(name, sync = True, play_time = 0):
     global volume_set
     path = dir_find('music', name)
     play(path, volume_set, sync, play_time)
 
-def play_dance(self, name, sync = True, play_time = 0):
+def play_dance(name, sync = True, play_time = 0):
     global volume_set
     path = dir_find('dance', name)
     play(path, volume_set, sync, play_time)
 
-def play_system(self, name, sync = True, play_time = 0):
+def play_system(name, sync = True, play_time = 0):
     global volume_set
     path = dir_find('system', name)
     play(path, volume_set, sync, play_time)
