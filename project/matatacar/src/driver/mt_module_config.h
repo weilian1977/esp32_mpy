@@ -12,7 +12,9 @@ typedef int32_t mt_module_status_t;
 
 #define MODULE_DRIVER_ENABLE                     1
 #if MODULE_DRIVER_ENABLE
+    #define MODULE_EVENT_ENABLE                  1
     #define MODULE_BUTTON_ENABLE                 1
+    #define MODULE_LEDS_ENABLE                   1
     // #define MODULE_GYRO_ENABLE                   1
     // #define MODULE_LEDMATRIX_ENABLE              1
     // #define MODULE_TOUCHPAD_ENABLE               1
@@ -20,20 +22,7 @@ typedef int32_t mt_module_status_t;
     // #define MODULE_PIN_ENABLE                    1
     // #define MODULE_POWER_BOARD_CHECK_ENABLE      1
     // #define MODULE_CLOCK_ENABLE                  1
+    #define MODULE_MOTION_ENABLE                 1
+    #define MODULE_SENSOR_ENABLE                 1
 #endif
-
-/*
- * event mechanism
- */
-#define MODULE_BUTTON_ENABLE                 1
-#define MODULE_EVENT_ENABLE                  1
-// #define MODULE_GYRO_ENABLE                   1
-// #define MODULE_MOTION_ENABLE                 1
-/* module slect */
-/*
- * driver
- */
-//#define MODULE_LEDS_ENABLE                     1
-#define MODULE_MOTION_ENABLE                 1
-
 #endif

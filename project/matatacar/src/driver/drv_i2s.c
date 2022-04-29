@@ -41,7 +41,7 @@ esp_err_t i2s0_init(void)
     }
     SET_PERI_REG_BITS(PIN_CTRL, CLK_OUT1, 0, CLK_OUT1_S);
     PIN_FUNC_SELECT(PERIPHS_IO_MUX_GPIO0_U, 1);             //CHANGE
-    ret =i2s_set_pin(I2S_NUM_0, &my_i2s_pin);
+    ret = i2s_set_pin(I2S_NUM_0, &my_i2s_pin);
     return ret;
 }
 
@@ -63,18 +63,6 @@ esp_err_t i2s0_shdn_enable(uint8_t en)
 {
     gpio_pad_select_gpio(IIS_SHDN);
     gpio_set_direction(IIS_SHDN, GPIO_MODE_OUTPUT);
-    // if(en)
-    // {
-    //     gpio_set_level(IIS_SHDN, 1);
-    //     mp_hal_delay_us(5);
-    //     gpio_set_level(IIS_SHDN, 0);
-    //     mp_hal_delay_us(5);
-    //     gpio_set_level(IIS_SHDN, 1);
-    // }
-    // else
-    // {
-    //     gpio_set_level(IIS_SHDN, en);
-    // }
     gpio_set_level(IIS_SHDN, en);
     return ESP_OK;
 }
@@ -116,8 +104,8 @@ esp_err_t i2s0_output_plays(short * data, int length)//length为char字节长度
     int half_bag = length%512;
     int bat_count = length/512;
     i2s0_shdn_enable(1);
-    int id=i2s0_acquire_play();
-    for(i=0; i<bat_count; i++)
+    int id = i2s0_acquire_play();
+    for(i = 0; i < bat_count; i++)
     {
         int ret=i2s0_output_play(id,&data[i*512], 512);
         if(ret==AUDIO_BREAK)

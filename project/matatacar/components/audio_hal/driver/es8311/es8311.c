@@ -280,17 +280,13 @@ static void es8311_suspend(void)
 */
 void es8311_pa_power(bool enable)
 {
-    gpio_config_t  io_conf;
-    memset(&io_conf, 0, sizeof(io_conf));
-    io_conf.mode = GPIO_MODE_OUTPUT;
-    io_conf.pin_bit_mask = BIT64(get_pa_enable_gpio());
-    io_conf.pull_down_en = 0;
-    io_conf.pull_up_en = 0;
-    gpio_config(&io_conf);
+    int8_t pa_power_gpio = get_pa_enable_gpio();
+    gpio_reset_pin(pa_power_gpio);
+    gpio_set_direction(pa_power_gpio, GPIO_MODE_OUTPUT);
     if (enable) {
-        gpio_set_level(get_pa_enable_gpio(), 1);
+        gpio_set_level(pa_power_gpio, 1);
     } else {
-        gpio_set_level(get_pa_enable_gpio(), 0);
+        gpio_set_level(pa_power_gpio, 0);
     }
 }
 
@@ -481,7 +477,7 @@ esp_err_t es8311_codec_init(audio_hal_codec_config_t *codec_cfg)
     ret |= es8311_write_reg(ES8311_ADC_REG1B, 0x0A);
     ret |= es8311_write_reg(ES8311_ADC_REG1C, 0x6A);
 
-    //es8311_pa_power(true);
+    es8311_pa_power(true);
     return ESP_OK;
 }
 

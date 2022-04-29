@@ -41,7 +41,7 @@ all:
 		$(BUILD)/firmware.bin \
 		$(BUILD)/${BOARD}..uf2
 
-$(BUILD)/bootloader/bootloader.bin $(BUILD)/partition_table/partition-table.bin $(BUILD)/micropython.bin: FORCE
+$(BUILD)/bootloader/bootloader.bin $(BUILD)/partition_table/partition-table.bin $(BUILD)/${BOARD}.bin: FORCE
 
 clean:
 	idf.py $(IDFPY_FLAGS) fullclean
@@ -53,10 +53,10 @@ erase:
 	idf.py $(IDFPY_FLAGS) -p $(PORT) -b $(BAUD) erase_flash
 
 make_fatfs:
-	./tools/mkfatfs/mkfatfs_linux_x86 -c ./tools/vfs/ -s 0x450000 -t fatfs ./tools/vfs.bin
+	./tools/mkfatfs/mkfatfs_linux_x86 -c ./tools/fatdisk/vfsroot/ -s 0x700000 -t fatfs ./tools/fatdisk/vfs.bin
 
 upload_fatfs:
-	./tools/esptool_py/esptool/esptool.py --before default_reset --after hard_reset -p $(PORT) -b $(BAUD) write_flash 0x250000 ./tools/vfs.bin
+	./tools/esptool_py/esptool/esptool.py --before default_reset --after hard_reset -p $(PORT) -b $(BAUD) write_flash 0x260000 ./tools/fatdisk/vfs.bin
 
 submodules:
 	git submodule update --init $(addprefix ../../,$(GIT_SUBMODULES))

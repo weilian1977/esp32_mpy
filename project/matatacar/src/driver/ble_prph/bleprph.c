@@ -30,7 +30,7 @@
 #include "services/gap/ble_svc_gap.h"
 #include "bleprph.h"
 #include "drv_ble.h"
-//#include "indicator_led.h"
+#include "indicator_led.h"
 #include "esp_bt.h"
 #define BLE_CONN_INTERVAL         (50000)    /** unit: us */
 #define BLE_CONN_INTERVAL_MIN     (20000)    /** unit: us */
@@ -187,8 +187,6 @@ bleprph_gap_event(struct ble_gap_event *event, void *arg)
             g_conn_handle = event->connect.conn_handle;
             ble_set_connect_state(BLE_STATE_CONNECT);
             ble_irq_event(IRQ_TYPE_CONNECT);
-            //indicator_led_set(LED_BLUE_ON);
-            ESP_LOGI(tag, "connection");
         }
         MODLOG_DFLT(INFO, "\n");
 
@@ -206,7 +204,6 @@ bleprph_gap_event(struct ble_gap_event *event, void *arg)
         ble_set_connect_state(BLE_STATE_DISCONNECT);
         ble_set_protocol_version(MSG_PROTOCOL_V1);
         ble_irq_event(IRQ_TYPE_DISCONNECT);
-        //indicator_led_set(LED_BLUE_OFF);
 
         /* Connection terminated; resume advertising. */
         bleprph_advertise();
@@ -289,14 +286,7 @@ bleprph_gap_event(struct ble_gap_event *event, void *arg)
             ESP_LOGI(tag, "Accept or reject the passkey through console in this format -> key Y or key N");
             pkey.action = event->passkey.params.action;
             pkey.numcmp_accept = 0;
-#if 0
-            if (scli_receive_key(&key)) {
-                pkey.numcmp_accept = key;
-            } else {
-                pkey.numcmp_accept = 0;
-                ESP_LOGE(tag, "Timeout! Rejecting the key");
-            }
-#endif
+
             rc = ble_sm_inject_io(event->passkey.conn_handle, &pkey);
             ESP_LOGI(tag, "ble_sm_inject_io result: %d\n", rc);
         } else if (event->passkey.params.action == BLE_SM_IOACT_OOB) {
@@ -311,14 +301,6 @@ bleprph_gap_event(struct ble_gap_event *event, void *arg)
             ESP_LOGI(tag, "Enter the passkey through console in this format-> key 123456");
             pkey.action = event->passkey.params.action;
             pkey.passkey = 0;
-#if 0
-            if (scli_receive_key(&key)) {
-                pkey.passkey = key;
-            } else {
-                pkey.passkey = 0;
-                ESP_LOGE(tag, "Timeout! Passing 0 as the key");
-            }
-#endif
             rc = ble_sm_inject_io(event->passkey.conn_handle, &pkey);
             ESP_LOGI(tag, "ble_sm_inject_io result: %d\n", rc);
         }
@@ -403,10 +385,7 @@ void ble_para_update(uint16_t latency, uint16_t interval_min, uint16_t interval_
 
 void ble_prph_main(void)
 {
-
-    ESP_LOGI(tag, "ble_set_connect_state");
     int rc;
-
 
     ESP_ERROR_CHECK(esp_nimble_hci_and_controller_init());
     nimble_port_init();
@@ -443,8 +422,7 @@ void ble_prph_main(void)
 
     /* Set the default device name. */
     //rc = ble_svc_gap_device_name_set("nimble-bleprph");
-    rc = ble_svc_gap_device_name_set("MatataCar");
-    //rc = ble_svc_gap_device_name_set("MatataBot");
+    rc = ble_svc_gap_device_name_set("MatataBot");
     assert(rc == 0);
 
     /* XXX Need to have template for store */
@@ -452,13 +430,5 @@ void ble_prph_main(void)
 
     //nimble_port_freertos_init(bleprph_background_task);
     nimble_port_freertos_init(bleprph_host_task);
-
-#if 0
-    /* Initialize command line interface to accept input from user */
-    rc = scli_init();
-    if (rc != ESP_OK) {
-        ESP_LOGE(tag, "scli_init() failed");
-    }
-#endif
 }
 

@@ -7,7 +7,10 @@ def start(callback):
     event_manager.event_register(event_o.EVE_SYSTEM_LAUNCH, event_o.TRIGGER_ALWAYS_WITH_NO_PARAMETER, callback, None)
 
 def button_pressed(callback):
-    event_manager.event_register(event_o.EVENT_BUTTON, event_o.TRIGGER_ONCE_BY_VALUE_TRUE, callback, None)
+    event_manager.event_register(event_o.EVENT_BUTTON_PRESSED, event_o.TRIGGER_ONCE_BY_VALUE_TRUE, callback, None)
+
+def button_released(callback):
+    event_manager.event_register(event_o.EVENT_BUTTON_RELEASED, event_o.TRIGGER_ONCE_BY_VALUE_TRUE, callback, None)
 
 def tilted_left(callback):
     print("event_register left")
@@ -17,10 +20,10 @@ def tilted_right(callback):
     print("event_register right")
     event_manager.event_register(event_o.EVENT_TILT_RIGHT, event_o.TRIGGER_ONCE_BY_VALUE_TRUE, callback, None)
 
-def arrow_down(callback):
+def tilted_forward(callback):
     print("event_register down")
     event_manager.event_register(event_o.EVENT_TILT_FORWARD, event_o.TRIGGER_ONCE_BY_VALUE_TRUE, callback, None)
 
-def arrow_up(callback):
+def tilted_backward(callback):
     print("event_register up")
     event_manager.event_register(event_o.EVENT_TILT_BACKWARD, event_o.TRIGGER_ONCE_BY_VALUE_TRUE, callback, None)

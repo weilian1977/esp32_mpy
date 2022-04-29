@@ -7,13 +7,19 @@
 #include "soc/ledc_reg.h"
 
 // GPIO configure
+// #define MOTOR_LEFT_SLEEP_PIN     (21)
+// #define MOTOR_RIGHT_SLEEP_PIN    (38)
+// #define MOTOR_LEFT_INA_PIN       (12)
+// #define MOTOR_LEFT_INB_PIN       (13)
+// #define MOTOR_RIGHT_INA_PIN      (14)
+// #define MOTOR_RIGHT_INB_PIN      (15)
+
 #define MOTOR_LEFT_SLEEP_PIN     (38)
-#define MOTOR_RIGHT_SLEEP_PIN    (38)
-#define MOTOR_LEFT_INA_PIN       (12)
-#define MOTOR_LEFT_INB_PIN       (13)
-#define MOTOR_RIGHT_INA_PIN      (14)
-#define MOTOR_RIGHT_INB_PIN      (15)
-#define SLEEP_PIN_SEL            ((1ULL << MOTOR_LEFT_SLEEP_PIN) | (1ULL << MOTOR_RIGHT_SLEEP_PIN))
+#define MOTOR_RIGHT_SLEEP_PIN    (21)
+#define MOTOR_LEFT_INA_PIN       (14)
+#define MOTOR_LEFT_INB_PIN       (15)
+#define MOTOR_RIGHT_INA_PIN      (12)
+#define MOTOR_RIGHT_INB_PIN      (13)
 
 #define MOTOR_LEFT_FAULT_PIN      (-1)
 #define MOTOR_RIGHT_FAULT_PIN     (-1)

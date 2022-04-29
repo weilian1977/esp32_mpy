@@ -4,7 +4,7 @@
 #include "freertos/task.h"
 #include "driver/ledc.h"
 #include "driver/gpio.h"
-//#include "system_management.h"
+#include "system_management.h"
 #include "drv_step_motor.h"
 #include "esp_err.h"
 #include "esp_log.h"
@@ -73,20 +73,11 @@ motion_data_type motion_data = {0};
 int32_t motion_max_speed = 700 * STEP_SUBDIVISION;
 
 static void sleep_pin_init(void)
-{ 
-    gpio_config_t io_conf;
-    //disable interrupt
-    io_conf.intr_type = GPIO_PIN_INTR_DISABLE;
-    //set as output mode
-    io_conf.mode = GPIO_MODE_OUTPUT;
-    //bit mask of the pins
-    io_conf.pin_bit_mask = SLEEP_PIN_SEL;
-    //disable pull-down mode
-    io_conf.pull_down_en = 0;
-    //disable pull-up mode
-    io_conf.pull_up_en = 0;
-    //configure GPIO with the given settings
-    gpio_config(&io_conf);
+{
+    gpio_reset_pin(MOTOR_LEFT_SLEEP_PIN);
+    gpio_reset_pin(MOTOR_RIGHT_SLEEP_PIN);
+    gpio_set_direction(MOTOR_LEFT_SLEEP_PIN, GPIO_MODE_OUTPUT);
+    gpio_set_direction(MOTOR_RIGHT_SLEEP_PIN, GPIO_MODE_OUTPUT);
 }
 
 static void set_spwm_freq(ledc_timer_t timer_num, uint32_t freq_hz)
@@ -205,7 +196,7 @@ static long map(long x, long in_min, long in_max, long out_min, long out_max)
 
 static long distance_to_go(motor_configure_type motor)
 {
-    if(motor < MOTOR_MAX)
+    if((motor >= MOTOR_LEFT) && (motor < MOTOR_MAX))
     {
         return motion_data.motor_data[motor].target_pos - motion_data.motor_data[motor].current_pos;
     }
@@ -828,8 +819,7 @@ void motor_run(void)
     else
     {
         previous_motor_left_pos = 0;
-        //vTaskDelay(SYSTEM_POLLING_TIME * 2 / portTICK_PERIOD_MS);
-        vTaskDelay(10 * 2 / portTICK_PERIOD_MS);
+        vTaskDelay(SYSTEM_POLLING_TIME * 2 / portTICK_PERIOD_MS);
     }
 
     if(motion_data.motor_data[MOTOR_RIGHT].motion_status != STOP_MOVE)
@@ -857,8 +847,7 @@ void motor_run(void)
     else
     {
         previous_motor_right_pos = 0;
-        //vTaskDelay(SYSTEM_POLLING_TIME * 2 / portTICK_PERIOD_MS);
-        vTaskDelay(10 * 2 / portTICK_PERIOD_MS);
+        vTaskDelay(SYSTEM_POLLING_TIME * 2 / portTICK_PERIOD_MS);
     }
 }
 

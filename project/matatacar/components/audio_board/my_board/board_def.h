@@ -26,7 +26,7 @@
 #define _AUDIO_BOARD_DEFINITION_H_
 
 #define ES8311_MCLK_SOURCE          (1)
-#define PA_ENABLE_GPIO              -1
+#define PA_ENABLE_GPIO              39
 
 extern audio_hal_func_t AUDIO_CODEC_ES8311_DEFAULT_HANDLE;
 

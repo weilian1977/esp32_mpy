@@ -9,7 +9,7 @@
 #define IIS_DSIN                    39
 #define IIS_DOUT                    38
 
-#define IIS_SHDN                    16
+#define IIS_SHDN                    39
 
 #define AUDIO_OK                     0
 #define AUDIO_FAIL                   1

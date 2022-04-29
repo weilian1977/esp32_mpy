@@ -7,7 +7,7 @@
 #include "mphalport.h"
 #include "drv_ble.h"
 
-//#include "message.h"
+#include "message.h"
 #include "extmod/vfs.h"
 #include "extmod/vfs_fat.h"
 
@@ -40,7 +40,7 @@ void ble_ringbuf_init(void)
 
 void ble_init(void)
 {
-    ble_status.protocol = MSG_PROTOCOL_V2;
+    ble_status.protocol = MSG_PROTOCOL_V1;
     ble_status.state = BLE_STATE_DISCONNECT;
     ble_status.heart_enable = true;
     ble_ringbuf_init();
@@ -68,11 +68,6 @@ void ble_protocol_v1_msg_rx(const uint8_t *pdata, uint32_t length)
     }
 }
 
-
-
-
-
-/*
 void ble_protocol_v2_msg_rx(const uint8_t *pdata, uint32_t length)
 {
     
@@ -82,9 +77,7 @@ void ble_protocol_v2_msg_rx(const uint8_t *pdata, uint32_t length)
         && (pdata[2] == CMD_CANCEL) && (pdata[3] == 0x99) && (pdata[4] == 0x50))
     {
         ble_ringbuf_init();
-        //message_move_speed_both(0, 0);
         long_msg_recive_flag = false;
-        ///message_normal_response(MESSAGE_RX_OK);
         return;
     }
         
@@ -103,14 +96,13 @@ void ble_protocol_v2_msg_rx(const uint8_t *pdata, uint32_t length)
                 translation_flag = false;
             }
         }
-
     }
     else
     {
         ble_ringbuf_init();
     }
 }
-*/
+
 uint32_t ble_get_msg_len(void)
 {
     return ringbuf_avail(&ble_ringbuf);
@@ -164,7 +156,6 @@ void ble_irq_func_register(ble_irq_func func)
 
 void ble_set_connect_state(uint32_t connect_state)
 {
-    ESP_LOGI(tag, "ble_set_connect_state");
     ble_status.state = connect_state;
 }
 
@@ -238,7 +229,6 @@ int32_t ble_rx_data(uint8_t *buffer, uint32_t len)
     {
         ble_ringbuf_init();
     }
-
     ble_irq_event(IRQ_TYPE_RECIVE);
 
     return ESP_OK;

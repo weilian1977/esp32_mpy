@@ -1,16 +1,21 @@
 import time
 import matatalab
 import _thread
-import audio
 import neopixel
+from communication import communication_process
+from communication import ble_state_monitor
+import communication
+import drv_system
+import nvs
 
 KEY_UP = 0
 KEY_DOWN = 1
 POWER_OFF_TIME = 1000
 
 THREAD_MAIN_SIZE = 8 * 1024
-motion = matatalab.motion()
+THREAD_COMMUNICATION_SIZE = 8 * 1024
 
+motion = matatalab.motion()
 
 power_off_count = 0
 low_power_count = 0
@@ -34,7 +39,7 @@ def power_monitor():
         if (time.ticks_diff(time.ticks_ms(), power_start_time) > POWER_OFF_TIME):
             # 长按1.2s开关键关机
             print("long pressed power button, shutdown")
-            matatalab.power_off()
+            drv_system.power_off()
             time.sleep(10)
 
     battery_level = matatalab.get_battery_voltage()
@@ -44,7 +49,7 @@ def power_monitor():
         power_off_count = power_off_count + 1
         if(power_off_count > 100):
             print("shutdown because of low battery")
-            matatalab.power_off()
+            drv_system.power_off()
             time.sleep(10)
 
     #电压低于 LOW_POWER_VOLTAGE, 低电量告警, 两分钟后关机
@@ -58,7 +63,7 @@ def power_monitor():
             #matatalab.indicator_led(matatalab.SINGLE_FAST_FLASH)
             if(low_power_count > 10000):
                 print("Low voltage alarm, shutdown about five minutes")
-                matatalab.power_off()
+                drv_system.power_off()
                 time.sleep(10)
 
     #电压正常时，清空异常计数
@@ -67,13 +72,15 @@ def power_monitor():
         low_power_count = 0
         if(low_power_flag == True):
             low_power_flag = False
-            # if(communication.ble_state == communication.BLE_LINK):
-            #     matatalab.indicator_led(matatalab.ON)
-            # else:
-            #     matatalab.indicator_led(matatalab.SINGLE_FLASH)
+            if(communication.ble_state == communication.BLE_LINK):
+                matatalab.indicator_led(matatalab.ON)
+            else:
+                matatalab.indicator_led(matatalab.SINGLE_FLASH)
 
 def main():
+    nvs.init_calibration_value()
     while True:
+        ble_state_monitor()
         power_monitor()
         time.sleep(0.02)
 
@@ -84,6 +91,9 @@ def start():
         execfile("/main.py")
     except:
         print("no user code, use default main.py")
+        _thread.stack_size(THREAD_COMMUNICATION_SIZE)
+        _thread.start_new_thread(communication_process, ())
+        print("communication_process start\r\n")
 
 if __name__ == '__main__':
     _thread.stack_size(THREAD_MAIN_SIZE)

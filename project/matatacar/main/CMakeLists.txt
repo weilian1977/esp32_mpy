@@ -85,16 +85,26 @@ set(MICROPY_SOURCE_PORT
     ${PROJECT_DIR}/src/adapter/machine_sdcard.c
     ${PROJECT_DIR}/src/driver/drv_i2c.c
     ${PROJECT_DIR}/src/driver/drv_i2s.c
+    ${PROJECT_DIR}/src/driver/drv_nvs.c
     ${PROJECT_DIR}/src/driver/vfs_stream.c
     ${PROJECT_DIR}/src/driver/mt_esp32_button.c
     ${PROJECT_DIR}/src/driver/drv_step_motor.c
     ${PROJECT_DIR}/src/driver/mt_event_mechanism.c
+    ${PROJECT_DIR}/src/driver/drv_light_sensor.c
+    ${PROJECT_DIR}/src/driver/drv_infrared_tube.c
+    ${PROJECT_DIR}/src/driver/drv_aw20144.c
     ${PROJECT_DIR}/src/driver/driver_update.c
     ${PROJECT_DIR}/src/driver/drv_ble.c
     ${PROJECT_DIR}/src/driver/ble_prph/bleprph.c
     ${PROJECT_DIR}/src/driver/ble_prph/gatt_svr.c
     ${PROJECT_DIR}/src/driver/ble_prph/misc.c
     #${PROJECT_DIR}/src/driver/ble_prph/scli.c
+    ${PROJECT_DIR}/src/driver/system/battery_check.c
+    ${PROJECT_DIR}/src/driver/system/firmware_version.c
+    ${PROJECT_DIR}/src/driver/system/indicator_led.c
+    ${PROJECT_DIR}/src/driver/system/power_management.c
+    ${PROJECT_DIR}/src/driver/system/system_management.c
+    ${PROJECT_DIR}/src/driver/system/usb_detect.c
     ${PROJECT_DIR}/src/audio/audio_player.c
     ${PROJECT_DIR}/src/audio/audio_recorder.c
     ${PROJECT_DIR}/src/audio/speech_cn.c
@@ -103,13 +113,9 @@ set(MICROPY_SOURCE_PORT
     ${PROJECT_DIR}/src/mpy_modules/mt_mpy_button.c
     ${PROJECT_DIR}/src/mpy_modules/mt_mpy_event.c
     ${PROJECT_DIR}/src/mpy_modules/mt_mpy_ble.c
+    ${PROJECT_DIR}/src/mpy_modules/mpy_leds.c
     ${PROJECT_DIR}/src/mpy_modules/motion/mpy_motion.c
-    ${PROJECT_DIR}/src/mpy_modules/system/battery_check.c
-    ${PROJECT_DIR}/src/mpy_modules/system/firmware_version.c
-    ${PROJECT_DIR}/src/mpy_modules/system/indicator_led.c
-    ${PROJECT_DIR}/src/mpy_modules/system/power_management.c
-    ${PROJECT_DIR}/src/mpy_modules/system/system_management.c
-    ${PROJECT_DIR}/src/mpy_modules/system/usb_detect.c
+    ${PROJECT_DIR}/src/mpy_modules/sensor/mpy_sensor.c
     ${PROJECT_DIR}/src/mpy_modules/modaudio.c
 )
 
@@ -211,9 +217,10 @@ idf_component_register(
         ${MICROPY_PORT_DIR}/src/adapter/
         ${MICROPY_PORT_DIR}/src/audio/
         ${MICROPY_PORT_DIR}/src/driver/
-        ${MICROPY_PORT_DIR}/src/mpy_modules/motion/
-        ${MICROPY_PORT_DIR}/src/mpy_modules/system/
         ${MICROPY_PORT_DIR}/src/driver/ble_prph/
+        ${MICROPY_PORT_DIR}/src/driver/system/
+        ${MICROPY_PORT_DIR}/src/mpy_modules/motion/
+        ${MICROPY_PORT_DIR}/src/mpy_modules/sensor/
         ${MICROPY_BOARD_DIR}
         ${CMAKE_BINARY_DIR}
         ${MICROPY_DIR}/py

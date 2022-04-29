@@ -116,7 +116,6 @@ STATIC void audio_player_init(audio_player_obj_t *self)
     i2s_stream_writer = i2s_stream_init(&i2s_writer);
     mp3_decoder_cfg_t mp3_cfg = DEFAULT_MP3_DECODER_CONFIG();
     mp3_cfg.task_core = 0;
-    
     mp3_decoder = mp3_decoder_init(&mp3_cfg);
     // sam stream
     sam_stream_cfg_t sam_cfg = SAM_STREAM_CFG_DEFAULT();   
@@ -157,7 +156,6 @@ STATIC void audio_player_init(audio_player_obj_t *self)
     audio_event_iface_cfg_t evt_cfg = AUDIO_EVENT_IFACE_DEFAULT_CFG();
     evt = audio_event_iface_init(&evt_cfg);
     audio_event_iface_set_listener(esp_periph_set_get_event_iface(set), evt);
-
 }
 STATIC mp_obj_t audio_player_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args)
 {
@@ -210,17 +208,16 @@ void play_start(const char *uri)
         audio_element_set_uri(zh_hans_stream_reader, path);
         sonic_set_pitch_and_speed_info(sonic_el, sonic_pitch, sonic_speed);
     }
-    //i2s0_shdn_enable(0);
+    i2s0_shdn_enable(0);
     if(esp_audio_player_rate_change)
     {
-        
         i2s_stream_set_clk(i2s_stream_writer, cur_rates, 16, 1);
         esp_audio_player_rate_change = false;
         get_music_info_flag = false;
     }
 
     audio_pipeline_set_listener(pipeline, evt);
-    //i2s0_shdn_enable(1);
+    i2s0_shdn_enable(1);
     esp_err_t ret = audio_pipeline_run(pipeline);
     if(get_music_info_flag)
     {
@@ -246,8 +243,6 @@ void play_start(const char *uri)
     {
         mp_hal_delay_ms(300);
     }
-
-    //AUDIO_MEM_SHOW("PRINT_MEM_RUN");
     ESP_LOGW(TAG, "audio_pipeline_run = %d\n", ret);
 }
 STATIC void play_stop(void)
@@ -260,7 +255,7 @@ STATIC void play_stop(void)
         ret = audio_pipeline_unlink(pipeline);
         ESP_LOGW(TAG, "audio_play_stop");
         i2s_stream_set_clk(i2s_stream_writer, 48000, 32, 2);
-        //i2s0_shdn_enable(0);
+        i2s0_shdn_enable(0);
         esp_audio_player_running = false;
     }
 }
@@ -294,7 +289,6 @@ STATIC void play_wait()
 
 STATIC mp_obj_t audio_player_play_helper(audio_player_obj_t *self, mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args)
 {
-    
     enum
     {
         ARG_uri,
@@ -324,7 +318,6 @@ STATIC mp_obj_t audio_player_play_helper(audio_player_obj_t *self, mp_uint_t n_a
     if(n_args == 4)
     {
         play_time = args[ARG_time].u_int;
-
     }
 
     if (args[ARG_uri].u_obj != mp_const_none)
@@ -335,7 +328,7 @@ STATIC mp_obj_t audio_player_play_helper(audio_player_obj_t *self, mp_uint_t n_a
         int pos = args[ARG_pos].u_int;
         ESP_LOGI(TAG, "play readly url = [%s], sync = %d\n", path, (int)args[ARG_sync].u_bool);
 
-        file_path =  strstr(path, "/")+1;
+        file_path =  strstr(path, "/") + 1;
         mp_vfs_mount_t *vfs = mp_vfs_lookup_path(file_path, &path_out);
         if (vfs == MP_VFS_NONE || vfs == MP_VFS_ROOT) {
             ESP_LOGE(TAG, "file not exist!\n");
@@ -465,7 +458,6 @@ STATIC mp_obj_t audio_player_set_mouth_throat(mp_obj_t self_in, mp_obj_t mouth,m
     int throat_in = mp_obj_get_int(throat);
     SetMouth(mouth_in);
     SetThroat(throat_in);
-    //SetMouthThroat(mouth_in,throat_in);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(audio_player_set_mouth_throat_obj, audio_player_set_mouth_throat);
