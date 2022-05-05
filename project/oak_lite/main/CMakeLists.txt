@@ -99,7 +99,7 @@ set(MICROPY_SOURCE_PORT
     ${PROJECT_DIR}/src/driver/ble_prph/misc.c
     #${PROJECT_DIR}/src/driver/ble_prph/scli.c
     ${PROJECT_DIR}/src/audio/audio_player.c
-    ${PROJECT_DIR}/src/audio/audio_recorder.c
+    ${PROJECT_DIR}/src/audio/audio_record.c
     ${PROJECT_DIR}/src/audio/speech_cn.c
     ${PROJECT_DIR}/src/audio/audio_tone_uri.c
     ${PROJECT_DIR}/src/system/battery_check.c

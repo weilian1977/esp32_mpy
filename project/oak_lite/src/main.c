@@ -64,6 +64,8 @@
 #include "modnetwork.h"
 #include "mpthreadport.h"
 #include "speech_cn.h"
+#include "audio_player.h"
+#include "audio_record.h"
 #include "system_management.h"
 
 #if MICROPY_BLUETOOTH_NIMBLE
@@ -263,6 +265,8 @@ void app_main(void) {
     mt_eve_init_t();
     driver_update_task_init();
     speech_cn_init();
+    audio_play_init();
+    audio_recorder_init();
     // Create and transfer control to the MicroPython task.
     //xTaskCreatePinnedToCore(voice_read_task_c, "read_task", 4 * 1024, NULL, MP_TASK_PRIORITY, NULL, 0);
     xTaskCreatePinnedToCore(mp_task, "mp_task", MP_TASK_STACK_SIZE / sizeof(StackType_t), NULL, MP_TASK_PRIORITY, &mp_main_task_handle, MP_TASK_COREID);
