@@ -74,6 +74,7 @@
 
 #include "driver_update.h"
 #include "mt_event_mechanism.h"
+#include "mt_module_config.h"
 
 // MicroPython runs as a task under FreeRTOS
 #define MP_TASK_PRIORITY        (ESP_TASK_PRIO_MIN + 1)
@@ -173,33 +174,22 @@ void mp_task(void *pvParameter) {
         machine_i2s_init0();
         #endif
 
+        /* event system deinit */
+        #if  MODULE_EVENT_ENABLE
+        mt_eve_init_t();
+        #endif /* MODULE_EVENT_ENABLE */
+
         // run boot-up scripts
         pyexec_frozen_module("_boot.py");
         pyexec_file_if_exists("boot.py");
         if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL)
         {
-            int ret = pyexec_file_if_exists("main.py");
+            int ret = pyexec_file_if_exists("system_call.py");
             if (ret & PYEXEC_FORCED_EXIT)
             {
                 goto soft_reset_exit;
             }
         }
-        if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL)
-        {
-            int ret = pyexec_file_if_exists("event_start.py");
-            if (ret & PYEXEC_FORCED_EXIT)
-            {
-                goto soft_reset_exit;
-            }
-        }
-        // if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL)
-        // {
-        //     int ret = pyexec_file_if_exists("system_call.py");
-        //     if (ret & PYEXEC_FORCED_EXIT)
-        //     {
-        //         goto soft_reset_exit;
-        //     }
-        // }
 
         for (;;)
         {
@@ -233,6 +223,11 @@ void mp_task(void *pvParameter) {
         mp_thread_deinit();
         #endif
 
+        /* event system deinit */
+        #if  MODULE_EVENT_ENABLE
+        mt_eve_deinit_t();
+        #endif /* MODULE_EVENT_ENABLE */
+
         gc_sweep_all();
 
         mp_hal_stdout_tx_str("MPY: soft reboot\r\n");
@@ -262,13 +257,11 @@ void app_main(void) {
     // Hook for a board to run code at start up.
     // This defaults to initialising NVS.
     MICROPY_BOARD_STARTUP();
-    mt_eve_init_t();
-    driver_update_task_init();
     speech_cn_init();
     audio_play_init();
     audio_recorder_init();
+    driver_update_task_init();
     // Create and transfer control to the MicroPython task.
-    //xTaskCreatePinnedToCore(voice_read_task_c, "read_task", 4 * 1024, NULL, MP_TASK_PRIORITY, NULL, 0);
     xTaskCreatePinnedToCore(mp_task, "mp_task", MP_TASK_STACK_SIZE / sizeof(StackType_t), NULL, MP_TASK_PRIORITY, &mp_main_task_handle, MP_TASK_COREID);
     xTaskCreatePinnedToCore(system_management_task, "system_management_task", SYSTEM_MANAGEMENT_TASK_STACK_SIZE / sizeof(StackType_t), NULL, SYSTEM_MANAGEMENT_TASK_PRIORITY, NULL, 0);
 }

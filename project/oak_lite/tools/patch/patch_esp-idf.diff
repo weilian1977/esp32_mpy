@@ -36,7 +36,7 @@ index 125a924d06..971ee9e15f 100644
   * Create a new task and add it to the list of tasks that are ready to run.
   *
 diff --git a/components/freertos/tasks.c b/components/freertos/tasks.c
-index 24eb47b948..baa9967c82 100644
+index 24eb47b948..32c480c538 100644
 --- a/components/freertos/tasks.c
 +++ b/components/freertos/tasks.c
 @@ -911,6 +911,54 @@ void taskYIELD_OTHER_CORE( BaseType_t xCoreID, UBaseType_t uxPriority )
@@ -94,3 +94,12 @@ index 24eb47b948..baa9967c82 100644
  static void prvInitialiseNewTask( TaskFunction_t pxTaskCode,
                                    const char * const pcName, /*lint !e971 Unqualified char types are allowed for strings and single characters only. */
                                    const uint32_t ulStackDepth,
+@@ -4578,7 +4626,7 @@ BaseType_t xTaskGetAffinity( TaskHandle_t xTask )
+                 {
+                     /* Neither the stack nor the TCB were allocated dynamically, so
+                      * nothing needs to be freed. */
+-                    configASSERT( pxTCB->ucStaticallyAllocated == tskSTATICALLY_ALLOCATED_STACK_AND_TCB );
++                    //configASSERT( pxTCB->ucStaticallyAllocated == tskSTATICALLY_ALLOCATED_STACK_AND_TCB );
+                     mtCOVERAGE_TEST_MARKER();
+                 }
+             }

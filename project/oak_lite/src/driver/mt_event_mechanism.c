@@ -322,7 +322,7 @@ mt_err_t mt_eve_trigger_by_type_t(mt_event_type_t eve_type, void *para)
 { 
   EVE_TYPE_CHECK(eve_type, MT_ERR_INVALID_ARG);
   //ESP_LOGI(TAG, "mt_eve 0");
-  MT_MODULE_EVENT_STATUS_CHECK(MT_MODULE_INITIALIZED, MT_FAIL);
+  //MT_MODULE_EVENT_STATUS_CHECK(MT_MODULE_INITIALIZED, MT_FAIL);
   //ESP_LOGI(TAG, "mt_eve_trigger_by_type_t");
   if(false == mt_eve_manager.eve_trigger_enabled)
   {

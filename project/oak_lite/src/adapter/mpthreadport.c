@@ -172,6 +172,7 @@ void mp_thread_create_ex(void *(*entry)(void *), void *arg, size_t *stack_size, 
     th->id = id;
     th->stack_type = thread_stack_type;
 #endif
+    th->tcb = tcb;
     th->stack_len = *stack_size / sizeof(uintptr_t);
     th->next = thread;
     thread = th;
@@ -219,11 +220,11 @@ void vPortCleanUpTCB(void *tcb) {
             if (th->stack_type == MP_THREAD_STACK_TYPE_INTERNEL) {
                 free((StaticTask_t*)th->tcb);
                 free(th->stack);
-                m_del(thread_t, th, 1);
+                //m_del(thread_t, th, 1);
             } else {
                 free((StaticTask_t*)th->tcb);
                 free(th->stack);
-                m_del(thread_t, th, 1);
+                //m_del(thread_t, th, 1);
             }
 #else
             free((StaticTask_t*)th->tcb);
