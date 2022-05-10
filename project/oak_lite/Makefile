@@ -39,7 +39,7 @@ all:
 		$(BUILD)/partition_table/partition-table.bin \
 		$(BUILD)/${BOARD}.bin \
 		$(BUILD)/firmware.bin \
-		$(BUILD)/${BOARD}..uf2
+		$(BUILD)/${BOARD}.uf2
 
 $(BUILD)/bootloader/bootloader.bin $(BUILD)/partition_table/partition-table.bin $(BUILD)/micropython.bin: FORCE
 
