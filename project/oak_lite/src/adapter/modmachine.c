@@ -34,6 +34,7 @@
 #include "freertos/task.h"
 #include "esp_sleep.h"
 #include "esp_pm.h"
+#include "esp_private/system_internal.h"
 
 #if CONFIG_IDF_TARGET_ESP32
 #include "esp32/rom/rtc.h"
@@ -222,6 +223,18 @@ STATIC mp_obj_t machine_reset(void) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_reset_obj, machine_reset);
 
+STATIC mp_obj_t machine_reset_to_uf2(void) {
+    // Check out esp_reset_reason_t for other Espressif pre-defined values
+    enum { APP_REQUEST_UF2_RESET_HINT = 0x11F2 };
+
+    // call esp_reset_reason() is required for idf.py to properly links esp_reset_reason_set_hint()
+    (void) esp_reset_reason();
+    esp_reset_reason_set_hint(APP_REQUEST_UF2_RESET_HINT);
+    esp_restart();
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_reset_to_uf2_obj, machine_reset_to_uf2);
+
 STATIC mp_obj_t machine_soft_reset(void) {
     pyexec_system_exit = PYEXEC_FORCED_EXIT;
     mp_raise_type(&mp_type_SystemExit);
@@ -265,6 +278,7 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
 
     { MP_ROM_QSTR(MP_QSTR_freq), MP_ROM_PTR(&machine_freq_obj) },
     { MP_ROM_QSTR(MP_QSTR_reset), MP_ROM_PTR(&machine_reset_obj) },
+    { MP_ROM_QSTR(MP_QSTR_reset_to_uf2), MP_ROM_PTR(&machine_reset_to_uf2_obj) },
     { MP_ROM_QSTR(MP_QSTR_soft_reset), MP_ROM_PTR(&machine_soft_reset_obj) },
     { MP_ROM_QSTR(MP_QSTR_unique_id), MP_ROM_PTR(&machine_unique_id_obj) },
     { MP_ROM_QSTR(MP_QSTR_sleep), MP_ROM_PTR(&machine_lightsleep_obj) },
