@@ -468,7 +468,7 @@ void speech_cn_init(void)
 
 STATIC mp_obj_t change_commid(mp_obj_t commands)
 {
-    char *commands_str = mp_obj_str_get_str(commands);
+    const char *commands_str = mp_obj_str_get_str(commands);
     char err[200];
     memset(ch_commands_str, 0x00, 64*99);
     strcpy(ch_commands_str, commands_str);
@@ -480,7 +480,7 @@ STATIC mp_obj_t change_commid(mp_obj_t commands)
 
 STATIC mp_obj_t is_speech_commands(mp_obj_t command)
 {
-    char *read_command = mp_obj_str_get_str(command);
+    const char *read_command = mp_obj_str_get_str(command);
     if(speech_cmd_id == -1)
     {
         return mp_obj_new_bool(false);
@@ -503,6 +503,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(mpy_is_speech_commands_obj, is_speech_commands)
 
 STATIC mp_obj_t start_speech_recognition()
 {
+    if(pipeline_rec == NULL)
+        return mp_const_none;
     if(esp_audio_recorder_running == false)
     {
         const char *link_tag[3] = {"i2s_recoder", "filter", "raw"};
@@ -518,14 +520,16 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(mpy_start_speech_recognition_obj, start_speech_
 
 STATIC mp_obj_t stop_speech_recognition()
 {
+    if(pipeline_rec == NULL)
+        return mp_const_none;
     if(esp_audio_recorder_running == true)
     {
         
         recorder_sr_enable(cfg.sr_handle,false);
-        esp_err_t ret = audio_pipeline_stop(pipeline_rec);
-        ret = audio_pipeline_wait_for_stop(pipeline_rec);
-        ret = audio_pipeline_terminate(pipeline_rec);
-        ret = audio_pipeline_unlink(pipeline_rec);
+        audio_pipeline_stop(pipeline_rec);
+        audio_pipeline_wait_for_stop(pipeline_rec);
+        audio_pipeline_terminate(pipeline_rec);
+        audio_pipeline_unlink(pipeline_rec);
         ESP_LOGW(TAG, "stop_speech_recognition\n");
         esp_audio_recorder_running = false;
     }

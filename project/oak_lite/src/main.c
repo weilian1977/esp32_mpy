@@ -213,6 +213,8 @@ void mp_task(void *pvParameter) {
 
         soft_reset_exit:
 
+        recorder_stop();
+        play_stop();
         #if MICROPY_BLUETOOTH_NIMBLE
         mp_bluetooth_deinit();
         #endif

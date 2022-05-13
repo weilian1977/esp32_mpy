@@ -83,7 +83,7 @@ static audio_event_iface_handle_t evt;
 static bool esp_audio_player_running = false;
 static char path[MAX_PATH_LENGTH];
 static bool esp_audio_player_rate_change = false;
-STATIC void play_stop(void);
+//STATIC void play_stop(void);
 
 typedef struct _audio_player_obj_t
 {
@@ -320,7 +320,7 @@ void play_start(const char *uri)
     AUDIO_MEM_SHOW("PRINT_MEM_RUN");
     ESP_LOGW(TAG, "audio_pipeline_run = %d\n", ret);
 }
-STATIC void play_stop(void)
+void play_stop(void)
 {
     if(esp_audio_player_running == true)
     {
