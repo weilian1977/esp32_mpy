@@ -69,13 +69,14 @@ void recorder_stop(void)
 {
     if(esp_audio_recorder_running == true)
     {
+        printf("recorder stop start\n");
         esp_audio_recorder_running = false; 
         audio_pipeline_stop(recorder_audio_init.pipeline);
         audio_pipeline_wait_for_stop(recorder_audio_init.pipeline);
         audio_pipeline_terminate(recorder_audio_init.pipeline);
         audio_pipeline_unlink(recorder_audio_init.pipeline);
         ESP_LOGW(TAG, "audio_recorder_stop \n");
-        i2s_stream_set_clk(recorder_audio_init.i2s_stream, 48000, 32, 2);
+        //i2s_stream_set_clk(recorder_audio_init.i2s_stream, 48000, 32, 2);
     }
 }
 STATIC mp_obj_t audio_recorder_stop(mp_obj_t self_in);
@@ -163,6 +164,12 @@ STATIC mp_obj_t audio_recorder_start(mp_uint_t n_args, const mp_obj_t *args_in, 
         {
             timer_recorder = args[ARG_maxtime].u_int;
             while (1) {
+                int st = audio_element_get_state(recorder_audio_init.i2s_stream);
+                if(st != AEL_STATE_RUNNING)
+                {
+                    audio_element_set_ringbuf_done(recorder_audio_init.i2s_stream);
+                    break;
+                }
                 mp_hal_delay_ms(1000);
             //audio_event_iface_msg_t msg;
                 time_count ++;
@@ -173,14 +180,15 @@ STATIC mp_obj_t audio_recorder_start(mp_uint_t n_args, const mp_obj_t *args_in, 
                 }
                 audio_element_set_ringbuf_done(recorder_audio_init.i2s_stream);
                 break;
-        }
-        esp_audio_recorder_running = false; 
+            }
+        esp_audio_recorder_running = false;
+        printf("recorder stop start\n");
         audio_pipeline_stop(recorder_audio_init.pipeline);
         audio_pipeline_wait_for_stop(recorder_audio_init.pipeline);
         audio_pipeline_terminate(recorder_audio_init.pipeline);
         audio_pipeline_unlink(recorder_audio_init.pipeline);
         ESP_LOGW(TAG, "audio_recorder_stop \n");
-        i2s_stream_set_clk(recorder_audio_init.i2s_stream, 48000, 32, 2);
+        //i2s_stream_set_clk(recorder_audio_init.i2s_stream, 48000, 32, 2);
         }
         return mp_obj_new_bool(true);
     }
@@ -197,13 +205,14 @@ STATIC mp_obj_t audio_recorder_stop(mp_obj_t self_in)
 {
     if(esp_audio_recorder_running == true)
     {
-        esp_audio_recorder_running = false; 
+        printf("recorder stop start\n");
+        esp_audio_recorder_running = false;     
         audio_pipeline_stop(recorder_audio_init.pipeline);
         audio_pipeline_wait_for_stop(recorder_audio_init.pipeline);
         audio_pipeline_terminate(recorder_audio_init.pipeline);
         audio_pipeline_unlink(recorder_audio_init.pipeline);
         ESP_LOGW(TAG, "audio_recorder_stop \n");
-        i2s_stream_set_clk(recorder_audio_init.i2s_stream, 48000, 32, 2);
+        //i2s_stream_set_clk(recorder_audio_init.i2s_stream, 48000, 32, 2);
     } 
     return mp_obj_new_bool(true);
 }

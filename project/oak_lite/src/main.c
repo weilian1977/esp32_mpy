@@ -213,6 +213,7 @@ void mp_task(void *pvParameter) {
 
         soft_reset_exit:
 
+        speech_stop();
         recorder_stop();
         play_stop();
         #if MICROPY_BLUETOOTH_NIMBLE
@@ -259,8 +260,8 @@ void app_main(void) {
     // Hook for a board to run code at start up.
     // This defaults to initialising NVS.
     MICROPY_BOARD_STARTUP();
-    speech_cn_init();
     audio_play_init();
+    speech_cn_init();
     audio_recorder_init();
     driver_update_task_init();
     // Create and transfer control to the MicroPython task.

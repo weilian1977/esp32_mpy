@@ -96,7 +96,7 @@ typedef struct _audio_player_obj_t
 audio_board_handle_t board_handle;
 void audio_play_init(void)
 {
-    //i2s0_init();
+    i2s0_init();
     board_handle = audio_board_init();
     audio_hal_ctrl_codec(board_handle->audio_hal, AUDIO_HAL_CODEC_MODE_BOTH, AUDIO_HAL_CTRL_START);
     esp_periph_config_t periph_cfg = DEFAULT_ESP_PERIPH_SET_CONFIG();
@@ -161,75 +161,6 @@ void audio_play_init(void)
     audio_event_iface_set_listener(esp_periph_set_get_event_iface(set), evt);
 
 }
-/*
-STATIC void audio_player_init(audio_player_obj_t *self)
-{
-    //i2s0_init();
-    self->board_handle = audio_board_init();
-    audio_hal_ctrl_codec(self->board_handle->audio_hal, AUDIO_HAL_CODEC_MODE_BOTH, AUDIO_HAL_CTRL_START);
-    esp_periph_config_t periph_cfg = DEFAULT_ESP_PERIPH_SET_CONFIG();
-    periph_cfg.task_core = 0;
-    set = esp_periph_set_init(&periph_cfg);
-    audio_pipeline_cfg_t pipeline_cfg = DEFAULT_AUDIO_PIPELINE_CONFIG();
-    pipeline = audio_pipeline_init(&pipeline_cfg);
-    mem_assert(pipeline);
-    audio_hal_set_volume(self->board_handle->audio_hal, 70);
-    vfs_stream_cfg_t fs_reader = VFS_STREAM_CFG_DEFAULT();
-    fs_reader.type = AUDIO_STREAM_READER;
-    fs_reader.task_core = 0;
-    vfsfs_stream_reader = vfs_stream_init(&fs_reader);
-    i2s_stream_cfg_t i2s_writer = I2S_STREAM_CFG_DEFAULT();
-    i2s_writer.type = AUDIO_STREAM_WRITER;
-    i2s_writer.i2s_config.sample_rate = 8000;
-    i2s_writer.i2s_config.channel_format = I2S_CHANNEL_FMT_RIGHT_LEFT;
-    i2s_writer.task_core = 0;
-    i2s_stream_writer = i2s_stream_init(&i2s_writer);
-    mp3_decoder_cfg_t mp3_cfg = DEFAULT_MP3_DECODER_CONFIG();
-    mp3_cfg.task_core = 0;
-    
-    mp3_decoder = mp3_decoder_init(&mp3_cfg);
-    // sam stream
-    sam_stream_cfg_t sam_cfg = SAM_STREAM_CFG_DEFAULT();   
-    sam_cfg.type = AUDIO_STREAM_READER;
-    sam_cfg.task_core = 0;
-    sam_stream_reader = sam_stream_init(&sam_cfg);
-     // zh_hans stream
-    zh_hans_stream_cfg_t zh_hans_cfg = ZH_HANS_STREAM_CFG_DEFAULT();
-    zh_hans_cfg.type = AUDIO_STREAM_READER;
-    zh_hans_cfg.task_core = 0;
-    zh_hans_stream_reader = zh_hans_stream_init(&zh_hans_cfg);
-    // amr
-    amr_decoder_cfg_t amr_dec_cfg = DEFAULT_AMR_DECODER_CONFIG();
-    amr_dec_cfg.task_core = 0;
-    amr_decoder = amr_decoder_init(&amr_dec_cfg);
-
-    // wav
-    wav_decoder_cfg_t wav_dec_cfg = DEFAULT_WAV_DECODER_CONFIG();
-    wav_dec_cfg.task_core = 0;
-    wav_dec_cfg.stack_in_ext = true;
-    wav_decoder = wav_decoder_init(&wav_dec_cfg);
-
-    sonic_cfg_t sonic_cfg = DEFAULT_SONIC_CONFIG();
-    sonic_cfg.sonic_info.samplerate = 16000;
-    sonic_cfg.task_core = 0;
-    sonic_cfg.sonic_info.channel = 1;
-    sonic_cfg.sonic_info.resample_linear_interpolate = 1;
-    sonic_el=sonic_init(&sonic_cfg);
-    
-    audio_pipeline_register(pipeline, sam_stream_reader, "sam");
-    audio_pipeline_register(pipeline, vfsfs_stream_reader, "file");
-    audio_pipeline_register(pipeline, zh_hans_stream_reader, "hans");
-    audio_pipeline_register(pipeline, wav_decoder, "wav");
-    audio_pipeline_register(pipeline, amr_decoder, "amr");
-    audio_pipeline_register(pipeline, mp3_decoder, "mp3");
-    audio_pipeline_register(pipeline, sonic_el, "sonic");
-    audio_pipeline_register(pipeline, i2s_stream_writer, "i2s");
-    audio_event_iface_cfg_t evt_cfg = AUDIO_EVENT_IFACE_DEFAULT_CFG();
-    evt = audio_event_iface_init(&evt_cfg);
-    audio_event_iface_set_listener(esp_periph_set_get_event_iface(set), evt);
-
-}
-*/
 STATIC mp_obj_t audio_player_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args)
 {
     mp_arg_check_num(n_args, n_kw, 0, 0, false);
@@ -280,7 +211,7 @@ void play_start(const char *uri)
         audio_element_set_uri(zh_hans_stream_reader, path);
         sonic_set_pitch_and_speed_info(sonic_el, sonic_pitch, sonic_speed);
     }
-    //i2s0_shdn_enable(0);
+    i2s0_shdn_enable(0);
     if(esp_audio_player_rate_change)
     {
         
@@ -290,7 +221,7 @@ void play_start(const char *uri)
     }
 
     audio_pipeline_set_listener(pipeline, evt);
-    //i2s0_shdn_enable(1);
+    i2s0_shdn_enable(1);
     esp_err_t ret = audio_pipeline_run(pipeline);
     if(get_music_info_flag)
     {
@@ -329,8 +260,8 @@ void play_stop(void)
         audio_pipeline_terminate(pipeline);
         audio_pipeline_unlink(pipeline);
         ESP_LOGW(TAG, "audio_play_stop");
-        i2s_stream_set_clk(i2s_stream_writer, 48000, 32, 2);
-        //i2s0_shdn_enable(0);
+//        i2s_stream_set_clk(i2s_stream_writer, 48000, 32, 2);
+        i2s0_shdn_enable(0);
         esp_audio_player_running = false;
     }
 }

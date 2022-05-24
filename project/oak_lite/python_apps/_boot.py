@@ -4,8 +4,7 @@ from flashbdev import bdev1, bdev2
 
 from oak_lite import *
 import time
-import audio_play
-import speech
+import audio
 
 try:
     if bdev1:

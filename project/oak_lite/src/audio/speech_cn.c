@@ -462,7 +462,20 @@ void speech_cn_init(void)
     char err[200];
     recorder_sr_reset_speech_cmd(cfg.sr_handle, ch_commands_str, err);
     separate_commands(ch_commands_str);
-    recorder = audio_recorder_create(&cfg);
+    recorder = audio_recorder_create(&cfg);    
+    if(pipeline_rec == NULL)
+        return;
+    if(esp_audio_recorder_running == true)
+    {
+        
+        recorder_sr_enable(cfg.sr_handle,false);
+        audio_pipeline_stop(pipeline_rec);
+        audio_pipeline_wait_for_stop(pipeline_rec);
+        audio_pipeline_terminate(pipeline_rec);
+        audio_pipeline_unlink(pipeline_rec);
+        ESP_LOGW(TAG, "stop_speech_recognition\n");
+        esp_audio_recorder_running = false;
+    }
 }
 
 
@@ -507,6 +520,8 @@ STATIC mp_obj_t start_speech_recognition()
         return mp_const_none;
     if(esp_audio_recorder_running == false)
     {
+        //printf("start_speech\n");
+        i2s_stream_set_clk(i2s_stream_reader, 48000, 32, 2);
         const char *link_tag[3] = {"i2s_recoder", "filter", "raw"};
         audio_pipeline_link(pipeline_rec, &link_tag[0], 3);
         audio_pipeline_run(pipeline_rec);
@@ -517,14 +532,27 @@ STATIC mp_obj_t start_speech_recognition()
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(mpy_start_speech_recognition_obj, start_speech_recognition);
-
+void speech_stop()
+{
+    if(pipeline_rec == NULL)
+        return ;
+    if(esp_audio_recorder_running == true)
+    {
+        recorder_sr_enable(cfg.sr_handle,false);
+        audio_pipeline_stop(pipeline_rec);
+        audio_pipeline_wait_for_stop(pipeline_rec);
+        audio_pipeline_terminate(pipeline_rec);
+        audio_pipeline_unlink(pipeline_rec);
+        ESP_LOGW(TAG, "stop_speech_recognition\n");
+        esp_audio_recorder_running = false;
+    }
+}
 STATIC mp_obj_t stop_speech_recognition()
 {
     if(pipeline_rec == NULL)
         return mp_const_none;
     if(esp_audio_recorder_running == true)
     {
-        
         recorder_sr_enable(cfg.sr_handle,false);
         audio_pipeline_stop(pipeline_rec);
         audio_pipeline_wait_for_stop(pipeline_rec);
