@@ -78,12 +78,12 @@ set(COMPONENT_SRCS
 ./esp32_s3_korvo2_v3/board_pins_config.c
 )
 endif()
-if (CONFIG_ESP32_MY_BOARD)
-message(STATUS "Current board name is " CONFIG_ESP32_MY_BOARD)
-list(APPEND COMPONENT_ADD_INCLUDEDIRS ./my_board)
+if (CONFIG_ESP32_OAK_LITE_BOARD)
+message(STATUS "Current board name is " CONFIG_ESP32_OAK_LITE_BOARD)
+list(APPEND COMPONENT_ADD_INCLUDEDIRS ./oak_lite_board)
 set(COMPONENT_SRCS
-./my_board/board.c
-./my_board/board_pins_config.c
+./oak_lite_board/board.c
+./oak_lite_board/board_pins_config.c
 )
 endif()
 

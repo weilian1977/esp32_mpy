@@ -7,7 +7,7 @@ import events.event_manager as event_manager
 from event_obj import event_o
 
 THREAD_MAIN_SIZE = 8 * 1024
-
+THREAD_MEDIA_SIZE = 8 * 1024
 def main():
     event_manager.event_system_start()
     time.sleep(0.1)
@@ -29,3 +29,8 @@ if __name__ == '__main__':
 
     _thread.stack_size(THREAD_MAIN_SIZE)
     _thread.start_new_thread(main, ())
+    
+    _thread.stack_size(THREAD_MEDIA_SIZE)
+    _thread.start_new_thread(audio.media_process, ())
+
+    print("media_process start")
