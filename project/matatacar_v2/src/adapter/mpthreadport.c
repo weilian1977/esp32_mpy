@@ -47,6 +47,10 @@ typedef struct _thread_t {
     int ready;              // whether the thread is ready and running
     void *arg;              // thread Python args, a GC root pointer
     void *stack;            // pointer to the stack
+#if CONFIG_ESP32S3_SPIRAM_SUPPORT
+    int   stack_type;       // stack type spiram or internel
+    StaticTask_t *tcb;      // pointer to the Task Control Block
+#endif
     size_t stack_len;       // number of words in the stack
     struct _thread_t *next;
 } thread_t;
@@ -63,6 +67,9 @@ void mp_thread_init(void *stack, uint32_t stack_len) {
     thread_entry0.ready = 1;
     thread_entry0.arg = NULL;
     thread_entry0.stack = stack;
+#if CONFIG_ESP32S3_SPIRAM_SUPPORT
+    thread_entry0.stack_type = MP_THREAD_STACK_TYPE_INTERNEL;
+#endif
     thread_entry0.stack_len = stack_len;
     thread_entry0.next = NULL;
     mp_thread_mutex_init(&thread_mutex);
@@ -131,7 +138,7 @@ void mp_thread_create_ex(void *(*entry)(void *), void *arg, size_t *stack_size, 
     }
 
     // Allocate linked-list node (must be outside thread_mutex lock)
- #if CONFIG_SPIRAM_SUPPORT
+ #if CONFIG_ESP32S3_SPIRAM_SUPPORT
     StaticTask_t *tcb = heap_caps_malloc(sizeof(StaticTask_t), MALLOC_CAP_8BIT); // malloc(sizeof(StaticTask_t));
     StackType_t *stack = NULL;
     if(thread_stack_type == MP_THREAD_STACK_TYPE_INTERNEL)
@@ -142,18 +149,17 @@ void mp_thread_create_ex(void *(*entry)(void *), void *arg, size_t *stack_size, 
     {
       stack = heap_caps_malloc((*stack_size), MALLOC_CAP_SPIRAM); 
     }
-    thread_t *th = m_new_obj(thread_t);
-#else /* CONFIG_SPIRAM_SUPPORT */
+#else /* CONFIG_ESP32S3_SPIRAM_SUPPORT */
     StaticTask_t *tcb = heap_caps_malloc(sizeof(StaticTask_t), MALLOC_CAP_8BIT);
     StackType_t *stack = heap_caps_malloc((*stack_size), MALLOC_CAP_8BIT);
-    thread_t *th = m_new_obj(thread_t);
 #endif
+    thread_t *th = m_new_obj(thread_t);
 
     mp_thread_mutex_lock(&thread_mutex, 1);
 
+    TaskHandle_t id = xTaskCreateStaticPinnedToCore(freertos_entry, name, *stack_size / sizeof(StackType_t), arg, priority, stack, tcb, MP_TASK_COREID);
     // create thread
-    BaseType_t result = xTaskCreatePinnedToCore(freertos_entry, name, *stack_size / sizeof(StackType_t), arg, priority, &th->id, MP_TASK_COREID);
-    if (result != pdPASS) {
+    if (id == NULL) {
         mp_thread_mutex_unlock(&thread_mutex);
         mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("can't create thread"));
     }
@@ -161,7 +167,12 @@ void mp_thread_create_ex(void *(*entry)(void *), void *arg, size_t *stack_size, 
     // add thread to linked list of all threads
     th->ready = 0;
     th->arg = arg;
-    th->stack = pxTaskGetStackStart(th->id);
+    th->stack = stack;
+#if CONFIG_ESP32S3_SPIRAM_SUPPORT
+    th->id = id;
+    th->stack_type = thread_stack_type;
+#endif
+    th->tcb = tcb;
     th->stack_len = *stack_size / sizeof(uintptr_t);
     th->next = thread;
     thread = th;
@@ -205,6 +216,21 @@ void vPortCleanUpTCB(void *tcb) {
                 // move the start pointer
                 thread = th->next;
             }
+#if CONFIG_ESP32S3_SPIRAM_SUPPORT
+            if (th->stack_type == MP_THREAD_STACK_TYPE_INTERNEL) {
+                free((StaticTask_t*)th->tcb);
+                free(th->stack);
+                //m_del(thread_t, th, 1);
+            } else {
+                free((StaticTask_t*)th->tcb);
+                free(th->stack);
+                //m_del(thread_t, th, 1);
+            }
+#else
+            free((StaticTask_t*)th->tcb);
+            free(th->stack);
+            m_del(thread_t, th, 1);
+#endif
             // The "th" memory will eventually be reclaimed by the GC.
             break;
         }

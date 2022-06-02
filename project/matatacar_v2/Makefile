@@ -10,8 +10,8 @@ BOARD ?= $(notdir $(CURDIR))
 BUILD ?= build-$(BOARD)
 
 # Device serial settings.
-PORT ?= /dev/ttyUSB0
-BAUD ?= 460800
+PORT ?= /dev/ttyS22
+BAUD ?= 921600
 
 PYTHON ?= python3
 
@@ -39,7 +39,7 @@ all:
 		$(BUILD)/partition_table/partition-table.bin \
 		$(BUILD)/${BOARD}.bin \
 		$(BUILD)/firmware.bin \
-		$(BUILD)/${BOARD}..uf2
+		$(BUILD)/${BOARD}.uf2
 
 $(BUILD)/bootloader/bootloader.bin $(BUILD)/partition_table/partition-table.bin $(BUILD)/${BOARD}.bin: FORCE
 
