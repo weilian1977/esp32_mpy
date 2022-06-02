@@ -64,6 +64,8 @@
 #include "modnetwork.h"
 #include "mpthreadport.h"
 #include "speech_cn.h"
+#include "audio_player.h"
+#include "audio_record.h"
 #include "system_management.h"
 
 #if MICROPY_BLUETOOTH_NIMBLE
@@ -72,6 +74,7 @@
 
 #include "driver_update.h"
 #include "mt_event_mechanism.h"
+#include "mt_module_config.h"
 
 // MicroPython runs as a task under FreeRTOS
 #define MP_TASK_PRIORITY        (ESP_TASK_PRIO_MIN + 1)
@@ -171,6 +174,11 @@ void mp_task(void *pvParameter) {
         machine_i2s_init0();
         #endif
 
+        /* event system deinit */
+        #if  MODULE_EVENT_ENABLE
+        mt_eve_init_t();
+        #endif /* MODULE_EVENT_ENABLE */
+
         // run boot-up scripts
         pyexec_frozen_module("_boot.py");
         pyexec_file_if_exists("boot.py");
@@ -205,6 +213,9 @@ void mp_task(void *pvParameter) {
 
         soft_reset_exit:
 
+        speech_stop();
+        recorder_stop();
+        play_stop();
         #if MICROPY_BLUETOOTH_NIMBLE
         mp_bluetooth_deinit();
         #endif
@@ -214,6 +225,11 @@ void mp_task(void *pvParameter) {
         #if MICROPY_PY_THREAD
         mp_thread_deinit();
         #endif
+
+        /* event system deinit */
+        #if  MODULE_EVENT_ENABLE
+        mt_eve_deinit_t();
+        #endif /* MODULE_EVENT_ENABLE */
 
         gc_sweep_all();
 
@@ -244,11 +260,11 @@ void app_main(void) {
     // Hook for a board to run code at start up.
     // This defaults to initialising NVS.
     MICROPY_BOARD_STARTUP();
-    mt_eve_init_t();
-    driver_update_task_init();
+    audio_play_init();
     speech_cn_init();
+    audio_recorder_init();
+    driver_update_task_init();
     // Create and transfer control to the MicroPython task.
-    //xTaskCreatePinnedToCore(voice_read_task_c, "read_task", 4 * 1024, NULL, MP_TASK_PRIORITY, NULL, 0);
     xTaskCreatePinnedToCore(mp_task, "mp_task", MP_TASK_STACK_SIZE / sizeof(StackType_t), NULL, MP_TASK_PRIORITY, &mp_main_task_handle, MP_TASK_COREID);
     xTaskCreatePinnedToCore(system_management_task, "system_management_task", SYSTEM_MANAGEMENT_TASK_STACK_SIZE / sizeof(StackType_t), NULL, SYSTEM_MANAGEMENT_TASK_PRIORITY, NULL, 0);
 }

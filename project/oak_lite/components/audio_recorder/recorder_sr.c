@@ -555,9 +555,7 @@ recorder_sr_handle_t recorder_sr_create(recorder_sr_cfg_t *cfg, recorder_sr_ifac
     recorder_sr->idx_ch1 = -1;
 #endif
     recorder_sr->idx_ref = recorder_sr_find_input_ch_idx(cfg->input_order, DAT_CH_REF0);
-    AUDIO_MEM_SHOW("PRINT_MEM_SR1");
     recorder_sr->afe_handle = esp_afe->create_from_config(&cfg->afe_cfg);
-    AUDIO_MEM_SHOW("PRINT_MEM_SR2");
     AUDIO_NULL_CHECK(TAG, recorder_sr->afe_handle, goto _failed);
     if (cfg->afe_cfg.wakenet_init == true) {
         recorder_sr->wwe_enable = true;
@@ -567,12 +565,9 @@ recorder_sr_handle_t recorder_sr_create(recorder_sr_cfg_t *cfg, recorder_sr_ifac
     }
 #ifdef CONFIG_USE_MULTINET
     if (cfg->multinet_init) {
-        AUDIO_MEM_SHOW("PRINT_MEM_SR3");//PRINT_MEM_SR1: Func:recorder_sr_create, Line:567, MEM Total:7219815 Bytes, Inter:274899 Bytes, Dram:274899
         recorder_sr->mn_handle = multinet->create((const model_coeff_getter_t *)&MULTINET_COEFF, 5760);
-        AUDIO_MEM_SHOW("PRINT_MEM_SR4");//PRINT_MEM_SR2: Func:recorder_sr_create, Line:569, MEM Total:4177411 Bytes, Inter:272931 Bytes, Dram:272931
         recorder_sr->mn_enable = true;
         AUDIO_NULL_CHECK(TAG, recorder_sr->mn_handle, goto _failed);
-        AUDIO_MEM_SHOW("PRINT_MEM_SR5");//PRINT_MEM_SR3: Func:recorder_sr_create, Line:572, MEM Total:4177411 Bytes, Inter:272931 Bytes, Dram:272931
     }
 #endif
     recorder_sr->events = xEventGroupCreate();

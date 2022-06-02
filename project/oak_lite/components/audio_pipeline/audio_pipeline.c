@@ -417,6 +417,7 @@ static inline esp_err_t __audio_pipeline_wait_stop(audio_pipeline_handle_t pipel
     esp_err_t ret = ESP_OK;
     STAILQ_FOREACH(el_item, &pipeline->el_list, next) {
         if (el_item->linked) {
+            vTaskDelay(5 / portTICK_PERIOD_MS);
             esp_err_t res = audio_element_wait_for_stop_ms(el_item->el, ticks_to_wait);
             if (res == ESP_ERR_TIMEOUT) {
                 ESP_LOGW(TAG, "Wait stop timeout, el:%p, tag:%s",

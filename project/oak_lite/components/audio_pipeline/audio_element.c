@@ -1118,7 +1118,7 @@ static inline esp_err_t __audio_element_term(audio_element_handle_t el, TickType
         ESP_LOGE(TAG, "[%s] Send destroy command failed", el->tag);
         return ESP_FAIL;
     }
-    vTaskDelay(5 / portTICK_PERIOD_MS);
+    vTaskDelay(10 / portTICK_PERIOD_MS);
     EventBits_t uxBits = xEventGroupWaitBits(el->state_event, TASK_DESTROYED_BIT, false, true, ticks_to_wait);
     esp_err_t ret = ESP_FAIL;
     if (uxBits & TASK_DESTROYED_BIT ) {

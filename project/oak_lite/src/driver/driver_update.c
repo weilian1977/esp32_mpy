@@ -76,7 +76,7 @@ void driver_init_t(void)
   mt_tof_init_t();
 #endif
 
-#if MODULE_TOF_ENABLE
+#if MODULE_LIGHT_SENSOR_ENABLE
   mt_light_sensor_init_t();
 #endif
 }

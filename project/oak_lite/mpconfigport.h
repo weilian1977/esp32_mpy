@@ -154,7 +154,7 @@ extern const struct _mp_obj_module_t matatalab_module;
     { MP_OBJ_NEW_QSTR(MP_QSTR_network), (mp_obj_t)&mp_module_network }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR__onewire), (mp_obj_t)&mp_module_onewire }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_motion_sensor), (mp_obj_t)&motion_sensor_module}, \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_audio), (mp_obj_t)&audio_module}, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR__audio), (mp_obj_t)&audio_module}, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_speech), (mp_obj_t)&speech_module}, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_matatalab), (mp_obj_t)&matatalab_module }, \
 
