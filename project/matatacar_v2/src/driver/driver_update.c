@@ -31,6 +31,7 @@
 #include "driver_update.h"
 #include "mt_esp32_button.h"
 #include "drv_button.h"
+#include "drv_light_sensor.h"
 
 /******************************************************************************
  DEFINE MACROS
@@ -100,6 +101,14 @@ void driver_event_listenning(void)
       mt_eve_trigger_by_type_t(EVENT_BUTTON_A_RELEASED + i*2, para);
     }
   }
+  float temp = get_light_value(1);
+  memcpy(para, &temp, sizeof(float)); 
+  mt_eve_trigger_by_type_t(EVENT_LIGHT_LEFT_LESS, para);
+  mt_eve_trigger_by_type_t(EVENT_LIGHT_LEFT_MORE, para);
+  // temp = get_light_value(1);
+  // memcpy(para, &temp, sizeof(float)); 
+  // mt_eve_trigger_by_type_t(EVENT_LIGHT_RIGHT_LESS, para);
+  // mt_eve_trigger_by_type_t(EVENT_LIGHT_RIGHT_MORE, para);
 #endif
 
   //float temp = (float)get_timer_value_second_t(0);
