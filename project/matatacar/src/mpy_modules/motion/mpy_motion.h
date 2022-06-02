@@ -15,9 +15,9 @@
 #define DEFALUT_MAX_SPEED        (1050 * STEP_SUBDIVISION)
 #define DEFALUT_ACCELERATION     (5 * DEFALUT_MAX_SPEED)    //200ms 加速到最快
 
-#define WHEEL_DIAMETER_VALUE                  48.0f
+#define WHEEL_DIAMETER_VALUE                  45.6f
 #define WHEEL_SPACING_VALUE                   62.0f
-#define MOTOR_REDUCTION_RATIO                 50.09f
+#define MOTOR_REDUCTION_RATIO                 45.28f
 #define STEP_ANGLE                            18
 #define PI                                    3.1416f
 

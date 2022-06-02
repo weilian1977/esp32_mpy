@@ -5,11 +5,11 @@
 #include "driver/gpio.h"
 
 #define LEFT_COLOR_LEDS_RED_ID      16
-#define LEFT_COLOR_LEDS_GREEN_ID    52
-#define LEFT_COLOR_LEDS_BLUE_ID     34
+#define LEFT_COLOR_LEDS_GREEN_ID    34
+#define LEFT_COLOR_LEDS_BLUE_ID     52
 #define RIGHT_COLOR_LEDS_RED_ID     70
-#define RIGHT_COLOR_LEDS_GREEN_ID   106
-#define RIGHT_COLOR_LEDS_BLUE_ID    88
+#define RIGHT_COLOR_LEDS_GREEN_ID   88
+#define RIGHT_COLOR_LEDS_BLUE_ID    106
 
 #define AW20144_I2C_ADDRESS     0x20
 
@@ -17,8 +17,8 @@
 
 #define AW20XXX_MAX_CURRENT     (0x9f)
 #define AW20XXX_RSL_SET         (0xff) /* R colour brightness set */
-#define AW20XXX_GSL_SET         (0xb9) /* G colour brightness set  */
-#define AW20XXX_BSL_SET         (0xef) /* B colour brightness set*/
+#define AW20XXX_GSL_SET         (0xff) /* G colour brightness set  */
+#define AW20XXX_BSL_SET         (0xff) /* B colour brightness set*/
 
 #define AW20XXX_MAX_PWM         (0xff)
 #define AW20XXX_MAX_BREATH_PWM  (0xff) /* auto breath pwm */

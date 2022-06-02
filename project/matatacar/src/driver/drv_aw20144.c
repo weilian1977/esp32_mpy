@@ -14,40 +14,43 @@ static bool aw20144_initialized = false;
 
 static uint8_t show_table_1[16] = 
 {
-    0x00, 0x00, 0x18, 0x18, 0x3c, 0x3c, 0x3c, 0x3c,
-    0x3c, 0x3c, 0x3c, 0x3c, 0x18, 0x18, 0x00, 0x00
+    0x00, 0x00, 0x00, 0x00, 0x06, 0x60, 0x0f, 0xf0, 0x0f, 0xf0,
+    0x0f, 0xf0, 0x0f, 0xf0, 0x06, 0x60,
 };
 
 static uint8_t show_table_2[16] = 
 {
-    0x00, 0x00, 0x00, 0x00, 0x18, 0x18, 0x3c, 0x3c,
-    0x3c, 0x3c, 0x18, 0x18, 0x00, 0x00, 0x00, 0x00
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x06, 0x60, 0x0f, 0xf0,
+    0x0f, 0xf0, 0x06, 0x60, 0x00, 0x00,
 };
 
 static uint8_t show_table_3[16] = 
 {
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x3c, 0x3c,
-    0x3c, 0x3c, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0f, 0xf0,
+    0x0f, 0xf0, 0x00, 0x00, 0x00, 0x00,
 };
 
-static void aw20144_soft_rst(void)
+static esp_err_t aw20144_soft_rst(void)
 {
     esp_err_t ret = ESP_OK;
     ret = i2c_master_write_reg(I2C0_MASTER_NUM, AW20144_I2C_ADDRESS, AW20XXX_PAGE_ADDR, AW20XXX_CMD_PAGE0);
     if(ret != ESP_OK)
     {
         ESP_LOGE(TAG, "set page0 for page addr error!");
+        return ret;
     }
     ret = i2c_master_write_reg(I2C0_MASTER_NUM, AW20144_I2C_ADDRESS, REG_RSTN, 0xae);
     if(ret != ESP_OK)
     {
         ESP_LOGE(TAG, "write REG_RSTN reg error!");
+        return ret;
     }
     ESP_LOGE(TAG, "soft rst ok!");
     vTaskDelay(10 / portTICK_PERIOD_MS);
+    return ret;
 }
 
-static void aw20144_chip_swen(void)
+static esp_err_t aw20144_chip_swen(void)
 {
     esp_err_t ret = ESP_OK;
     uint8_t val = 0;
@@ -55,6 +58,7 @@ static void aw20144_chip_swen(void)
     if(ret != ESP_OK)
     {
         ESP_LOGE(TAG, "set page0 for page addr error!");
+        return ret;
     }
     i2c_master_read_reg(I2C0_MASTER_NUM, AW20144_I2C_ADDRESS, REG_GCR, &val);
     val &= BIT_CHIPEN_DIS;
@@ -63,8 +67,10 @@ static void aw20144_chip_swen(void)
     if(ret != ESP_OK)
     {
         ESP_LOGE(TAG, "write REG_GCR reg error!");
+        return ret;
     }
     ESP_LOGE(TAG, "aw20144_chip_swen %d!", val);
+    return ret;
 }
 
 static bool check_chip_id(void)
@@ -79,54 +85,46 @@ static bool check_chip_id(void)
     return id_sta;
 }
 
-static void aw20144_set_global_current(uint8_t current)
+static esp_err_t aw20144_set_global_current(uint8_t current)
 {
     esp_err_t ret = ESP_OK;
     ret = i2c_master_write_reg(I2C0_MASTER_NUM, AW20144_I2C_ADDRESS, AW20XXX_PAGE_ADDR, AW20XXX_CMD_PAGE0);
     if(ret != ESP_OK)
     {
         ESP_LOGE(TAG, "set page0 for page addr error!");
+        return ret;
     }
     ret = i2c_master_write_reg(I2C0_MASTER_NUM, AW20144_I2C_ADDRESS, REG_GCCR, current);
     if(ret != ESP_OK)
     {
         ESP_LOGE(TAG, "write REG_GCCR reg error!");
+        return ret;
     }
+    return ret;
 }
 
-// static void aw20144_set_breath_pwm(uint8_t pwm_reg, uint8_t pwm)
-// {
-//     esp_err_t ret = ESP_OK;
-//     ret = i2c_master_write_reg(I2C0_MASTER_NUM, AW20144_I2C_ADDRESS, AW20XXX_PAGE_ADDR, AW20XXX_CMD_PAGE0);
-//     if(ret != ESP_OK)
-//     {
-//         ESP_LOGE(TAG, "set page0 for page addr error!");
-//     }
-//     ret = i2c_master_write_reg(I2C0_MASTER_NUM, AW20144_I2C_ADDRESS, pwm_reg, pwm);
-//     if(ret != ESP_OK)
-//     {
-//         ESP_LOGE(TAG, "write pwm_reg reg error!");
-//     }
-// }
-
-static void aw20144_set_constant_current_by_idx(uint8_t idx, uint8_t constant_current)
+static esp_err_t aw20144_set_constant_current_by_idx(uint8_t idx, uint8_t constant_current)
 {
     esp_err_t ret = ESP_OK;
     ret = i2c_master_write_reg(I2C0_MASTER_NUM, AW20144_I2C_ADDRESS, idx, constant_current);
     if(ret != ESP_OK)
     {
         ESP_LOGE(TAG, "write idx reg error!");
+        return ret;
     }
+    return ret;
 }
 
-static void aw20144_set_pwm_by_idx(uint8_t idx, unsigned char pwm)
+static esp_err_t aw20144_set_pwm_by_idx(uint8_t idx, unsigned char pwm)
 {
     esp_err_t ret = ESP_OK;
     ret = i2c_master_write_reg(I2C0_MASTER_NUM, AW20144_I2C_ADDRESS, idx, pwm);
     if(ret != ESP_OK)
     {
         ESP_LOGE(TAG, "write idx reg error!");
+        return ret;
     }
+    return ret;
 }
 
 void aw20144_fast_clear_display(void)
@@ -200,35 +198,7 @@ void aw20144_set_monochrome_leds_brightness(uint8_t brightness)
 static uint8_t table_map(uint8_t table_bit)
 {
     uint8_t led_index;
-    led_index = 18 * (table_bit / 16) + table_bit % 16;
-    if(led_index == 11)
-    {
-        led_index = 47;
-    }
-    else if(led_index == 29)
-    {
-        led_index = 83;
-    }
-    else if(led_index == 47)
-    {
-        led_index = 119;
-    }
-    else if(led_index == 65)
-    {
-        led_index = 11;
-    }
-    else if(led_index == 83)
-    {
-        led_index = 29;
-    }
-    else if(led_index == 101)
-    {
-        led_index = 65;
-    }
-    else if(led_index == 119)
-    {
-        led_index = 101;
-    }
+    led_index = (18 * (table_bit / 16)) + (table_bit % 16);
     return led_index;
 }
 
@@ -241,7 +211,7 @@ void aw20144_show_table_1(void)
     ret = i2c_master_write_reg(I2C0_MASTER_NUM, AW20144_I2C_ADDRESS, AW20XXX_PAGE_ADDR, AW20XXX_CMD_PAGE1);
     if(ret != ESP_OK)
     {
-        ESP_LOGE(TAG, "set page2 for page addr error!");
+        ESP_LOGE(TAG, "set page1 for page addr error!");
     }
 
     for (i = 0; i < 16; i++)
@@ -273,7 +243,7 @@ void aw20144_show_table_2(void)
     ret = i2c_master_write_reg(I2C0_MASTER_NUM, AW20144_I2C_ADDRESS, AW20XXX_PAGE_ADDR, AW20XXX_CMD_PAGE1);
     if(ret != ESP_OK)
     {
-        ESP_LOGE(TAG, "set page2 for page addr error!");
+        ESP_LOGE(TAG, "set page1 for page addr error!");
     }
 
     for (i = 0; i < 16; i++)
@@ -305,7 +275,7 @@ void aw20144_show_table_3(void)
     ret = i2c_master_write_reg(I2C0_MASTER_NUM, AW20144_I2C_ADDRESS, AW20XXX_PAGE_ADDR, AW20XXX_CMD_PAGE1);
     if(ret != ESP_OK)
     {
-        ESP_LOGE(TAG, "set page2 for page addr error!");
+        ESP_LOGE(TAG, "set page1 for page addr error!");
     }
 
     for (i = 0; i < 16; i++)
@@ -334,11 +304,11 @@ void set_left_rgb_led(uint8_t red, uint8_t green, uint8_t blue)
     ret = i2c_master_write_reg(I2C0_MASTER_NUM, AW20144_I2C_ADDRESS, AW20XXX_PAGE_ADDR, AW20XXX_CMD_PAGE1);
     if(ret != ESP_OK)
     {
-        ESP_LOGE(TAG, "set page2 for page addr error!");
+        ESP_LOGE(TAG, "set page1 for page addr error!");
     }
-    aw20144_set_pwm_by_idx(RIGHT_COLOR_LEDS_RED_ID, red);
-    aw20144_set_pwm_by_idx(RIGHT_COLOR_LEDS_GREEN_ID, green);
-    aw20144_set_pwm_by_idx(RIGHT_COLOR_LEDS_BLUE_ID, blue);
+    aw20144_set_pwm_by_idx(LEFT_COLOR_LEDS_RED_ID, red);
+    aw20144_set_pwm_by_idx(LEFT_COLOR_LEDS_GREEN_ID, green);
+    aw20144_set_pwm_by_idx(LEFT_COLOR_LEDS_BLUE_ID, blue);
 }
 
 void set_right_rgb_led(uint8_t red, uint8_t green, uint8_t blue)
@@ -347,11 +317,11 @@ void set_right_rgb_led(uint8_t red, uint8_t green, uint8_t blue)
     ret = i2c_master_write_reg(I2C0_MASTER_NUM, AW20144_I2C_ADDRESS, AW20XXX_PAGE_ADDR, AW20XXX_CMD_PAGE1);
     if(ret != ESP_OK)
     {
-        ESP_LOGE(TAG, "set page2 for page addr error!");
+        ESP_LOGE(TAG, "set page1 for page addr error!");
     }
-    aw20144_set_pwm_by_idx(LEFT_COLOR_LEDS_RED_ID, red);
-    aw20144_set_pwm_by_idx(LEFT_COLOR_LEDS_GREEN_ID, green);
-    aw20144_set_pwm_by_idx(LEFT_COLOR_LEDS_BLUE_ID, blue);
+    aw20144_set_pwm_by_idx(RIGHT_COLOR_LEDS_RED_ID, red);
+    aw20144_set_pwm_by_idx(RIGHT_COLOR_LEDS_GREEN_ID, green);
+    aw20144_set_pwm_by_idx(RIGHT_COLOR_LEDS_BLUE_ID, blue);
 }
 
 esp_err_t aw20144_init(void)
@@ -359,7 +329,7 @@ esp_err_t aw20144_init(void)
     esp_err_t ret = ESP_OK;
     if(aw20144_initialized == true)
     {
-        ESP_LOGD(TAG, "i2c driver has been Initialized");
+        ESP_LOGD(TAG, "aw20144 driver has been Initialized");
         return ret;
     }
     if(!is_i2c0_initialized())
@@ -369,18 +339,22 @@ esp_err_t aw20144_init(void)
 
     aw20144_soft_rst();
     aw20144_chip_swen();
-    check_chip_id();
-    aw20144_set_global_current(0x40);
+    if(check_chip_id() == true)
+    {
+        aw20144_initialized = true;
+    }
+    aw20144_set_global_current(0xff);
 
     /* set constant current for monochrome leds broghtness */
-    aw20144_set_monochrome_leds_brightness(0x80);
+    aw20144_set_monochrome_leds_brightness(0x20);
     aw20144_set_rgb_leds_brightness(AW20XXX_RSL_SET, AW20XXX_GSL_SET, AW20XXX_BSL_SET);
+
+    /* low power mode */
     ret = i2c_master_write_reg(I2C0_MASTER_NUM, AW20144_I2C_ADDRESS, REG_MIXCR, 0x04);
     if(ret != ESP_OK)
     {
         ESP_LOGE(TAG, "write REG_MIXCR reg error!");
     }
-    aw20144_initialized = true;
     return ret;
 }
 

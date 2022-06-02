@@ -85,16 +85,13 @@ def set_play_info(volume_info, rate_info = '', speed_info = 1.0, pitch_info = 1.
     mPlayer.say_speed(speed_info)
     mPlayer.say_pitch(pitch_info)
     mPlayer.set_vol(volume_info)
-    #volume_set = volume_info
    
-def play(path, volume = '', sync = True, play_time = 0, speed = 1.0, pitch =1.0, rate = ''):
+def play(path, sync = True, speed = 1.0, pitch =1.0, rate = '', pos = 0):
     global volume_set
     audio_type = "file:/"
     play_path = "%s%s" % (audio_type, path)
-    if(volume !=''):
-        volume_set = volume
     set_play_info(volume_set, rate, speed, pitch)
-    mPlayer.play(play_path, 0, sync, play_time)
+    mPlayer.play(play_path, pos, sync, time = 0)
 
 def play_time(path, play_time = 0):
     global volume_set
@@ -110,7 +107,7 @@ def play_until_done(path):
     set_play_info(volume_set)
     mPlayer.play(play_path, 0, sync = True, time = 0)
 
-def play_say(language,text):
+def play_say(language, text, sync = True, pos = 0):
     if(language == "english"):
         audio_type = "sam://"
         rates(22050)
@@ -121,8 +118,8 @@ def play_say(language,text):
         print("language error")
         return
     end_text = "/.wav"
-    play_path = "%s%s%s" % (audio_type,text,end_text)
-    mPlayer.play(play_path, pos = 0, sync = True, time = 0)
+    play_path = "%s%s%s" % (audio_type, text, end_text)
+    mPlayer.play(play_path, pos, sync, time = 0)
 
 def play_pause():
     mPlayer.pause()
@@ -144,13 +141,12 @@ def set_volume(value):
     mPlayer.set_vol(temp)
     print("current volume is ",volume_set)
 
-def get_volume(add_value = 5):
-    global volume_set
+def get_volume():
     temp = mPlayer.get_vol()
     if(temp > 100):
         temp = 100
-    volume_set = value
-    print("current volume is ",volume_set)
+    print("current volume is ",temp)
+    return temp
 
 def add_volume(add_value = 5):
     global volume_set
@@ -183,7 +179,7 @@ def play_instrument_tone(instruments, tone):
     set_rate =resample_rate * pitch_interval
     print("find tone: %d, set_rate:%d" %(find_tone, set_rate))
     rates(round(set_rate))
-    play(path, volume = volume_set,sync =False)
+    play(path, sync = False)
 
 def play_tone(tone, meter, instruments = ''):
     global play_rate

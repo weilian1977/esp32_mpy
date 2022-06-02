@@ -6,6 +6,8 @@
 #include "drv_light_sensor.h"
 #include "drv_infrared_tube.h"
 #include "mpy_sensor.h"
+#include "drv_ltr381.h"
+#include "drv_infrared_transceiver.h"
 #include "esp_err.h"
 #include "esp_log.h"
 
@@ -78,7 +80,6 @@ STATIC mp_obj_t mpy_get_line_follower_1_value(mp_obj_t self_in)
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(get_line_follower_1_value_obj, mpy_get_line_follower_1_value);
 
-
 STATIC mp_obj_t mpy_get_line_follower_2_value(mp_obj_t self_in)
 {
     float ir_value = get_infrared_tube_value(2);
@@ -87,6 +88,49 @@ STATIC mp_obj_t mpy_get_line_follower_2_value(mp_obj_t self_in)
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(get_line_follower_2_value_obj, mpy_get_line_follower_2_value);
 
+STATIC mp_obj_t mpy_get_color(mp_obj_t self_in)
+{
+    int32_t red_val = get_red_value();
+    int32_t green_val = get_green_value();
+    int32_t blue_val = get_blue_value();
+    mp_obj_t color_tuple[3] = {
+        mp_obj_new_int(red_val),
+        mp_obj_new_int(green_val),
+        mp_obj_new_int(blue_val),
+    };
+    return mp_obj_new_tuple(3, color_tuple);
+}
+
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(get_color_obj, mpy_get_color);
+
+STATIC mp_obj_t mpy_get_ir_code(mp_obj_t self_in)
+{
+    ir_code_t ir_code_data;
+    ir_code_data = get_ir_code();
+    int32_t data_valid = ir_code_data.data_valid;
+    int32_t repeat = ir_code_data.repeat;
+    int32_t addr = ir_code_data.addr;
+    int32_t cmd = ir_code_data.cmd;
+    mp_obj_t ir_code_tuple[4] = {
+        mp_obj_new_int(data_valid),
+        mp_obj_new_int(repeat),
+        mp_obj_new_int(addr),
+        mp_obj_new_int(cmd),
+    };
+    return mp_obj_new_tuple(4, ir_code_tuple);
+}
+
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(get_ir_code_obj, mpy_get_ir_code);
+
+STATIC mp_obj_t mpy_send_ir_code(mp_obj_t self_in, mp_obj_t addr, mp_obj_t command)
+{
+    uint32_t addr_data = mp_obj_get_int(addr);
+    uint32_t command_data = mp_obj_get_int(command);
+    send_ir_code(addr_data, command_data);
+    return mp_const_none;
+}
+
+STATIC MP_DEFINE_CONST_FUN_OBJ_3(send_ir_code_obj, mpy_send_ir_code);
 
 STATIC const mp_rom_map_elem_t mpy_sensor_locals_dict_table[] =
 {
@@ -95,6 +139,9 @@ STATIC const mp_rom_map_elem_t mpy_sensor_locals_dict_table[] =
     { MP_OBJ_NEW_QSTR(MP_QSTR_get_obstacle_avoidance_value),   (mp_obj_t)&get_obstacle_avoidance_value_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_get_line_follower_1_value),      (mp_obj_t)&get_line_follower_1_value_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_get_line_follower_2_value),      (mp_obj_t)&get_line_follower_2_value_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_get_color),                      (mp_obj_t)&get_color_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_get_ir_code),                    (mp_obj_t)&get_ir_code_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_send_ir_code),                   (mp_obj_t)&send_ir_code_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_LEFT),                           MP_OBJ_NEW_SMALL_INT(0) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_RIGHT),                          MP_OBJ_NEW_SMALL_INT(1) },
 };

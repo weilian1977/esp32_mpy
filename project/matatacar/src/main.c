@@ -68,6 +68,7 @@
 #include "power_management.h"
 #include "usb_detect.h"
 #include "drv_aw20144.h"
+#include "drv_infrared_transceiver.h"
 
 #if MICROPY_BLUETOOTH_NIMBLE
 #include "extmod/modbluetooth.h"
@@ -254,15 +255,17 @@ void boardctrl_startup(void) {
 void test_leds(void *pvParameter)
 {
     vTaskDelay(1000 / portTICK_PERIOD_MS);
+    set_left_rgb_led(0,0,255);
+    set_right_rgb_led(0,255,0);
     while(true)
     {
-       int a = rand() % 6;
-       aw20144_show_table_1();
-       vTaskDelay((1000 +  1000 * a)/ portTICK_PERIOD_MS);
-       aw20144_show_table_2();
-       vTaskDelay(100 / portTICK_PERIOD_MS);
-       aw20144_show_table_3();
-       vTaskDelay(100 / portTICK_PERIOD_MS);
+        int a = rand() % 5;
+        aw20144_show_table_1();
+        vTaskDelay((500 +  1000 * a)/ portTICK_PERIOD_MS);
+        aw20144_show_table_2();
+        vTaskDelay(50 / portTICK_PERIOD_MS);
+        aw20144_show_table_3();
+        vTaskDelay(100 / portTICK_PERIOD_MS);
     }
 }
 
@@ -280,6 +283,7 @@ void app_main(void) {
     xTaskCreatePinnedToCore(system_management_task, "system_management_task", SYSTEM_MANAGEMENT_TASK_STACK_SIZE / sizeof(StackType_t), NULL, SYSTEM_MANAGEMENT_TASK_PRIORITY, NULL, 0);
     xTaskCreatePinnedToCore(mp_task, "mp_task", MP_TASK_STACK_SIZE / sizeof(StackType_t), NULL, MP_TASK_PRIORITY, &mp_main_task_handle, MP_TASK_COREID);
     xTaskCreatePinnedToCore(test_leds, "test_leds", SYSTEM_MANAGEMENT_TASK_STACK_SIZE / sizeof(StackType_t), NULL, SYSTEM_MANAGEMENT_TASK_PRIORITY, NULL, 0);
+    xTaskCreatePinnedToCore(driver_ir_task, "driver_ir_task", INFRARED_TRANSCEIVER_TASK_STACK_SIZE / sizeof(StackType_t), NULL, INFRARED_TRANSCEIVER_TASK_PRIORITY, NULL, 0);
 }
 
 void nlr_jump_fail(void *val) {

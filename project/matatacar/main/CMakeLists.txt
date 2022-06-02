@@ -93,8 +93,12 @@ set(MICROPY_SOURCE_PORT
     ${PROJECT_DIR}/src/driver/drv_light_sensor.c
     ${PROJECT_DIR}/src/driver/drv_infrared_tube.c
     ${PROJECT_DIR}/src/driver/drv_aw20144.c
+    ${PROJECT_DIR}/src/driver/drv_ltr381.c
+    ${PROJECT_DIR}/src/driver/drv_bh1745.c
     ${PROJECT_DIR}/src/driver/driver_update.c
     ${PROJECT_DIR}/src/driver/drv_ble.c
+    ${PROJECT_DIR}/src/driver/irmp/irmp.c
+    ${PROJECT_DIR}/src/driver/irmp/irsnd.c
     ${PROJECT_DIR}/src/driver/ble_prph/bleprph.c
     ${PROJECT_DIR}/src/driver/ble_prph/gatt_svr.c
     ${PROJECT_DIR}/src/driver/ble_prph/misc.c
@@ -105,6 +109,11 @@ set(MICROPY_SOURCE_PORT
     ${PROJECT_DIR}/src/driver/system/power_management.c
     ${PROJECT_DIR}/src/driver/system/system_management.c
     ${PROJECT_DIR}/src/driver/system/usb_detect.c
+    ${PROJECT_DIR}/src/driver/infrared_tools/ir_builder_rmt_nec.c
+    ${PROJECT_DIR}/src/driver/infrared_tools/ir_builder_rmt_rc5.c
+    ${PROJECT_DIR}/src/driver/infrared_tools/ir_parser_rmt_nec.c
+    ${PROJECT_DIR}/src/driver/infrared_tools/ir_parser_rmt_rc5.c
+    ${PROJECT_DIR}/src/driver/drv_infrared_transceiver.c
     ${PROJECT_DIR}/src/audio/audio_player.c
     ${PROJECT_DIR}/src/audio/audio_recorder.c
     ${PROJECT_DIR}/src/audio/speech_cn.c
@@ -217,8 +226,10 @@ idf_component_register(
         ${MICROPY_PORT_DIR}/src/adapter/
         ${MICROPY_PORT_DIR}/src/audio/
         ${MICROPY_PORT_DIR}/src/driver/
+        ${MICROPY_PORT_DIR}/src/driver/irmp/
         ${MICROPY_PORT_DIR}/src/driver/ble_prph/
         ${MICROPY_PORT_DIR}/src/driver/system/
+        ${MICROPY_PORT_DIR}/src/driver/infrared_tools/
         ${MICROPY_PORT_DIR}/src/mpy_modules/motion/
         ${MICROPY_PORT_DIR}/src/mpy_modules/sensor/
         ${MICROPY_BOARD_DIR}

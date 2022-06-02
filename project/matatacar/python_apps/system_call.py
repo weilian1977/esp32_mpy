@@ -7,6 +7,10 @@ from communication import ble_state_monitor
 import communication
 import drv_system
 import nvs
+import sensor
+import audio_play as audio_player
+import audio_recorder
+import drv_motion as motion
 
 KEY_UP = 0
 KEY_DOWN = 1
@@ -14,8 +18,8 @@ POWER_OFF_TIME = 1000
 
 THREAD_MAIN_SIZE = 8 * 1024
 THREAD_COMMUNICATION_SIZE = 8 * 1024
-
-motion = matatalab.motion()
+POWER_OFF_VOLTAGE = 3.40
+LOW_POWER_VOLTAGE = 3.55
 
 power_off_count = 0
 low_power_count = 0
@@ -45,7 +49,7 @@ def power_monitor():
     battery_level = matatalab.get_battery_voltage()
 
     #电压低于 POWER_OFF_VOLTAGE 执行关机
-    if(battery_level < matatalab.POWER_OFF_VOLTAGE):
+    if(battery_level < POWER_OFF_VOLTAGE):
         power_off_count = power_off_count + 1
         if(power_off_count > 100):
             print("shutdown because of low battery")
@@ -53,7 +57,7 @@ def power_monitor():
             time.sleep(10)
 
     #电压低于 LOW_POWER_VOLTAGE, 低电量告警, 两分钟后关机
-    elif(battery_level < matatalab.LOW_POWER_VOLTAGE):
+    elif(battery_level < LOW_POWER_VOLTAGE):
         power_off_count = 0
         low_power_count = low_power_count + 1
         if (low_power_count > 100):
@@ -67,7 +71,7 @@ def power_monitor():
                 time.sleep(10)
 
     #电压正常时，清空异常计数
-    elif(battery_level > (matatalab.LOW_POWER_VOLTAGE + 0.1)):
+    elif(battery_level > (LOW_POWER_VOLTAGE + 0.1)):
         power_off_count = 0
         low_power_count = 0
         if(low_power_flag == True):

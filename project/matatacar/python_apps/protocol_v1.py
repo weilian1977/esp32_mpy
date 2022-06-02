@@ -12,6 +12,7 @@ import drv_system
 import audio_play
 import factory
 import system_state
+import sensor
 import nvs
 
 PROTOCOL_V1_MOVE_FORWARD    = 0x00
@@ -42,6 +43,8 @@ PROTOCOL_V1_RIGHT_ADJUST          = 0x62
 PROTOCOL_V1_BACKWARD_ADJUST       = 0x63
 
 PROTOCOL_V1_CONTROL               = 0x64
+PROTOCOL_V1_SENSOR_EVENT          = 0x66
+PROTOCOL_V1_IR_SEND               = 0x67
 
 PROTOCOL_V1_PLAY_BASS_BEAT             = 0x70
 PROTOCOL_V1_PLAY_TREBLE_BEAT           = 0x71
@@ -90,7 +93,7 @@ command_start = False
 
 def motion_forward(carble, msg):
     print("motion_forward")
-    drv_motion.motion_forward(1, 1)
+    drv_motion.forward(1, 1)
     if system_state.get_cmd_cancel_flag():
         print("cancel motion_forward")
         return
@@ -98,7 +101,7 @@ def motion_forward(carble, msg):
 
 def motion_left(carble, msg):
     print("motion_left")
-    drv_motion.motion_turn_left(90, 1)
+    drv_motion.turn_left(90, 1)
     if system_state.get_cmd_cancel_flag():
         print("cancel motion_left")
         return
@@ -106,14 +109,14 @@ def motion_left(carble, msg):
 
 def motion_right(carble, msg):
     print("motion_right")
-    drv_motion.motion_turn_right(90, 1)
+    drv_motion.turn_right(90, 1)
     if system_state.get_cmd_cancel_flag():
         print("cancel motion_right")
         return
     time.sleep_ms(550)
 
 def motion_backward(carble, msg):
-    drv_motion.motion_backward(1, 1)
+    drv_motion.backward(1, 1)
     if system_state.get_cmd_cancel_flag():
         print("cancel motion_backward")
         return
@@ -142,7 +145,7 @@ def motion_forward_multi(carble, msg):
         if(cmd_cancel_flag == True):
             print("cancel motion_forward_multi")
             return
-        drv_motion.motion_forward(1, 1)
+        drv_motion.forward(1, 1)
         time.sleep_ms(200)
     time.sleep_ms(550)
     print("motion_forward_multi")
@@ -151,7 +154,7 @@ def motion_left_multi(carble, msg):
     angle = msg[1]
     if(angle == 0x01):
         angle = 90
-    drv_motion.motion_turn_left(angle, 1)
+    drv_motion.turn_left(angle, 1)
     time.sleep_ms(550)
     print("motion_left_multi")
 
@@ -159,13 +162,13 @@ def motion_right_multi(carble, msg):
     angle = msg[1]
     if(angle == 0x01):
         angle = 90
-    drv_motion.motion_turn_right(angle, 1)
+    drv_motion.turn_right(angle, 1)
     time.sleep_ms(550)
     print("motion_right_multi")
 
 def motion_backward_multi(carble, msg):
     for i in range(msg[1]):
-        drv_motion.motion_backward(1, 1)
+        drv_motion.backward(1, 1)
         cmd_cancel_flag = system_state.get_cmd_cancel_flag()
         if(cmd_cancel_flag == True):
             print("cancel motion_backward_multi")
@@ -263,7 +266,7 @@ def car_action_control(carble, msg):
                 right_speed = (right_speed_level * 35) - 35
             else:
                 right_speed = "stop"
-        drv_motion.motion_move_speed(left_speed, right_speed)
+        drv_motion.move_speed(left_speed, right_speed)
     if(control_code in [1,2]):
         time.sleep_ms(200)
 
@@ -283,7 +286,7 @@ def car_action_control(carble, msg):
         print("stop music")
 
     if(control_code == PROTOCOL_V1_CONTROL_STOP_MOTO):
-        drv_motion.motion_stop(2)
+        drv_motion.stop(2)
     
     if(control_code == PROTOCOL_V1_CONTROL_BOTH_EYE):
         drv_led.led_eye_set(2, msg[1])
@@ -304,7 +307,7 @@ def factory_cmd(carble, msg):
     factory.factory_process(carble, msg)
 
 def play_start_voice(carble, msg):
-    m.play_system('start.mp3', False, 100)
+    audio_play.play_system('start.mp3', False, 100)
     print("play_start_voice")
     
 def car_cmd_unknow(carble, msg):
@@ -342,6 +345,144 @@ def check_new_protocol(carble, msg):
         return
     print("error.crc_recive %x, crc calc:%x"%(crc_recive, crc_calc))
 
+def sensor_event(carble, msg):
+    if msg[1] != 0x10:
+        print("not sensor_event!")
+        return
+    event_monitor_id = msg[2]
+    print("event_monitor_id:%d" %(event_monitor_id))
+    if event_monitor_id == 0x01:
+        pass
+    elif event_monitor_id == 0x02:
+        pass
+    elif event_monitor_id == 0x03:
+        pass
+    elif event_monitor_id == 0x04:
+        while(True):
+            if(sensor.get_obstacle_avoidance_value() > 2.8):
+                return
+            else:
+                carble.clear_heart_time()
+                time.sleep_ms(50)
+                print("wait obstacle approaching")
+
+    elif event_monitor_id == 0x05:
+        pass
+    elif event_monitor_id == 0x06:
+        while(True):
+            if(sensor.get_left_light() > 1) or (sensor.get_right_light() > 1):
+                return
+            else:
+                carble.clear_heart_time()
+                time.sleep_ms(50)
+                print("wait the light gets stronger")
+
+    elif event_monitor_id == 0x07:
+        while(True):
+            if(sensor.get_left_light() < 0.5) and (sensor.get_right_light() < 0.5):
+                return
+            else:
+                carble.clear_heart_time()
+                time.sleep_ms(50)
+                print("wait dim light")
+
+    elif event_monitor_id == 0x08:
+        pass
+    elif event_monitor_id == 0x09:
+        pass
+    elif event_monitor_id == 0x0a:
+        while(True):
+            if(sensor.get_obstacle_avoidance_value() < 0.6):
+                return
+            else:
+                carble.clear_heart_time()
+                time.sleep_ms(50)
+                print("wait obstacle principle")
+
+    elif event_monitor_id == 0x0b:    #0xf30c
+        while(True):
+            ir_code_tuple = sensor.get_ir_code()
+            if(ir_code_tuple[3] == 0xf30c):
+                return
+            else:
+                carble.clear_heart_time()
+                time.sleep_ms(50)
+                print("wait message 1")
+    elif event_monitor_id == 0x0c:    #0xe718
+        while(True):
+            ir_code_tuple = sensor.get_ir_code()
+            if(ir_code_tuple[3] == 0xe718):
+                return
+            else:
+                carble.clear_heart_time()
+                time.sleep_ms(50)
+                print("wait message 2")
+    elif event_monitor_id == 0x0d:    #0xa15e
+        while(True):
+            ir_code_tuple = sensor.get_ir_code()
+            if(ir_code_tuple[3] == 0xa15e):
+                return
+            else:
+                carble.clear_heart_time()
+                time.sleep_ms(50)
+                print("wait message 3")
+    elif event_monitor_id == 0x0e:    #0xf708
+        while(True):
+            ir_code_tuple = sensor.get_ir_code()
+            if(ir_code_tuple[3] == 0xf708):
+                return
+            else:
+                carble.clear_heart_time()
+                time.sleep_ms(50)
+                print("wait message 4")
+    elif event_monitor_id == 0x0f:    #0xe31c
+        while(True):
+            ir_code_tuple = sensor.get_ir_code()
+            if(ir_code_tuple[3] == 0xe31c):
+                return
+            else:
+                carble.clear_heart_time()
+                time.sleep_ms(50)
+                print("wait message 5")
+    elif event_monitor_id == 0x10:    #0xa55a
+        while(True):
+            ir_code_tuple = sensor.get_ir_code()
+            if(ir_code_tuple[3] == 0xa55a):
+                return
+            else:
+                carble.clear_heart_time()
+                time.sleep_ms(50)
+                print("wait message 6")
+    elif event_monitor_id == 0x11:
+        pass
+    elif event_monitor_id == 0x12:
+        pass
+    elif event_monitor_id == 0x13:
+        pass
+    elif event_monitor_id == 0x14:
+        pass
+
+def ir_send(carble, msg):
+    if msg[1] != 0x01:
+        print("not ir_send!")
+        return
+    ir_command = 0x0000;
+    ir_addr = 0xfe00;
+    if msg[2] == 1:
+        ir_command = 0xf30c
+    elif msg[2] == 2:
+        ir_command = 0xe718
+    elif msg[2] == 3:
+        ir_command = 0xa15e
+    elif msg[2] == 4:
+        ir_command = 0xf708
+    elif msg[2] == 5:
+        ir_command = 0xe31c
+    elif msg[2] == 6:
+        ir_command = 0xa55a
+    sensor.send_ir_code(ir_addr, ir_command)
+    print("ir_send msg:%d, cmd:%#x" %(msg[2], ir_command))
+
 ################################################
 # opcode:  cmd_len   function
 opcode = {
@@ -369,6 +510,8 @@ opcode = {
 0x62:[3, motion_adjust_right],
 0x63:[3, motion_adjust_backward],
 0x64:[3, car_action_control],
+0x66:[3, sensor_event],
+0x67:[3, ir_send],
 0x70:[3, play_alto_beat],
 0x71:[3, play_treble_beat],
 0x80:[0xFF, factory_cmd],

@@ -13,9 +13,11 @@
 #include "drv_light_sensor.h"
 #include "drv_infrared_tube.h"
 #include "drv_aw20144.h"
+#include "drv_ltr381.h"
+// #include "drv_bh1745.h"
+#include "drv_infrared_transceiver.h"
 
 extern void mp_hal_delay_ms(uint32_t ms);
-
 
 // static const char *TAG = "USER SYSTEM";
 
@@ -23,9 +25,12 @@ void system_status_update(void)
 {
     usb_status_update();
     indicator_led_update();
+    ltr381_sensor_update();
+    // bh1745_sensor_update();
     hardware_version_voltage_update();
     light_sensor_voltage_update();
     infrared_tube_sensor_voltage_update();
+    ir_code_update();
 }
 
 void system_management_task(void *pvParameter)
@@ -42,6 +47,8 @@ void system_management_task(void *pvParameter)
     light_sensor_init();
     infrared_tube_sensor_init();
     hardware_version_check_init();
+    ltr381_init();
+    // bh1745_init();
     show_firmware_version_t();
     while(true)
     {       
@@ -50,3 +57,4 @@ void system_management_task(void *pvParameter)
         vTaskDelay(SYSTEM_POLLING_TIME / portTICK_PERIOD_MS);
     }
 }
+

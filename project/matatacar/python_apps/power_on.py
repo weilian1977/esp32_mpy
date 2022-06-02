@@ -13,5 +13,5 @@ if __name__ == '__main__':
     drv_led.led_eye_rgb_cfg(2, 0, 0, 200)
     print("power on script begin")
     time.sleep(0.8)
-    audio_play.play('/sdcard/music/system/2-on.mp3', 70, True)
+    audio_play.play('/sdcard/music/system/2-on.mp3', True)
     drv_led.led_eye_rgb_cfg(2, 0, 0, 0)
