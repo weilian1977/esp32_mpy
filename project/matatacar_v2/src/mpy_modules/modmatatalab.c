@@ -224,7 +224,7 @@ STATIC const mp_map_elem_t matatalab_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_get_mac),                      (mp_obj_t)&get_mac_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_get_version),                  (mp_obj_t)&nvs_get_firmware_version_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_is_first_start),               (mp_obj_t)&is_first_start_obj },
-    // { MP_OBJ_NEW_QSTR(MP_QSTR_event),                        (mp_obj_t)&mt_mpy_event_type},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_event),                        (mp_obj_t)&mt_mpy_event_type},
     { MP_OBJ_NEW_QSTR(MP_QSTR_EVENT_ENABLE),                 MP_OBJ_NEW_SMALL_INT(MODULE_ENABLE_VALUE) },
     //{ MP_OBJ_NEW_QSTR(MP_QSTR_stop_script),                (mp_obj_t)&mt_mpy_stop_thread_type},
     //{ MP_OBJ_NEW_QSTR(MP_QSTR_STOP_PYTHON_THREAD_ENABLE),  MP_OBJ_NEW_SMALL_INT(MODULE_ENABLE_VALUE) },

@@ -95,7 +95,7 @@ set(MICROPY_SOURCE_PORT
     ${PROJECT_DIR}/src/driver/drv_aw20144.c
     ${PROJECT_DIR}/src/driver/drv_ltr381.c
     ${PROJECT_DIR}/src/driver/drv_bh1745.c
-    #${PROJECT_DIR}/src/driver/driver_update.c
+    ${PROJECT_DIR}/src/driver/driver_update.c
     ${PROJECT_DIR}/src/driver/drv_button.c
     ${PROJECT_DIR}/src/driver/drv_ble.c
     ${PROJECT_DIR}/src/driver/irmp/irmp.c

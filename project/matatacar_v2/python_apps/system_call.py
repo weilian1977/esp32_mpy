@@ -2,6 +2,8 @@ import time
 import _thread
 from communication import communication_process
 from communication import ble_state_monitor
+import events.event_manager as event_manager
+from event_obj import event_o
 import communication
 import matatalab
 import drv_system
@@ -32,6 +34,7 @@ usb_connect_state = False
 
 button = matatalab.button()
 led_matrix = matatalab.led_matrix()
+led_matrix.clear_display()
 
 def power_monitor():
     global power_off_count, low_power_count, low_power_flag, key_pressed, power_start_time, usb_connect_state
@@ -88,6 +91,9 @@ def power_monitor():
 
 def main():
     nvs.init_calibration_value()
+    event_manager.event_system_start()
+    time.sleep(0.1)
+    event_manager.event_trigger(event_o.EVE_SYSTEM_LAUNCH)
     while True:
         ble_state_monitor()
         power_monitor()

@@ -30,13 +30,14 @@
 
 #include "driver_update.h"
 #include "mt_esp32_button.h"
+#include "drv_button.h"
 
 /******************************************************************************
  DEFINE MACROS
  ******************************************************************************/
 #define   TAG                         ("DRIVER_UPDATE")
 
-#define BUTTON_NUM            (1)
+#define BUTTON_NUM            (3)
 
 /******************************************************************************
  DEFINE TYPES & CONSTANTS
@@ -75,13 +76,29 @@ void driver_update_t(void)
 void driver_event_listenning(void)
 {
   uint8_t para[EVE_PARAMETER_BYTE_MAX_SIZE];
-
 #if MODULE_BUTTON_ENABLE
-  for(uint8_t i = 0; i < BUTTON_NUM; i++)
+  for (uint8_t i = 0; i < BUTTON_NUM; i++)
   {
-    mt_esp32_button_is_pressed_t(i, (bool *)&para[0]);
-    mt_eve_trigger_by_type_t(EVENT_BUTTON + i, para);
-
+    if (is_key_pressed(BUTTON_A + i))
+    {
+      para[0] = 1;
+      mt_eve_trigger_by_type_t(EVENT_BUTTON_A_PRESSED + i*2, para);
+    }
+    else
+    {
+      para[0] = 0;
+      mt_eve_trigger_by_type_t(EVENT_BUTTON_A_PRESSED + i*2, para);
+    }
+    if (is_key_released(BUTTON_A + i))
+    {
+      para[0] = 1;
+      mt_eve_trigger_by_type_t(EVENT_BUTTON_A_RELEASED + i*2, para);
+    }
+    else
+    {
+      para[0] = 0;
+      mt_eve_trigger_by_type_t(EVENT_BUTTON_A_RELEASED + i*2, para);
+    }
   }
 #endif
 
@@ -99,7 +116,7 @@ void driver_update_task_t(void *parameter)
   {
     driver_update_t();
 #if MODULE_EVENT_ENABLE
-    // driver_event_listenning();
+    driver_event_listenning();
 #endif /* MODULE_EVENT_ENABLE */
     vTaskDelay(20 / portTICK_PERIOD_MS);
   }
@@ -111,8 +128,8 @@ void driver_update_task_t(void *parameter)
 void driver_update_task_init(void)
 {
   ESP_LOGI(TAG, "button false");
-  driver_init_t();
-  //xTaskCreatePinnedToCore(driver_update_task_t, "driver_update_task", 4 * 1024, NULL, 0, NULL, 0);
+  //driver_init_t();
+  xTaskCreatePinnedToCore(driver_update_task_t, "driver_update_task", 4 * 1024, NULL, 0, NULL, 0);
 }
 /******************************************************************************
  DEFINE PRIVATE FUNCTIONS

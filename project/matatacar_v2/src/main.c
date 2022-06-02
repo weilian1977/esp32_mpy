@@ -74,7 +74,7 @@
 #include "extmod/modbluetooth.h"
 #endif
 
-// #include "driver_update.h"
+#include "driver_update.h"
 #include "mt_event_mechanism.h"
 #include "drv_step_motor.h"
 
@@ -272,8 +272,8 @@ void app_main(void) {
     // Hook for a board to run code at start up.
     // This defaults to initialising NVS.
     MICROPY_BOARD_STARTUP();
-    // mt_eve_init_t();
-    // driver_update_task_init();
+    mt_eve_init_t();
+    driver_update_task_init();
     ble_prph_main();
     // speech_cn_init();
     xTaskCreatePinnedToCore(step_motor_task, "step_motor_task", STEP_MOTOR_TASK_STACK_SIZE / sizeof(StackType_t), NULL, STEP_MOTOR_TASK_PRIORITY, NULL, 0);

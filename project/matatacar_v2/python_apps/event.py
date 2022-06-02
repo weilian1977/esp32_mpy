@@ -6,24 +6,20 @@ def start(callback):
     print("System start")
     event_manager.event_register(event_o.EVE_SYSTEM_LAUNCH, event_o.TRIGGER_ALWAYS_WITH_NO_PARAMETER, callback, None)
 
-def button_pressed(callback):
-    event_manager.event_register(event_o.EVENT_BUTTON_PRESSED, event_o.TRIGGER_ONCE_BY_VALUE_TRUE, callback, None)
+def button_a_pressed(callback):
+    event_manager.event_register(event_o.EVENT_BUTTON_A_PRESSED, event_o.TRIGGER_ONCE_BY_VALUE_TRUE, callback, None)
 
-def button_released(callback):
-    event_manager.event_register(event_o.EVENT_BUTTON_RELEASED, event_o.TRIGGER_ONCE_BY_VALUE_TRUE, callback, None)
+def button_a_released(callback):
+    event_manager.event_register(event_o.EVENT_BUTTON_A_RELEASED, event_o.TRIGGER_ONCE_BY_VALUE_TRUE, callback, None)
 
-def tilted_left(callback):
-    print("event_register left")
-    event_manager.event_register(event_o.EVENT_TILT_LEFT, event_o.TRIGGER_ONCE_BY_VALUE_TRUE, callback, None)
+def button_b_pressed(callback):
+    event_manager.event_register(event_o.EVENT_BUTTON_B_PRESSED, event_o.TRIGGER_ONCE_BY_VALUE_TRUE, callback, None)
 
-def tilted_right(callback):
-    print("event_register right")
-    event_manager.event_register(event_o.EVENT_TILT_RIGHT, event_o.TRIGGER_ONCE_BY_VALUE_TRUE, callback, None)
+def button_b_released(callback):
+    event_manager.event_register(event_o.EVENT_BUTTON_B_RELEASED, event_o.TRIGGER_ONCE_BY_VALUE_TRUE, callback, None)
 
-def tilted_forward(callback):
-    print("event_register down")
-    event_manager.event_register(event_o.EVENT_TILT_FORWARD, event_o.TRIGGER_ONCE_BY_VALUE_TRUE, callback, None)
+def button_play_pressed(callback):
+    event_manager.event_register(event_o.EVENT_BUTTON_PLAY_PRESSED, event_o.TRIGGER_ONCE_BY_VALUE_TRUE, callback, None)
 
-def tilted_backward(callback):
-    print("event_register up")
-    event_manager.event_register(event_o.EVENT_TILT_BACKWARD, event_o.TRIGGER_ONCE_BY_VALUE_TRUE, callback, None)
+def button_play_released(callback):
+    event_manager.event_register(event_o.EVENT_BUTTON_PLAY_RELEASED, event_o.TRIGGER_ONCE_BY_VALUE_TRUE, callback, None)
