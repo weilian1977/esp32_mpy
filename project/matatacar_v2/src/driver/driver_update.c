@@ -105,10 +105,10 @@ void driver_event_listenning(void)
   memcpy(para, &temp, sizeof(float)); 
   mt_eve_trigger_by_type_t(EVENT_LIGHT_LEFT_LESS, para);
   mt_eve_trigger_by_type_t(EVENT_LIGHT_LEFT_MORE, para);
-  // temp = get_light_value(1);
-  // memcpy(para, &temp, sizeof(float)); 
-  // mt_eve_trigger_by_type_t(EVENT_LIGHT_RIGHT_LESS, para);
-  // mt_eve_trigger_by_type_t(EVENT_LIGHT_RIGHT_MORE, para);
+  temp = get_light_value(0);
+  memcpy(para, &temp, sizeof(float)); 
+  mt_eve_trigger_by_type_t(EVENT_LIGHT_RIGHT_LESS, para);
+  mt_eve_trigger_by_type_t(EVENT_LIGHT_RIGHT_MORE, para);
 #endif
 
   //float temp = (float)get_timer_value_second_t(0);

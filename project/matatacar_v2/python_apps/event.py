@@ -37,11 +37,9 @@ def light_left_more_than(threshold):
 def light_left_less_than(threshold):
     def decorator(callback):
         if not isinstance(threshold, (int, float)):
-            print("left isinstance\n")
             return
         threshold_data = threshold
         if threshold_data < 0:
-            print("left  thre\n")
             threshold_data = 0
         event_manager.event_register(event_o.EVENT_LIGHT_LEFT_LESS, event_o.TRIGGER_ONCE_BY_VALUE_SMALLER, callback, threshold_data)
     return decorator
@@ -49,11 +47,9 @@ def light_left_less_than(threshold):
 def light_right_more_than(threshold):
     def decorator(callback):
         if not isinstance(threshold, (int, float)):
-            print("isinstance\n")
             return
         threshold_data = threshold
         if threshold_data < 0:
-            print("right  thre\n")
             threshold_data = 0
         event_manager.event_register(event_o.EVENT_LIGHT_RIGHT_MORE, event_o.TRIGGER_ONCE_BY_VALUE_LARGER, callback, threshold_data)
     return decorator
