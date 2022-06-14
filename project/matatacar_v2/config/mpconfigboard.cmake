@@ -6,6 +6,7 @@ set(SDKCONFIG_DEFAULTS
     config/sdkconfig.spiram_sx
     config/sdkconfig.board
     config/sdkconfig.base_s3
+    config/sdkconfig.freertos
     config/sdkconfig.ble
 )
 

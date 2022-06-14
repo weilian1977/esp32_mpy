@@ -69,6 +69,7 @@
 #include "usb_detect.h"
 #include "drv_aw20144.h"
 #include "drv_infrared_transceiver.h"
+#include "drv_coprocessor.h"
 
 #if MICROPY_BLUETOOTH_NIMBLE
 #include "extmod/modbluetooth.h"
@@ -276,6 +277,7 @@ void app_main(void) {
     driver_update_task_init();
     ble_prph_main();
     // speech_cn_init();
+    xTaskCreatePinnedToCore(drv_coprpcessor_task, "drv_coprpcessor_task", DRV_COPROCESSOR_TASK_STACK_SIZE / sizeof(StackType_t), NULL, DRV_COPROCESSOR_TASK_PRIORITY, NULL, 0);
     xTaskCreatePinnedToCore(step_motor_task, "step_motor_task", STEP_MOTOR_TASK_STACK_SIZE / sizeof(StackType_t), NULL, STEP_MOTOR_TASK_PRIORITY, NULL, 0);
     xTaskCreatePinnedToCore(system_management_task, "system_management_task", SYSTEM_MANAGEMENT_TASK_STACK_SIZE / sizeof(StackType_t), NULL, SYSTEM_MANAGEMENT_TASK_PRIORITY, NULL, 0);
     xTaskCreatePinnedToCore(mp_task, "mp_task", MP_TASK_STACK_SIZE / sizeof(StackType_t), NULL, MP_TASK_PRIORITY, &mp_main_task_handle, MP_TASK_COREID);

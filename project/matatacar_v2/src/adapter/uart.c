@@ -48,15 +48,15 @@ void uart_stdout_init(void) {
     };
     uart_param_config(MICROPY_HW_UART_REPL, &uartcfg);
 
-    const uint32_t rxbuf = 129; // IDF requires > 128 min
+    const uint32_t rxbuf = 256; // IDF requires > 128 min
     const uint32_t txbuf = 0;
 
     uart_driver_install(MICROPY_HW_UART_REPL, rxbuf, txbuf, 0, NULL, 0);
 
-    uart_isr_handle_t handle;
-    uart_isr_free(MICROPY_HW_UART_REPL);
-    uart_isr_register(MICROPY_HW_UART_REPL, uart_irq_handler, NULL, ESP_INTR_FLAG_LOWMED | ESP_INTR_FLAG_IRAM, &handle);
-    uart_enable_rx_intr(MICROPY_HW_UART_REPL);
+    // uart_isr_handle_t handle;
+    // uart_isr_free(MICROPY_HW_UART_REPL);
+    // uart_isr_register(MICROPY_HW_UART_REPL, uart_irq_handler, NULL, ESP_INTR_FLAG_LOWMED | ESP_INTR_FLAG_IRAM, &handle);
+    // uart_enable_rx_intr(MICROPY_HW_UART_REPL);
 }
 
 int uart_stdout_tx_strn(const char *str, size_t len) {

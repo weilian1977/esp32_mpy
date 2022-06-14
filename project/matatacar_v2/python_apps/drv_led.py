@@ -47,6 +47,15 @@ def led_get_rgb(color, brightness):
     [r,g,b] = [int(round(i * brightness / 255.0)) for i in led_color[color]]
     return [r,g,b]
 
+def show_single(id, r, g, b):
+    if(id < 0) or (id > 6):
+        pass
+    if(id == 0):
+        show_all(r,g,b)
+    else:
+        _leds[id - 1] = (r,g,b)
+        _leds.write()
+
 def led_eye_rgb_cfg(mode, r, g, b):
     if( mode == BOTH_EYE_MODE):
         show_all(r,g,b)

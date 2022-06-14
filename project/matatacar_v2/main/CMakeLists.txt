@@ -87,7 +87,6 @@ set(MICROPY_SOURCE_PORT
     ${PROJECT_DIR}/src/driver/drv_i2s.c
     ${PROJECT_DIR}/src/driver/drv_nvs.c
     ${PROJECT_DIR}/src/driver/vfs_stream.c
-    #${PROJECT_DIR}/src/driver/mt_esp32_button.c
     ${PROJECT_DIR}/src/driver/drv_step_motor.c
     ${PROJECT_DIR}/src/driver/mt_event_mechanism.c
     ${PROJECT_DIR}/src/driver/drv_light_sensor.c
@@ -97,6 +96,7 @@ set(MICROPY_SOURCE_PORT
     ${PROJECT_DIR}/src/driver/drv_bh1745.c
     ${PROJECT_DIR}/src/driver/driver_update.c
     ${PROJECT_DIR}/src/driver/drv_button.c
+    ${PROJECT_DIR}/src/driver/drv_coprocessor.c
     ${PROJECT_DIR}/src/driver/drv_ble.c
     ${PROJECT_DIR}/src/driver/irmp/irmp.c
     ${PROJECT_DIR}/src/driver/irmp/irsnd.c

@@ -6,7 +6,7 @@
 #include "drv_light_sensor.h"
 #include "drv_infrared_tube.h"
 #include "mpy_sensor.h"
-#include "drv_ltr381.h"
+#include "drv_coprocessor.h"
 #include "drv_infrared_transceiver.h"
 #include "esp_err.h"
 #include "esp_log.h"
@@ -90,9 +90,9 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(get_line_follower_2_value_obj, mpy_get_line_fol
 
 STATIC mp_obj_t mpy_get_color(mp_obj_t self_in)
 {
-    int32_t red_val = get_red_value();
-    int32_t green_val = get_green_value();
-    int32_t blue_val = get_blue_value();
+    int32_t red_val = sensor_value.r_value;
+    int32_t green_val = sensor_value.g_value;
+    int32_t blue_val = sensor_value.b_value;
     mp_obj_t color_tuple[3] = {
         mp_obj_new_int(red_val),
         mp_obj_new_int(green_val),
