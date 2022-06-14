@@ -9,7 +9,7 @@ import drv_motion
 import system_def
 import action
 import drv_system
-import audio_play
+import audio
 # import ota
 import wifi
 import system_state
@@ -333,18 +333,18 @@ def cmd_play_note(carble, cmd):
     play_time = (cmd[2] << 8) | cmd[3]
     beat = play_time / 500
     if freq >= 131 and freq <= 247:
-        audio_play.play_alto(note_id_offset[freq], beat)
+        audio.play_alto(note_id_offset[freq], beat)
     elif freq >= 262 and freq <= 494:
-        audio_play.play_treble(note_id_offset[freq], beat)
+        audio.play_treble(note_id_offset[freq], beat)
     else:
         tone = note_freq_table.get(freq)
-        audio_play.play_tone(tone, beat)
+        audio.play_tone(tone, beat)
     msg_normal_response(carble, MESSAGE_RX_OK)
 
 def cmd_play_music(carble, cmd):
     print("cmd_play_music")
     if(cmd[0] == 0x04):
-        audio_play.play_stop()
+        audio.play_stop()
         msg_normal_response(carble, MESSAGE_RX_OK)
         return
     elif(cmd[0] == 0x01):
@@ -359,11 +359,11 @@ def cmd_play_music(carble, cmd):
         return
         
     if((0 < cmd[1]) and (cmd[1] <= 0xa)):
-        audio_play.play_melody(cmd[1], 1)
+        audio.play_melody(cmd[1], 1)
     elif((0x10 < cmd[1]) and (cmd[1] <= 0x16)):
-        audio_play.play_music((cmd[1] - 0x10), 1)
+        audio.play_music((cmd[1] - 0x10), 1)
     elif(0x20 <= cmd[1]) and (cmd[1] < 0x2f):
-        audio_play.play_move((cmd[1] - 0x20), 1)
+        audio.play_move((cmd[1] - 0x20), 1)
     else:
         print("invalid music")
         msg_normal_response(carble, MESSAGE_ERROR_INVALID_PARAM)
@@ -463,7 +463,7 @@ def cmd_long_trans(carble, cmd):
 
 def cmd_play_voice(carble, cmd):
     print("cmd_play_voice")
-    audio_play.play_system('start.mp3', False, 100)
+    audio.play_system('start.mp3', False, 100)
     msg_normal_response(carble, MESSAGE_RX_OK)
 
 def cmd_unknow(carble, cmd):

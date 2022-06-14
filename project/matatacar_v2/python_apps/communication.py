@@ -9,7 +9,7 @@ import protocol_v3
 import _thread
 import matatalab
 import drv_system
-import audio_play
+import audio
 
 BLE_UNLINK = 0
 BLE_LINK = 1
@@ -44,13 +44,13 @@ def ble_process():
             print("ble connect")
             ble_state = BLE_LINK
             matatalab.indicator_led(matatalab.ON)
-            audio_play.play('/sdcard/music/system/5-link.mp3' ,False)
+            audio.play('/sdcard/music/system/5-link.mp3' ,False)
     elif(ble_state == BLE_LINK):
         if(carble.get_connect_state() == BLE_UNLINK):
             print("ble disconnect")
             ble_state = BLE_UNLINK
             matatalab.indicator_led(matatalab.SINGLE_FLASH)
-            audio_play.play('/sdcard/music/system/4-ulink.mp3' ,False)
+            audio.play('/sdcard/music/system/4-ulink.mp3' ,False)
         else:
             protocol_id = carble.get_protocol()
             if(protocol_id == ble.PROTOCOL_VER_V1):
@@ -69,7 +69,7 @@ def communication():
     if(matatalab.is_first_start()):
         ble_state = carble.get_connect_state()
         if (ble_state == BLE_LINK):
-            audio_play.play('/sdcard/music/system/5-link.mp3' ,False)
+            audio.play('/sdcard/music/system/5-link.mp3' ,False)
     else:
         ble_state = carble.get_connect_state()
 

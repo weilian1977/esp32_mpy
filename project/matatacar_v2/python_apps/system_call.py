@@ -10,8 +10,7 @@ import drv_system
 import drv_led as leds
 import nvs
 import sensor
-import audio_play as audio_player
-import audio_recorder
+import audio
 import drv_motion as motion
 import action
 import errno
@@ -115,6 +114,9 @@ if __name__ == '__main__':
 
     _thread.stack_size(THREAD_MAIN_SIZE)
     _thread.start_new_thread(main, ())
+
+    _thread.stack_size(THREAD_MAIN_SIZE)
+    _thread.start_new_thread(audio.media_process, ())
 
     _thread.stack_size(THREAD_COMMUNICATION_SIZE)
     _thread.start_new_thread(communication_process, ())

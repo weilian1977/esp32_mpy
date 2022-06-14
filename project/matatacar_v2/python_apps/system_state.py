@@ -1,10 +1,28 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-PLAY_IDLE = False
-PLAY_RUN = True
+PLAY_IDLE = 0
+PLAY_RUN = 1
+PLAY_END = 2
+
+SPEECH_IDLE =0
+SPEECH_RUN = 1
+SPEECH_END = 2
+
+RECORD_IDLE = 0
+RECORD_RUN = 1
+RECORD_END = 2
+RECORD_TIMEOUT = 3
+RECORD_COPY = 4
 
 play_state = PLAY_IDLE
+speech_state = SPEECH_IDLE
+record_state = RECORD_IDLE
+
+#PLAY_IDLE = False
+#PLAY_RUN = True
+#
+#play_state = PLAY_IDLE
 stop_flag = False
 power_off_state = False
 code_stop = False
@@ -26,6 +44,22 @@ def set_play_state(state):
 def get_play_state():
     global play_state
     return play_state
+
+def set_record_state(state):
+    global record_state
+    record_state = state
+
+def get_record_state():
+    global record_state
+    return record_state
+
+def set_speech_state(state):
+    global speech_state
+    speech_state = state
+
+def get_speech_state():
+    global speech_state
+    return speech_state
 
 def set_power_off_state(state):
     global power_off_state

@@ -4,7 +4,7 @@ import system_def
 import matatalab
 import ble
 import drv_system
-import audio_play
+import audio
 import nvs
 import time
 import drv_motion
@@ -98,7 +98,7 @@ def factory_power_off(carble, msg):
     drv_system.power_off()
 
 def factory_speaker_test(carble, msg):
-    audio_play.play_move(1)
+    audio.play_move(1)
     ret = [0]
     carble.send_upstream(bytes(ret))
 
@@ -110,7 +110,7 @@ def factory_aging_test_start(carble, item, test_hour):
     carble.send_upstream(bytes(ret))
     while((time.ticks_diff(time.time(), test_start_time) < test_hour*3600)):
         if(item & (1 << 0)):
-            audio_play.play_melody(1)
+            audio.play_melody(1)
             # led.show_all(0, 0, 255)
         if(item & (1 << 1)):
             drv_motion.forward(1,1)
@@ -135,7 +135,7 @@ def factory_aging_test_start(carble, item, test_hour):
     drv_system.power_off()
 
 def factory_aging_test_stop(carble):
-    audio_play.play_stop()
+    audio.play_stop()
     drv_motion.stop(2)
     ret = [0]
     carble.send_upstream(bytes(ret))
@@ -191,7 +191,7 @@ def factory_cmd_unknow(carble, msg):
 
 
 def factory_emc_test_start():
-    audio_play.play_music(1,False)
+    audio.play_music(1,False)
     # led.show_all(255, 255, 255)
     drv_motion.move_speed(100,100)
     time.sleep(5)
@@ -206,7 +206,7 @@ def factory_emc_test_start():
     time.sleep(1)
         
 def factory_emc_test_stop():
-    audio_play.play_stop()
+    audio.play_stop()
     # led.show_all(0, 0, 0)
     drv_motion.move_speed(0,0)
 

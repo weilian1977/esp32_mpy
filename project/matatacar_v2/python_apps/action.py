@@ -8,7 +8,7 @@ import drv_led
 import drv_motion
 import matatalab
 import system_state
-import audio_play
+import audio
 
 
 MOTION_FORWARD    = 0
@@ -23,18 +23,18 @@ def play(file_name, sync):
     if(if_file_exists(file_full_name) == False):
         print("file not exist:",file_full_name)
         return
-    audio_play.play(file_full_name, sync)
+    audio.play(file_full_name, sync)
 
 
 def play_move_time(index, delay):
-    audio_play.play_move(index, 0)
+    audio.play_move(index, 0)
     time.sleep_ms(delay)
         
 def set_vol(value):
-    audio_play.set_volume(value)
+    audio.set_volume(value)
     
 def get_vol():
-    return audio_play.get_volume()
+    return audio.get_volume()
 
 def action_motion(type, value):
     if(type == MOTION_FORWARD):
@@ -50,7 +50,7 @@ def action_eye(eye_mode, para):
     drv_led.led_eye_set(eye_mode, para)
 
 def action_play_stop():
-    audio_play.play_stop()
+    audio.play_stop()
 
 def action_cancel_cmd():
     action_play_stop()
@@ -133,7 +133,7 @@ def action_parse(list):
     action_play_stop()
 
 def action_dance(index):
-    audio_play.play_dance(index, 0)
+    audio.play_dance(index, 0)
     dance_list = action_dance_code_get(index)
     print("action_dance", dance_list)
     action_parse(dance_list)

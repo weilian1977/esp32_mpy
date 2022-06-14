@@ -141,7 +141,7 @@ extern const struct _mp_obj_module_t mp_module_usocket;
 extern const struct _mp_obj_module_t mp_module_network;
 extern const struct _mp_obj_module_t mp_module_onewire;
 // extern const struct _mp_obj_module_t motion_sensor_module;
-extern const struct _mp_obj_module_t audio_module;
+extern const struct _mp_obj_module_t _audio_module;
 extern const struct _mp_obj_module_t speech_module;
 extern const struct _mp_obj_module_t matatalab_module;
 
@@ -153,7 +153,7 @@ extern const struct _mp_obj_module_t matatalab_module;
     { MP_OBJ_NEW_QSTR(MP_QSTR_usocket), (mp_obj_t)&mp_module_usocket }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_network), (mp_obj_t)&mp_module_network }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR__onewire), (mp_obj_t)&mp_module_onewire }, \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_audio), (mp_obj_t)&audio_module}, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR__audio), (mp_obj_t)&_audio_module}, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_speech), (mp_obj_t)&speech_module}, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_matatalab), (mp_obj_t)&matatalab_module }, \
 

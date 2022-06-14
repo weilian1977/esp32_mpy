@@ -9,7 +9,7 @@ import drv_motion
 import protocol_v2
 import action
 import drv_system
-import audio_play
+import audio
 import factory
 import system_state
 import sensor
@@ -125,7 +125,7 @@ def motion_backward(carble, msg):
 
 def play_default_music(carble, msg):
     #action.set_vol(60)
-    audio_play.play_music(1)
+    audio.play_music(1)
     #action.play('/music/music1.mp3')
     print("play_default_music")
 
@@ -190,11 +190,11 @@ def wait_type1(carble, msg):
 def play_music(carble, msg):
     print("play_music")
     if(msg[1] > 0) and (msg[1] <= 6):
-        audio_play.play_music(msg[1], False)
+        audio.play_music(msg[1], False)
     if(msg[1] > 6) and (msg[1] <= 12):
-        audio_play.play_music((msg[1] - 6), False)
+        audio.play_music((msg[1] - 6), False)
     if(msg[1] > 12) and (msg[1] <= 18):
-        audio_play.play_dance((msg[1] - 12), False)
+        audio.play_dance((msg[1] - 12), False)
 
 def play_dance(carble, msg):
     action.action_dance(msg[1])
@@ -207,15 +207,15 @@ def play_movement(carble, msg):
     print("play_movement")
 
 def play_alto(carble, msg):
-    audio_play.play_alto(msg[1])
+    audio.play_alto(msg[1])
     print("play_bass")
 
 def play_treble(carble, msg):
-    audio_play.play_treble(msg[1])
+    audio.play_treble(msg[1])
     print("play_treble")
 
 def play_melody(carble, msg):
-    audio_play.play_melody(msg[1])
+    audio.play_melody(msg[1])
     print("play_melody")
     
 def motion_adjust_forward(carble, msg):
@@ -294,11 +294,11 @@ def car_action_control(carble, msg):
     print("car_action_control")
 
 def play_alto_beat(carble, msg):
-    audio_play.play_alto(msg[1], msg[2])
+    audio.play_alto(msg[1], msg[2])
     print("play_bass_beat")
 
 def play_treble_beat(carble, msg):
-    audio_play.play_treble(msg[1], msg[2])
+    audio.play_treble(msg[1], msg[2])
     print("play_treble_beat")
 
 def factory_cmd(carble, msg):
@@ -307,7 +307,7 @@ def factory_cmd(carble, msg):
     factory.factory_process(carble, msg)
 
 def play_start_voice(carble, msg):
-    audio_play.play_system('start.mp3', False, 100)
+    audio.play_system('start.mp3', False, 100)
     print("play_start_voice")
     
 def car_cmd_unknow(carble, msg):
