@@ -43,7 +43,7 @@
 #define MICRO_STEP               (STEP_SUBDIVISION * 4)
 #define STEP_POS_MAX             (MICRO_STEP * 100)
 
-#define DEFAULT_MIN_SPEED        (200 * STEP_SUBDIVISION)
+#define DEFAULT_MIN_SPEED        (100 * STEP_SUBDIVISION)
 #define DEFALUT_MAX_SPEED        (1050 * STEP_SUBDIVISION)
 #define DEFALUT_ACCELERATION     (5 * DEFALUT_MAX_SPEED)    //200ms 加速到最快
 
@@ -78,6 +78,7 @@ typedef enum
     STOP_MOVE = 0,
     SPEED_MOVE =  1,
     POS_MOVE = 2,
+    PWM_MOVE = 3,
 }step_motor_motion_type;
 
 typedef struct
@@ -129,9 +130,9 @@ extern long get_current_position(motor_configure_type motor);
 extern void set_current_position(motor_configure_type motor, long position);
 extern void motor_move_to(motor_configure_type motor, long absolute, bool sync);
 extern void motor_move(motor_configure_type motor, long relative, bool sync);
-extern void motor_set_speed(motor_configure_type motor, int32_t run_speed);
+extern void motor_set_speed(motor_configure_type motor, int32_t run_speed, bool immediately);
 extern int32_t motor_get_speed(motor_configure_type motor);
-extern void motor_run_speed(int32_t left_run_speed, int32_t right_run_speed);
+extern void motor_run_speed(int32_t left_run_speed, int32_t right_run_speed, bool immediately);
 extern void motor_stop(motor_configure_type motor);
 extern void motor_run(void);
 extern void step_motor_task(void *pvParameter);

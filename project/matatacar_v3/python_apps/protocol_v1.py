@@ -251,9 +251,9 @@ def car_action_control(carble, msg):
         else:
             left_speed_level = ((msg[1] >> 4) & 0xF) - 6
             if(0 < left_speed_level) and (left_speed_level <= 6):
-                left_speed = (left_speed_level * 35) + 35
+                left_speed = (left_speed_level * 15) + 15
             elif(left_speed_level < 0) and (left_speed_level >= -6):
-                left_speed = (left_speed_level * 35) - 35
+                left_speed = (left_speed_level * 15) - 15
             else:
                 left_speed = "stop"
         if(right_speed_level == 0xf):
@@ -261,9 +261,9 @@ def car_action_control(carble, msg):
         else:
             right_speed_level = (msg[1] & 0xF) - 6
             if(0 < right_speed_level) and (right_speed_level <= 6):
-                right_speed = (right_speed_level * 35) + 35
+                right_speed = (right_speed_level * 15) + 15
             elif(right_speed_level < 0) and (right_speed_level >= -6):
-                right_speed = (right_speed_level * 35) - 35
+                right_speed = (right_speed_level * 15) - 15
             else:
                 right_speed = "stop"
         drv_motion.move_speed(left_speed, right_speed)

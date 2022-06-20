@@ -11,7 +11,7 @@
 #define MICRO_STEP               (STEP_SUBDIVISION * 4)
 #define STEP_POS_MAX             (MICRO_STEP * 100)
 
-#define DEFAULT_MIN_SPEED        (200 * STEP_SUBDIVISION)
+#define DEFAULT_MIN_SPEED        (100 * STEP_SUBDIVISION)
 #define DEFALUT_MAX_SPEED        (1050 * STEP_SUBDIVISION)
 #define DEFALUT_ACCELERATION     (5 * DEFALUT_MAX_SPEED)    //200ms 加速到最快
 

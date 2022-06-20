@@ -30,6 +30,9 @@ def turn_right(angle, wait_flag):
 def move_speed(speed_left, speed_right):
     moto.move_speed(speed_left, speed_right)
 
+def motor_pwm(speed_left, speed_right):
+    moto.motor_pwm(speed_left, speed_right)
+
 def move_position(position, wait_flag):
     moto.move_position(position, wait_flag)
 

@@ -199,7 +199,7 @@ STATIC mp_obj_t mpy_move_speed(mp_obj_t self_in, mp_obj_t left_speed, mp_obj_t r
             right_pulse_speed = 0;
         }
     }
-    motor_run_speed(-left_pulse_speed, right_pulse_speed);
+    motor_run_speed(-left_pulse_speed, right_pulse_speed, false);
 
     return mp_const_none;
 }
@@ -213,21 +213,44 @@ STATIC mp_obj_t mpy_motor_speed(mp_obj_t self_in, mp_obj_t motor, mp_obj_t speed
     long pulse_speed = (long)(MM_TO_PULSE * speed_value);
     if(motor_value == MOTOR_MAX)
     {
-        motor_set_speed(MOTOR_LEFT, -pulse_speed);
-        motor_set_speed(MOTOR_RIGHT, pulse_speed);
+        motor_set_speed(MOTOR_LEFT, pulse_speed, false);
+        motor_set_speed(MOTOR_RIGHT, pulse_speed, false);
     }
     else if(motor_value == MOTOR_LEFT)
     {
-        motor_set_speed(MOTOR_LEFT, -pulse_speed);
+        motor_set_speed(MOTOR_LEFT, pulse_speed, false);
     }
     else if(motor_value == MOTOR_RIGHT)
     {
-        motor_set_speed(MOTOR_RIGHT, pulse_speed);
+        motor_set_speed(MOTOR_RIGHT, pulse_speed, false);
     }
     return mp_const_none;
 }
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(motor_speed_obj, mpy_motor_speed);
+
+STATIC mp_obj_t mpy_motor_pwm(mp_obj_t self_in, mp_obj_t motor, mp_obj_t pwm)
+{
+    int16_t motor_value = mp_obj_get_int(motor);
+    int16_t pwm_value = mp_obj_get_int(pwm);
+    long pulse_speed = (long)(DEFALUT_MAX_SPEED * pwm_value / 100);
+    if(motor_value == MOTOR_MAX)
+    {
+        motor_set_speed(MOTOR_LEFT, pulse_speed, true);
+        motor_set_speed(MOTOR_RIGHT, pulse_speed, true);
+    }
+    else if(motor_value == MOTOR_LEFT)
+    {
+        motor_set_speed(MOTOR_LEFT, pulse_speed, true);
+    }
+    else if(motor_value == MOTOR_RIGHT)
+    {
+        motor_set_speed(MOTOR_RIGHT, pulse_speed, true);
+    }
+    return mp_const_none;
+}
+
+STATIC MP_DEFINE_CONST_FUN_OBJ_3(motor_pwm_obj, mpy_motor_pwm);
 
 STATIC mp_obj_t mpy_stop(mp_obj_t self_in, mp_obj_t motor)
 {
@@ -258,7 +281,6 @@ STATIC mp_obj_t mpy_set_max_speed(mp_obj_t self_in, mp_obj_t max_speed)
 {
     uint32_t max_speed_value = mp_obj_get_int(max_speed);
     motor_set_move_speed_max(max_speed_value);
-
     return mp_const_none;
 }
 
@@ -279,6 +301,7 @@ STATIC const mp_rom_map_elem_t mpy_motion_locals_dict_table[] =
     { MP_OBJ_NEW_QSTR(MP_QSTR_RIGHT),                MP_OBJ_NEW_SMALL_INT(MOTOR_RIGHT) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_ALL),                  MP_OBJ_NEW_SMALL_INT(MOTOR_MAX) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_motor_speed),          (mp_obj_t)&motor_speed_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_motor_pwm),            (mp_obj_t)&motor_pwm_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_stop),                 (mp_obj_t)&stop_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_set_max_speed),        (mp_obj_t)&set_max_speed_obj },
         
