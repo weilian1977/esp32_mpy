@@ -645,10 +645,19 @@ static bool mt_eve_trigger_check(int16_t eve_id, void *para)
       /* parameter must be a string type */
       if(0 == strcmp((char *)(mt_eve_manager.mt_eve_single[eve_id]->eve_para.byte_val), (char *)para))
       {
-        ret = true;
+        if(false == mt_eve_get_triggerd_flag_t(eve_id))
+        {
+          mt_eve_set_triggerd_flag_t(eve_id, true);
+          ret = true;
+        }
+        else
+        {
+          ret = false;
+        }
       }
       else
       {
+        mt_eve_set_triggerd_flag_t(eve_id, false);
         ret = false;
       }
     break;

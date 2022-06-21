@@ -5,6 +5,7 @@
 #define NVS_STRING_LENGTH_MAX  (128)
 
 esp_err_t nvs_init(void);
+bool is_nvs_initialized(void);
 esp_err_t nvs_write_string(const char* namespace, const char* key, char* write_string);
 esp_err_t nvs_read_string(const char* namespace, const char* key, char* read_string);
 

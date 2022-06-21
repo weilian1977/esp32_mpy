@@ -24,6 +24,27 @@ def button_play_pressed(callback):
 def button_play_released(callback):
     event_manager.event_register(event_o.EVENT_BUTTON_PLAY_RELEASED, event_o.TRIGGER_ONCE_BY_VALUE_TRUE, callback, None)
 
+def button_circular_pressed(callback):
+    event_manager.event_register(event_o.EVENT_BUTTON_A_PRESSED, event_o.TRIGGER_ONCE_BY_VALUE_TRUE, callback, None)
+
+def button_circular_released(callback):
+    event_manager.event_register(event_o.EVENT_BUTTON_A_RELEASED, event_o.TRIGGER_ONCE_BY_VALUE_TRUE, callback, None)
+
+def button_square_pressed(callback):
+    event_manager.event_register(event_o.EVENT_BUTTON_B_PRESSED, event_o.TRIGGER_ONCE_BY_VALUE_TRUE, callback, None)
+
+def button_square_released(callback):
+    event_manager.event_register(event_o.EVENT_BUTTON_B_RELEASED, event_o.TRIGGER_ONCE_BY_VALUE_TRUE, callback, None)
+
+def button_triangle_pressed(callback):
+    event_manager.event_register(event_o.EVENT_BUTTON_PLAY_PRESSED, event_o.TRIGGER_ONCE_BY_VALUE_TRUE, callback, None)
+
+def button_triangle_released(callback):
+    event_manager.event_register(event_o.EVENT_BUTTON_PLAY_RELEASED, event_o.TRIGGER_ONCE_BY_VALUE_TRUE, callback, None)
+
+def obstacle_detected(callback):
+    event_manager.event_register(event_o.EVENT_OBSTACLE_DETECTED, event_o.TRIGGER_ONCE_BY_VALUE_TRUE, callback, None)
+
 def light_left_more_than(threshold):
     def decorator(callback):
         if not isinstance(threshold, (int, float)):
@@ -62,4 +83,10 @@ def light_right_less_than(threshold):
         if threshold_data < 0:
             threshold_data = 0
         event_manager.event_register(event_o.EVENT_LIGHT_RIGHT_LESS, event_o.TRIGGER_ONCE_BY_VALUE_SMALLER, callback, threshold_data)
+    return decorator
+
+def color_detected(mstr):
+    def decorator(callback):
+        mstr_str = str(mstr)
+        event_manager.event_register(event_o.EVENT_COLOR_DETECTED, event_o.TRIGGER_BY_STRING_MATCHING, callback, mstr_str)
     return decorator

@@ -221,6 +221,8 @@ def get_color_id():
             return "blue"
         elif (v > 46) and (s > 43) and ((h > 125) and (h < 155)):
             return "purple"
+        else:
+            return "unknown"
 
 def send_ir_code(addr, command):
     _sensor.send_ir_code(addr, command)

@@ -115,14 +115,12 @@ static MP_DEFINE_CONST_FUN_OBJ_2(mt_mpy_event_get_status_obj, mt_mpy_event_get_s
 
 static mp_obj_t mt_mpy_event_test(mp_obj_t self_in)
 {
-  ESP_LOGI(TAG, "mt_mpy_event_test");
   return mp_const_true;
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(mt_mpy_event_test_obj, mt_mpy_event_test);
 
 static mp_obj_t mt_mpy_event_register(size_t n_args, const mp_obj_t *args)
 {
-  ESP_LOGI(TAG, "mt_mpy_event_register");
   int32_t eve_type = mp_obj_get_int(args[1]);
   int32_t trigger_type = mp_obj_get_int(args[2]);
   int16_t register_id = -1;
@@ -163,9 +161,6 @@ static mp_obj_t mt_mpy_event_register(size_t n_args, const mp_obj_t *args)
   }
 
   mt_eve_register_t(eve_type, trigger_type, para_data, NULL, &register_id);
-  ESP_LOGI(TAG, "event register id is: %d", register_id);
-  ESP_LOGI(TAG, "eve_type is: %d", eve_type);
-  ESP_LOGI(TAG, "trigger_type is: %d", trigger_type);
   
   return mp_obj_new_int(register_id);
 }
@@ -177,7 +172,6 @@ static mp_obj_t mt_mpy_event_unregister(mp_obj_t self_in, mp_obj_t arg1)
 
   mt_eve_unregister_t(eve_id);
   MT_LOGD(TAG, "event register id is: %d", eve_id);
-  ESP_LOGI(TAG, "event unregister id is: %d !!!", eve_id);
   return mp_const_true;
 }
 static MP_DEFINE_CONST_FUN_OBJ_2(mt_mpy_event_unregister_obj, mt_mpy_event_unregister);
@@ -302,7 +296,6 @@ static mp_obj_t mt_mpy_event_trigger_by_type(mp_obj_t self_in, mp_obj_t arg1, mp
   {
     ;
   }
-  MT_LOGD(TAG, "trigger tpye is:%d", eve_type);
   mt_eve_trigger_by_type_t(eve_type, para_data);
   return mp_const_true;
 }
@@ -394,6 +387,8 @@ static const mp_map_elem_t mt_mpy_event_locals_dict_table[] =
   { MP_OBJ_NEW_QSTR(MP_QSTR_EVENT_LIGHT_LEFT_MORE),                  MP_OBJ_NEW_SMALL_INT(EVENT_LIGHT_LEFT_MORE) },
   { MP_OBJ_NEW_QSTR(MP_QSTR_EVENT_LIGHT_RIGHT_LESS),                 MP_OBJ_NEW_SMALL_INT(EVENT_LIGHT_RIGHT_LESS) },
   { MP_OBJ_NEW_QSTR(MP_QSTR_EVENT_LIGHT_RIGHT_MORE),                 MP_OBJ_NEW_SMALL_INT(EVENT_LIGHT_RIGHT_MORE) },
+  { MP_OBJ_NEW_QSTR(MP_QSTR_EVENT_OBSTACLE_DETECTED),                MP_OBJ_NEW_SMALL_INT(EVENT_OBSTACLE_DETECTED) },
+  { MP_OBJ_NEW_QSTR(MP_QSTR_EVENT_COLOR_DETECTED),                   MP_OBJ_NEW_SMALL_INT(EVENT_COLOR_DETECTED) },
   { MP_OBJ_NEW_QSTR(MP_QSTR_EVENT_TOUCHPAD_0),                       MP_OBJ_NEW_SMALL_INT(EVENT_TOUCHPAD_0) },
   { MP_OBJ_NEW_QSTR(MP_QSTR_EVENT_TOUCHPAD_1),                       MP_OBJ_NEW_SMALL_INT(EVENT_TOUCHPAD_1) },
   { MP_OBJ_NEW_QSTR(MP_QSTR_EVENT_TOUCHPAD_2),                       MP_OBJ_NEW_SMALL_INT(EVENT_TOUCHPAD_2) },
