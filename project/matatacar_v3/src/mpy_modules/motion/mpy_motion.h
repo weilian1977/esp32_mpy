@@ -6,14 +6,14 @@
 #include "mt_module_config.h"
 
 
-// 64 细分, 一个循环四个信号
-#define STEP_SUBDIVISION         32
-#define MICRO_STEP               (STEP_SUBDIVISION * 4)
-#define STEP_POS_MAX             (MICRO_STEP * 100)
+// // 64 细分, 一个循环四个信号
+// #define STEP_SUBDIVISION         32
+// #define MICRO_STEP               (STEP_SUBDIVISION * 4)
+// #define STEP_POS_MAX             (MICRO_STEP * 100)
 
-#define DEFAULT_MIN_SPEED        (100 * STEP_SUBDIVISION)
-#define DEFALUT_MAX_SPEED        (1050 * STEP_SUBDIVISION)
-#define DEFALUT_ACCELERATION     (5 * DEFALUT_MAX_SPEED)    //200ms 加速到最快
+// #define DEFAULT_MIN_SPEED        (100 * STEP_SUBDIVISION)
+// #define DEFALUT_MAX_SPEED        (1000 * STEP_SUBDIVISION)
+// #define DEFALUT_ACCELERATION     (5 * DEFALUT_MAX_SPEED)    //200ms 加速到最快
 
 #define WHEEL_DIAMETER_VALUE                  45.6f
 #define WHEEL_SPACING_VALUE                   62.0f

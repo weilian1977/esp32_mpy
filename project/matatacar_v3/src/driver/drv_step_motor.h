@@ -44,7 +44,7 @@
 #define STEP_POS_MAX             (MICRO_STEP * 100)
 
 #define DEFAULT_MIN_SPEED        (100 * STEP_SUBDIVISION)
-#define DEFALUT_MAX_SPEED        (1050 * STEP_SUBDIVISION)
+#define DEFALUT_MAX_SPEED        (1000 * STEP_SUBDIVISION)
 #define DEFALUT_ACCELERATION     (5 * DEFALUT_MAX_SPEED)    //200ms 加速到最快
 
 
@@ -132,6 +132,7 @@ extern void motor_move_to(motor_configure_type motor, long absolute, bool sync);
 extern void motor_move(motor_configure_type motor, long relative, bool sync);
 extern void motor_set_speed(motor_configure_type motor, int32_t run_speed, bool immediately);
 extern int32_t motor_get_speed(motor_configure_type motor);
+extern step_motor_motion_type motor_get_motion_status(motor_configure_type motor);
 extern void motor_run_speed(int32_t left_run_speed, int32_t right_run_speed, bool immediately);
 extern void motor_stop(motor_configure_type motor);
 extern void motor_run(void);

@@ -804,7 +804,12 @@ void motor_set_speed(motor_configure_type motor, int32_t run_speed, bool immedia
 
 int32_t motor_get_speed(motor_configure_type motor)
 {
-    return motion_data.motor_data[motor].speed;
+    return motion_data.motor_data[motor].target_speed;
+}
+
+step_motor_motion_type motor_get_motion_status(motor_configure_type motor)
+{
+    return motion_data.motor_data[motor].motion_status;
 }
 
 void motor_run_speed(int32_t left_run_speed, int32_t right_run_speed, bool immediately)

@@ -166,7 +166,7 @@ STATIC mp_obj_t mpy_move_speed(mp_obj_t self_in, mp_obj_t left_speed, mp_obj_t r
     if(MP_OBJ_IS_SMALL_INT(left_speed))
     {
         left_speed_value = mp_obj_get_int(left_speed);
-        left_pulse_speed = (long)(MM_TO_PULSE * left_speed_value);
+        left_pulse_speed = -(long)(MM_TO_PULSE * left_speed_value);
     }
     else if(MP_OBJ_IS_QSTR(left_speed))
     {
@@ -174,7 +174,7 @@ STATIC mp_obj_t mpy_move_speed(mp_obj_t self_in, mp_obj_t left_speed, mp_obj_t r
         // mp_printf("left_speed is string (%s)\r\n", test_str);
         if(strcmp("unchanged", left_str) == 0)
         {
-            left_pulse_speed = -motor_get_speed(MOTOR_LEFT);
+            left_pulse_speed = motor_get_speed(MOTOR_LEFT);
         }
         else if(strcmp("stop", left_str) == 0)
         {
@@ -199,7 +199,7 @@ STATIC mp_obj_t mpy_move_speed(mp_obj_t self_in, mp_obj_t left_speed, mp_obj_t r
             right_pulse_speed = 0;
         }
     }
-    motor_run_speed(-left_pulse_speed, right_pulse_speed, false);
+    motor_run_speed(left_pulse_speed, right_pulse_speed, false);
 
     return mp_const_none;
 }
@@ -277,6 +277,33 @@ STATIC mp_obj_t mpy_stop(mp_obj_t self_in, mp_obj_t motor)
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(stop_obj, mpy_stop);
 
+
+STATIC mp_obj_t mpy_get_motion_status(mp_obj_t self_in, mp_obj_t motor)
+{
+    int16_t motor_value = mp_obj_get_int(motor);
+    step_motor_motion_type motion_type = STOP_MOVE; 
+    if((motor_value == MOTOR_LEFT) || (motor_value == MOTOR_RIGHT))
+    {
+        motion_type = motor_get_motion_status(motor_value);
+    }
+    return mp_obj_new_int(motion_type);
+}
+
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(get_motion_status_obj, mpy_get_motion_status);
+
+STATIC mp_obj_t mpy_get_motor_speed(mp_obj_t self_in, mp_obj_t motor)
+{
+    int16_t motor_value = mp_obj_get_int(motor);
+    int32_t motor_speed = 0;
+    if((motor_value == MOTOR_LEFT) || (motor_value == MOTOR_RIGHT))
+    {
+        motor_speed = motor_get_speed(motor_value);
+    }
+    return mp_obj_new_int(motor_speed);
+}
+
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(get_motor_speed_obj, mpy_get_motor_speed);
+
 STATIC mp_obj_t mpy_set_max_speed(mp_obj_t self_in, mp_obj_t max_speed)
 {
     uint32_t max_speed_value = mp_obj_get_int(max_speed);
@@ -303,6 +330,8 @@ STATIC const mp_rom_map_elem_t mpy_motion_locals_dict_table[] =
     { MP_OBJ_NEW_QSTR(MP_QSTR_motor_speed),          (mp_obj_t)&motor_speed_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_motor_pwm),            (mp_obj_t)&motor_pwm_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_stop),                 (mp_obj_t)&stop_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_get_motion_status),   (mp_obj_t)&get_motion_status_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_get_motor_speed),      (mp_obj_t)&get_motor_speed_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_set_max_speed),        (mp_obj_t)&set_max_speed_obj },
         
 };
