@@ -1,7 +1,7 @@
 from _audio import player,recorder
 import time
 import speech
-
+from utility import if_file_exists
 import system_state
 import _thread
 lock = _thread.allocate_lock()
@@ -18,7 +18,9 @@ play_time = 0
 
 resample_rate =22050.0
 tempo = 500.0
+beats = 1
 volume_set = 70
+say_language = 'english'
 instrument_type = '1-piano'
 
 instruments_voice_table = {
@@ -62,6 +64,14 @@ music_dir_table = {
     'move': ['1-hi.mp3', '2-why.mp3', '3-dila.mp3', '4-zzz.mp3', '5-byebye.mp3', '6-woo.mp3', '7-applaud.mp3', '8-yoho.mp3', '9-aaa.mp3', '10-ao.mp3', '11-o-no.mp3', '12-du.mp3', '13-hello.mp3', '14-byebye.mp3', '15-waw.mp3'],
     'melody': ['1-melody.mp3', '2-melody.mp3', '3-melody.mp3', '4-melody.mp3', '5-melody.mp3', '6-melody.mp3', '7-melody.mp3', '8-melody.mp3', '9-melody.mp3', '10-melody.mp3'],
     'dance': ['1-dance.mp3', '2-dance.mp3', '3-dance.mp3', '4-dance.mp3', '5-dance.mp3', '6-dance.mp3'],
+    'drums': ['1-drums.mp3', '2-drums.mp3', '3-drums.mp3', '4-drums.mp3', '5-drums.mp3', '6-drums.mp3', '7-drums.mp3','8-drums.mp3', '9-drums.mp3',\
+              '10-drums.mp3','11-drums.mp3', '12-drums.mp3', '13-drums.mp3', '14-drums.mp3', '15-drums.mp3', '16-drums.mp3', '17-drums.mp3', '18-drums.mp3' ,'19-drums.mp3'],
+    'effect': ['1-fire engine bell.mp3', '2-police car bell.mp3', '3-ambulance bell.mp3', '4-thunder.mp3', '5-rain.mp3', '6-strong wind.mp3','7-cicada chirping.mp3',\
+               '8-frog call.mp3','9-elephant.mp3','10-kitten.mp3','11-duck.mp3','12-hen.mp3','13-sheep.mp3',\
+               '14-cow.mp3','15-dog.mp3','16-pig.mp3','17-cow.mp3','18-hourse.mp3','19-knock on door.mp3',\
+               '20-ding ding.mp3','21-wrong.mp3','22-score.mp3','23-get coins.mp3','24-warning.mp3','25-upgrade.mp3',\
+               '26-fail.mp3','27-metal knock.mp3','28-water flow.mp3','29-record sound.mp3'],
+    'sing': ['1-twinkle, twinkle, little star.mp3', '2-jingle bells.mp3', '3-happy birthday to you.mp3', '4-to alice.mp3', '5-ode to joy.mp3', '6-parade of the wooden soldiers.mp3', '7-peter and the wolf.mp3', '8-hunting porca.mp3', '9-die forelle.mp3'],
 }
 
 ## player
@@ -74,11 +84,15 @@ def rates(rate):
     mPlayer.rates(rate)
 
 def set_tempo(pct):
+    global tempo
     if(pct > 4000):
         pct = 4000
     if(pct < 100):
         pct = 100
     tempo = pct
+def get_tempo():
+    global tempo
+    return tempo
 
 def set_instrument(instrument_type_select):
     global instrument_type
@@ -140,19 +154,28 @@ def set_play_info(path, sync = False, s_time = 0,rate_info = '', speed_info = 1.
 
 def play(path, sync = False, play_time = 0, speed = 1.0, pitch =1.0, rate = ''):
     type = "file:/"
+    if(if_file_exists(path) == False):
+        print('file no exists')
+        path = '/sdcard/ding.mp3'
     play_path = "%s%s" % (type,path)
     set_play_info(play_path,sync,play_time,rate,speed,pitch)
     
 def play_times(path, play_time = 0):
     type = "file:/"
+    if(if_file_exists(path) == False):
+        print('file no exists')
+        path = '/sdcard/ding.mp3'
     play_path = "%s%s" % (type,path)
     set_play_info(play_path,True,play_time)
     
 def play_until_done(path):
     type = "file:/"
+    if(if_file_exists(path) == False):
+        print('file no exists')
+        path = '/sdcard/ding.mp3'
     play_path = "%s%s" % (type,path)
     set_play_info(play_path,True,0)
-    
+
 def play_say(language,text,sync = True):
     speech_recognition_stop()
     if(language == "english"):
@@ -167,6 +190,21 @@ def play_say(language,text,sync = True):
     end_text = "/.wav"
     play_path = "%s%s%s" % (type,text,end_text)
     set_play_info(play_path,sync)
+
+def set_say_language(language):
+    global say_language
+    if(language != "english" and language != "chinese"):
+        print("language error")
+        return
+    say_language = language
+
+def get_say_language(language):
+    global say_language
+    say_language = language
+
+def say(text,sync = False):
+    global say_language
+    play_say(say_language,text,sync)
 
 def play_pause():
     mPlayer.pause()
@@ -234,8 +272,10 @@ def play_instrument_tone(instruments, tone):
     #set_play_info(play_path, False)
 
 def play_tone(tone, meter, instruments = ''):
-    global play_rate
+    global play_rate,tempo,beats,volume_set
+    beats = meter
     time_start = time.ticks_ms()
+    mPlayer.set_vol(volume_set + 10)
     if(instruments == ''):
         instruments = instrument_type
         play_instrument_tone(instruments, tone)
@@ -244,11 +284,12 @@ def play_tone(tone, meter, instruments = ''):
         play_instrument_tone(instrument_type, tone)
 
     time_space = time.ticks_diff(time.ticks_ms(), time_start)
-    time_space=tempo * meter - time_space
+    time_space=tempo * beats - time_space
     if(time_space < 0):
         time_space = 0
     time.sleep(time_space / 1000)
     play_stop()
+    mPlayer.set_vol(volume_set)
 
 
 def play_alto(tone_id, beat = 1):
@@ -302,6 +343,34 @@ def play_melody(name, sync = True, play_time = 0):
     path = dir_find('melody', name)
     play(path, sync, play_time)
 
+def rest(meter):
+    global beats
+    beats = meter
+
+def play_drums(name, meter):
+    global tempo,beats
+    beats = meter
+    path = dir_find('drums', name)
+    play(path, False)
+    time_start = time.ticks_ms()
+    
+    time_space = time.ticks_diff(time.ticks_ms(), time_start)
+    time_space=tempo * beats - time_space
+    if(time_space < 0):
+        time_space = 0
+    time.sleep(time_space / 1000)
+    play_stop()
+
+
+
+def effect(name, sync = False , play_time = 0):
+    path = dir_find('effect', name)
+    play(path, sync, play_time)
+    
+def sing(name, sync = False , play_time = 0):
+    path = dir_find('sing', name)
+    play(path, sync, play_time)
+    
 ## recorder
 def record_start(path):
     global record_time,record_path

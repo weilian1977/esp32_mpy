@@ -10,7 +10,7 @@ BOARD ?= $(notdir $(CURDIR))
 BUILD ?= build-$(BOARD)
 
 # Device serial settings.
-PORT ?= /dev/ttyS22
+PORT ?= /dev/ttyS14
 BAUD ?= 921600
 
 PYTHON ?= python3
@@ -53,10 +53,10 @@ erase:
 	idf.py $(IDFPY_FLAGS) -p $(PORT) -b $(BAUD) erase_flash
 
 make_fatfs:
-	./tools/mkfatfs/mkfatfs_linux_x86 -c ./tools/fatdisk/vfsroot/ -s 0x700000 -t fatfs ./tools/fatdisk/vfs.bin
+	./tools/mkfatfs/mkfatfs_linux_x86 -c ./tools/fatdisk/vfsroot/ -s 0x890000 -t fatfs ./tools/fatdisk/vfs.bin
 
 upload_fatfs:
-	./tools/esptool_py/esptool/esptool.py --before default_reset --after hard_reset -p $(PORT) -b $(BAUD) write_flash 0x260000 ./tools/fatdisk/vfs.bin
+	./tools/esptool_py/esptool/esptool.py --before default_reset --after hard_reset -p $(PORT) -b $(BAUD) write_flash 0x560000 ./tools/fatdisk/vfs.bin
 
 submodules:
 	git submodule update --init $(addprefix ../../,$(GIT_SUBMODULES))
