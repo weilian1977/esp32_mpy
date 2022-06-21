@@ -12,13 +12,14 @@ def show_image(data_array, time = "None"):
     if time != "None":
         time.sleep(time)
 
-def set_pixel(x, y, value):
-    pass
+def set_pixel(x, y, brightness):
+    brightness_data = int((round(brightness * 255.0 / 100.0)));
+    _led_matrix.set_pixel(x, y, brightness_data)
 
 def write(string):
     print("write:%s" %(string))
 
-def clear(string):
+def clear():
     _led_matrix.clear()
 
 def set_brightness(brightness):

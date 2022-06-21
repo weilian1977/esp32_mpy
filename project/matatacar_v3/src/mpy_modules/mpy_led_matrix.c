@@ -71,11 +71,23 @@ STATIC mp_obj_t mpy_show_image(mp_obj_t self_in, mp_obj_t arg)
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(show_image_obj, mpy_show_image);
 
+STATIC mp_obj_t mpy_set_pixel(size_t n_args, const mp_obj_t *args)
+{
+    int16_t x = mp_obj_get_int(args[1]);
+    int16_t y = mp_obj_get_int(args[2]);
+    uint8_t brightness = mp_obj_get_int(args[3]);
+    aw20144_set_pixel(x, y, brightness);
+    return mp_const_none;
+}
+
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(set_pixel_obj, 4, 4, mpy_set_pixel);
+
 STATIC const mp_rom_map_elem_t mpy_led_matrix_locals_dict_table[] = 
 {
     { MP_OBJ_NEW_QSTR(MP_QSTR_set_brightness),    (mp_obj_t)&set_brightness_obj},
     { MP_OBJ_NEW_QSTR(MP_QSTR_clear),             (mp_obj_t)&clear_display_obj},
     { MP_OBJ_NEW_QSTR(MP_QSTR_show_image),        (mp_obj_t)&show_image_obj},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_set_pixel),         (mp_obj_t)&set_pixel_obj},
 };
 
 MP_DEFINE_CONST_DICT(mpy_led_matrix_locals_dict, mpy_led_matrix_locals_dict_table);

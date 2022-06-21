@@ -13,7 +13,7 @@ import drv_motion as motion
 import nvs
 import sensor
 import audio
-#import event
+import event
 import action
 import errno
 import machine, neopixel

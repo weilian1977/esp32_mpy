@@ -294,6 +294,21 @@ void aw20144_show_image(uint8_t *data, uint8_t data_Length)
     }
 }
 
+void aw20144_set_pixel(uint8_t x, uint8_t y, uint8_t brightness)
+{
+    esp_err_t ret = ESP_OK;
+
+    ret = i2c_master_write_reg(I2C0_MASTER_NUM, AW20144_I2C_ADDRESS, AW20XXX_PAGE_ADDR, AW20XXX_CMD_PAGE1);
+    if(ret != ESP_OK)
+    {
+        ESP_LOGE(TAG, "set page1 for page addr error!");
+    }
+    
+    int i = (2 * y) + (x / 8);
+    int j = x % 8;
+    aw20144_set_pwm_by_idx(table_map(i * 8 + j), brightness);
+}
+
 esp_err_t aw20144_init(void)
 {
     esp_err_t ret = ESP_OK;

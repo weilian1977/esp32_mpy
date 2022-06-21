@@ -90,6 +90,7 @@ def set_tempo(pct):
     if(pct < 100):
         pct = 100
     tempo = pct
+
 def get_tempo():
     global tempo
     return tempo
