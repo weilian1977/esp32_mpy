@@ -38,13 +38,13 @@ def get_vol():
 
 def action_motion(type, value):
     if(type == MOTION_FORWARD):
-        drv_motion.move_position(value, 1)
-    if(type == MOTION_TURN_LEFT):
-        drv_motion.move_angle(value, 1)
-    if(type == MOTION_TURN_RIGHT):
-        drv_motion.move_angle((-1*value), 1)
-    if(type == MOTION_BACKWARD):
-        drv_motion.move_position((-1*value), 1)
+        drv_motion.move_position("forward", value, "mm", True)
+    elif(type == MOTION_TURN_LEFT):
+        drv_motion.move_angle("left", value, "degrees", True)
+    elif(type == MOTION_TURN_RIGHT):
+        drv_motion.move_angle("right", value, "degrees", True)
+    elif(type == MOTION_BACKWARD):
+        drv_motion.move_position("backward", value, "mm", True)
     
 def action_eye(eye_mode, para):
     drv_led.led_eye_set(eye_mode, para)

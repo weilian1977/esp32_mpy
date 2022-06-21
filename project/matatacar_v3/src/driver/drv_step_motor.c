@@ -215,8 +215,24 @@ static void step_left_start(void)
     spwm_resume(MOTOR_LEFT);
 
     table_pos_ina = motion_data.motor_data[MOTOR_LEFT].step_pos % MICRO_STEP;
-    set_spwm_freq(MOTOR_LEFT_TIME, DEFAULT_MIN_SPEED);
 
+    if(motion_data.motor_data[MOTOR_LEFT].motion_status != PWM_MOVE)
+    {
+        set_spwm_freq(MOTOR_LEFT_TIME, DEFAULT_MIN_SPEED);
+    }
+    else
+    {
+        uint32_t freq_temp = abs(motion_data.motor_data[MOTOR_LEFT].speed);
+        if(freq_temp < DEFAULT_MIN_SPEED)
+        {
+            freq_temp = DEFAULT_MIN_SPEED;
+        }
+        else if(freq_temp > DEFALUT_MAX_SPEED)
+        {
+            freq_temp = DEFALUT_MAX_SPEED;
+        }
+        set_spwm_freq(MOTOR_LEFT_TIME, freq_temp);
+    }
     // update duty, shift the duty 4 bits to the left due to ESP32 register format
     // REG_WRITE(LEDC_LSCH0_DUTY_REG, map(sin_data[2 * table_pos_ina], 0, 1000, 102, 921) << 4);
     // REG_SET_BIT(LEDC_LSCH0_CONF1_REG, LEDC_DUTY_START_LSCH0);
@@ -249,7 +265,24 @@ static void step_right_start(void)
     spwm_resume(MOTOR_RIGHT);
 
     table_pos_ina = motion_data.motor_data[MOTOR_RIGHT].step_pos % MICRO_STEP;
-    set_spwm_freq(MOTOR_RIGHT_TIME, DEFAULT_MIN_SPEED);
+
+    if(motion_data.motor_data[MOTOR_RIGHT].motion_status != PWM_MOVE)
+    {
+        set_spwm_freq(MOTOR_RIGHT_TIME, DEFAULT_MIN_SPEED);
+    }
+    else
+    {
+        uint32_t freq_temp = abs(motion_data.motor_data[MOTOR_RIGHT].speed);        
+        if(freq_temp < DEFAULT_MIN_SPEED)
+        {
+            freq_temp = DEFAULT_MIN_SPEED;
+        }
+        else if(freq_temp > DEFALUT_MAX_SPEED)
+        {
+            freq_temp = DEFALUT_MAX_SPEED;
+        }
+        set_spwm_freq(MOTOR_RIGHT_TIME, freq_temp);
+    }
     // update duty, shift the duty 4 bits to the left due to ESP32 register format
     // REG_WRITE(LEDC_LSCH2_DUTY_REG, map(sin_data[2 * table_pos_ina], 0, 1000, 102, 921) << 4);
     // REG_SET_BIT(LEDC_LSCH2_CONF1_REG, LEDC_DUTY_START_LSCH2);
@@ -586,7 +619,7 @@ void compute_new_speed(motor_configure_type motor)
     {
         compute_motor_new_speed_by_speed(motor);
     }
-    else
+    else if(motion_data.motor_data[motor].motion_status != PWM_MOVE)
     {
         compute_motor_new_speed(motor);
     }
@@ -595,7 +628,6 @@ void compute_new_speed(motor_configure_type motor)
 void motor_set_move_speed_max(int32_t max_speed)
 {
     motion_max_speed = max_speed;
-    return;
 }
 
 void set_max_speed(motor_configure_type motor, int32_t speed)
@@ -724,10 +756,14 @@ void motor_move(motor_configure_type motor, long relative, bool sync)
     motor_move_to(motor, absolute_position, sync);
 }
 
-void motor_set_speed(motor_configure_type motor, int32_t run_speed)
+void motor_set_speed(motor_configure_type motor, int32_t run_speed, bool immediately)
 {
-    set_max_speed(motor, 1200 * STEP_SUBDIVISION);
-    set_acceleration(motor, 4000 * STEP_SUBDIVISION); 
+    if(immediately == false)
+    {
+        set_max_speed(motor, DEFALUT_MAX_SPEED);
+        set_acceleration(motor, DEFALUT_ACCELERATION); 
+    }
+
     xSemaphoreTake(motion_data.motion_task_init_mutex, portMAX_DELAY); 
     if(run_speed == 0)
     {
@@ -740,9 +776,20 @@ void motor_set_speed(motor_configure_type motor, int32_t run_speed)
             motor_stop(motor);
         }
         motion_data.motor_data[motor].target_speed = run_speed;
-        ESP_LOGD(TAG, "target speed:%d\r\n", motion_data.motor_data[motor].target_speed);
         motion_data.motor_data[motor].dir = (motion_data.motor_data[motor].target_speed > 0) ? DIR_CW : DIR_CCW;
-        motion_data.motor_data[motor].motion_status = SPEED_MOVE;
+        if(immediately == false)
+        {
+            motion_data.motor_data[motor].motion_status = SPEED_MOVE;
+        }
+        else
+        {
+            motion_data.motor_data[motor].motion_status = PWM_MOVE;
+            motion_data.motor_data[motor].speed = motion_data.motor_data[motor].target_speed;
+            if(motion_data.motor_data[motor].dir == DIR_CCW)
+            {
+                motion_data.motor_data[motor].speed = -motion_data.motor_data[motor].speed;
+            }
+        }
         if(motor == MOTOR_LEFT)
         {
             step_left_start();
@@ -757,13 +804,18 @@ void motor_set_speed(motor_configure_type motor, int32_t run_speed)
 
 int32_t motor_get_speed(motor_configure_type motor)
 {
-    return motion_data.motor_data[motor].speed;
+    return motion_data.motor_data[motor].target_speed;
 }
 
-void motor_run_speed(int32_t left_run_speed, int32_t right_run_speed)
+step_motor_motion_type motor_get_motion_status(motor_configure_type motor)
 {
-    motor_set_speed(MOTOR_LEFT, left_run_speed);
-    motor_set_speed(MOTOR_RIGHT, right_run_speed);
+    return motion_data.motor_data[motor].motion_status;
+}
+
+void motor_run_speed(int32_t left_run_speed, int32_t right_run_speed, bool immediately)
+{
+    motor_set_speed(MOTOR_LEFT, left_run_speed, immediately);
+    motor_set_speed(MOTOR_RIGHT, right_run_speed, immediately);
 }
 
 void motor_stop(motor_configure_type motor)
@@ -794,7 +846,27 @@ void motor_run(void)
 {
     static long previous_motor_left_pos = 0;
     static long previous_motor_right_pos = 0;
-    if(motion_data.motor_data[MOTOR_LEFT].motion_status != STOP_MOVE)
+
+    if(motion_data.motor_data[MOTOR_LEFT].motion_status == PWM_MOVE)
+    {            
+        volatile uint32_t left_freq = abs(motion_data.motor_data[MOTOR_LEFT].speed);
+        if(left_freq < DEFAULT_MIN_SPEED)
+        {
+            left_freq = DEFAULT_MIN_SPEED;
+        }
+        else if(left_freq > DEFALUT_MAX_SPEED)
+        {
+            left_freq = DEFALUT_MAX_SPEED;
+        }
+        if(motion_data.motor_data[MOTOR_LEFT].current_spwm_freq != left_freq)
+        {
+            ESP_LOGD(TAG, "left_freq:%d", left_freq);
+            set_spwm_freq(MOTOR_LEFT_TIME, left_freq);
+        }
+        previous_motor_left_pos = 0;
+        vTaskDelay(SYSTEM_POLLING_TIME * 2 / portTICK_PERIOD_MS);
+    }
+    else if(motion_data.motor_data[MOTOR_LEFT].motion_status != STOP_MOVE)
     {
         if(abs(previous_motor_left_pos - motion_data.motor_data[MOTOR_LEFT].current_pos) >= 64)
         {
@@ -809,11 +881,10 @@ void motor_run(void)
             }
             if(motion_data.motor_data[MOTOR_LEFT].current_spwm_freq != left_freq)
             {
-                ESP_LOGD(TAG, "left speed:%d", left_freq);
+                ESP_LOGD(TAG, "left_freq:%d", left_freq);
                 set_spwm_freq(MOTOR_LEFT_TIME, left_freq);
             }
             previous_motor_left_pos = motion_data.motor_data[MOTOR_LEFT].current_pos;
-            ESP_LOGD(TAG, "left speed:%d\r\n", (int32_t)motion_data.motor_data[MOTOR_LEFT].speed);
         }
     }
     else
@@ -822,7 +893,25 @@ void motor_run(void)
         vTaskDelay(SYSTEM_POLLING_TIME * 2 / portTICK_PERIOD_MS);
     }
 
-    if(motion_data.motor_data[MOTOR_RIGHT].motion_status != STOP_MOVE)
+    if(motion_data.motor_data[MOTOR_RIGHT].motion_status == PWM_MOVE)
+    {
+        volatile uint32_t right_freq = abs(motion_data.motor_data[MOTOR_RIGHT].speed);
+        if(right_freq < DEFAULT_MIN_SPEED)
+        {
+            right_freq = DEFAULT_MIN_SPEED;
+        }
+        else if(right_freq > DEFALUT_MAX_SPEED)
+        {
+            right_freq = DEFALUT_MAX_SPEED;
+        }
+        if(motion_data.motor_data[MOTOR_RIGHT].current_spwm_freq != right_freq)
+        {
+            ESP_LOGD(TAG, "right_freq:%d", right_freq);
+            set_spwm_freq(MOTOR_RIGHT_TIME, right_freq);
+        }
+        vTaskDelay(SYSTEM_POLLING_TIME * 2 / portTICK_PERIOD_MS);
+    }
+    else if(motion_data.motor_data[MOTOR_RIGHT].motion_status != STOP_MOVE)
     {
         if(abs(previous_motor_right_pos - motion_data.motor_data[MOTOR_RIGHT].current_pos) >= 64)
         {
@@ -837,10 +926,9 @@ void motor_run(void)
             }
             if(motion_data.motor_data[MOTOR_RIGHT].current_spwm_freq != right_freq)
             {
-                ESP_LOGD(TAG, "right speed:%d", right_freq);
+                ESP_LOGD(TAG, "right_freq:%d", right_freq);
                 set_spwm_freq(MOTOR_RIGHT_TIME, right_freq);
             }
-            ESP_LOGD(TAG, "right speed:%d\r\n", (int32_t)motion_data.motor_data[MOTOR_RIGHT].speed);
             previous_motor_right_pos = motion_data.motor_data[MOTOR_RIGHT].current_pos;
         }
     }
@@ -862,8 +950,8 @@ void step_motor_task(void *pvParameter)
 
     xSemaphoreTake(motion_data.motion_task_init_mutex, portMAX_DELAY);
     step_motor_init();
-    set_max_speed(MOTOR_LEFT, 1000 * STEP_SUBDIVISION);
-    set_max_speed(MOTOR_RIGHT, 1000 * STEP_SUBDIVISION);
+    set_max_speed(MOTOR_LEFT, DEFALUT_MAX_SPEED);
+    set_max_speed(MOTOR_RIGHT, DEFALUT_MAX_SPEED);
     set_acceleration(MOTOR_LEFT, DEFALUT_ACCELERATION);
     set_acceleration(MOTOR_RIGHT, DEFALUT_ACCELERATION);
     set_current_position(MOTOR_LEFT, 0);

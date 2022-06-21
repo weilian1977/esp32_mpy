@@ -14,6 +14,9 @@ import audio
 import drv_motion as motion
 import action
 import errno
+import machine, neopixel
+
+power_led = neopixel.NeoPixel(machine.Pin(39), 1)
 
 KEY_UP = 0
 KEY_DOWN = 1
@@ -30,9 +33,34 @@ low_power_flag = False
 key_pressed = KEY_UP
 power_start_time = 0
 usb_connect_state = False
-
+power_indicator_time = 0
 button = matatalab.button()
 led_matrix = matatalab.led_matrix()
+
+def power_indicator():
+    global power_indicator_time
+    if (time.ticks_diff(time.ticks_ms(), power_indicator_time) > 200):
+        battery_capacity = matatalab.get_battery_capacity()
+        r = 100
+        if(battery_capacity < 10):
+            g = 0
+            b = 0
+        elif(battery_capacity >= 10) and (battery_capacity < 50):
+            g = (int)((battery_capacity - 10) * 2.5)
+            b = 0
+        elif(battery_capacity >= 50) and (battery_capacity < 90):
+            g = 100
+            b = (int)((battery_capacity - 50) * 2.5)
+        else:
+            g = 100
+            b = 100
+        if(matatalab.is_usb_detected() == True):
+            r = 0
+            g = 0
+            b = 0
+        power_led[0] = (r,g,b)
+        power_led.write()
+        power_indicator_time = time.ticks_ms()
 
 def power_monitor():
     global power_off_count, low_power_count, low_power_flag, key_pressed, power_start_time, usb_connect_state
@@ -53,6 +81,7 @@ def power_monitor():
             time.sleep(10)
 
     battery_level = matatalab.get_battery_voltage()
+    power_indicator()
 
     #电压低于 POWER_OFF_VOLTAGE 执行关机
     if(battery_level < POWER_OFF_VOLTAGE):
@@ -70,7 +99,6 @@ def power_monitor():
             low_power_flag = True;
 
         if ((low_power_flag == True)):
-            #matatalab.indicator_led(matatalab.SINGLE_FAST_FLASH)
             if(low_power_count > 10000):
                 print("Low voltage alarm, shutdown about five minutes")
                 drv_system.power_off()
@@ -88,11 +116,19 @@ def power_monitor():
                 matatalab.indicator_led(matatalab.SINGLE_FLASH)
 
 def main():
+    global power_indicator_time
     nvs.init_calibration_value()
     sensor.get_color_calibration_data()
     event_manager.event_system_start()
     time.sleep(0.1)
     event_manager.event_trigger(event_o.EVE_SYSTEM_LAUNCH)
+    power_indicator_time = time.ticks_ms()
+    leds.show_single(1, 100, 0, 0)
+    leds.show_single(2, 0, 100, 0)
+    leds.show_single(3, 0, 0, 100)
+    leds.show_single(4, 100, 100, 0)
+    leds.show_single(5, 0, 100, 100)
+    leds.show_single(6, 100, 100, 100)
     while True:
         ble_state_monitor()
         power_monitor()

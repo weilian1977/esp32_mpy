@@ -180,12 +180,20 @@ def motion_backward_multi(carble, msg):
 def wait_type1(carble, msg):
     global previous_opcode
     # global current_time
-    if previous_opcode == 0x25:
-        t = (msg[1] * 870) /1000.0
+    if((drv_motion.get_motion_status(0) == 1) and (drv_motion.get_motion_status(1) == 1) and (drv_motion.get_motor_speed(0) == -drv_motion.get_motor_speed(1))):
+        if previous_opcode == 0x25:
+            t = msg[1] * 1.1 - 0.12                    # 100/90
+        else:
+            t = msg[1] * 1.1 - 0.32
+    elif((drv_motion.get_motion_status(0) == 1) or (drv_motion.get_motion_status(1) == 1)):
+        if previous_opcode == 0x25:
+            t = msg[1] * 1.352 - 0.12                  # 62*2*3.14/72
+        else:
+            t = msg[1] * 1.352 - 0.32
     else:
-        t = (msg[1] * 870 - 340) / 1000.0
-    print("wait (%d) %f second" %(msg[1], t))
+        t = msg[1] - 0.12
     time.sleep(t)
+    print("wait %f second" %(t))
 
 def play_music(carble, msg):
     print("play_music")
@@ -251,9 +259,9 @@ def car_action_control(carble, msg):
         else:
             left_speed_level = ((msg[1] >> 4) & 0xF) - 6
             if(0 < left_speed_level) and (left_speed_level <= 6):
-                left_speed = (left_speed_level * 35) + 35
+                left_speed = (left_speed_level * 18) + 18
             elif(left_speed_level < 0) and (left_speed_level >= -6):
-                left_speed = (left_speed_level * 35) - 35
+                left_speed = (left_speed_level * 18) - 18
             else:
                 left_speed = "stop"
         if(right_speed_level == 0xf):
@@ -261,9 +269,9 @@ def car_action_control(carble, msg):
         else:
             right_speed_level = (msg[1] & 0xF) - 6
             if(0 < right_speed_level) and (right_speed_level <= 6):
-                right_speed = (right_speed_level * 35) + 35
+                right_speed = (right_speed_level * 18) + 18
             elif(right_speed_level < 0) and (right_speed_level >= -6):
-                right_speed = (right_speed_level * 35) - 35
+                right_speed = (right_speed_level * 18) - 18
             else:
                 right_speed = "stop"
         drv_motion.move_speed(left_speed, right_speed)
