@@ -252,6 +252,50 @@ STATIC mp_obj_t mpy_motor_pwm(mp_obj_t self_in, mp_obj_t motor, mp_obj_t pwm)
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(motor_pwm_obj, mpy_motor_pwm);
 
+STATIC mp_obj_t mpy_motor_run(size_t n_args, const mp_obj_t *args)
+{
+    int16_t motor_value = mp_obj_get_int(args[1]);
+    int16_t position_value = mp_obj_get_int(args[2]);
+    long pulse = (long)(MM_TO_PULSE * position_value);
+    bool sync_flag = mp_obj_get_int(args[3]);
+    if(sync_flag)
+    {
+
+        if(motor_value == MOTOR_MAX)
+        {
+            motor_move(MOTOR_LEFT, pulse, false);
+            motor_move(MOTOR_RIGHT, pulse, true);
+        }
+        else if(motor_value == MOTOR_LEFT)
+        {
+            motor_move(MOTOR_LEFT, pulse, true);
+        }
+        else if(motor_value == MOTOR_RIGHT)
+        {
+            motor_move(MOTOR_RIGHT, pulse, true);
+        }
+    }
+    else
+    {
+        if(motor_value == MOTOR_MAX)
+        {
+            motor_move(MOTOR_LEFT, pulse, false);
+            motor_move(MOTOR_RIGHT, pulse, false);
+        }
+        else if(motor_value == MOTOR_LEFT)
+        {
+            motor_move(MOTOR_LEFT, pulse, false);
+        }
+        else if(motor_value == MOTOR_RIGHT)
+        {
+            motor_move(MOTOR_RIGHT, pulse, false);
+        }
+    }
+    return mp_const_none;
+}
+
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(motor_run_obj, 3, 4, mpy_motor_run);
+
 STATIC mp_obj_t mpy_stop(mp_obj_t self_in, mp_obj_t motor)
 {
     int16_t motor_value = mp_obj_get_int(motor);
@@ -329,6 +373,7 @@ STATIC const mp_rom_map_elem_t mpy_motion_locals_dict_table[] =
     { MP_OBJ_NEW_QSTR(MP_QSTR_ALL),                  MP_OBJ_NEW_SMALL_INT(MOTOR_MAX) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_motor_speed),          (mp_obj_t)&motor_speed_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_motor_pwm),            (mp_obj_t)&motor_pwm_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_motor_run),            (mp_obj_t)&motor_run_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_stop),                 (mp_obj_t)&stop_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_get_motion_status),   (mp_obj_t)&get_motion_status_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_get_motor_speed),      (mp_obj_t)&get_motor_speed_obj },

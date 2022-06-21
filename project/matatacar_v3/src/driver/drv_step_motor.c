@@ -627,6 +627,14 @@ void compute_new_speed(motor_configure_type motor)
 
 void motor_set_move_speed_max(int32_t max_speed)
 {
+    if(max_speed < DEFAULT_MIN_SPEED)
+    {
+        max_speed = DEFAULT_MIN_SPEED;
+    }
+    else if(max_speed > DEFALUT_MAX_SPEED)
+    {
+        max_speed = DEFALUT_MAX_SPEED;
+    }
     motion_max_speed = max_speed;
 }
 
