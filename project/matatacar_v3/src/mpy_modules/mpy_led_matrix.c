@@ -74,7 +74,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(show_image_obj, mpy_show_image);
 STATIC const mp_rom_map_elem_t mpy_led_matrix_locals_dict_table[] = 
 {
     { MP_OBJ_NEW_QSTR(MP_QSTR_set_brightness),    (mp_obj_t)&set_brightness_obj},
-    { MP_OBJ_NEW_QSTR(MP_QSTR_clear_display),     (mp_obj_t)&clear_display_obj},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_clear),             (mp_obj_t)&clear_display_obj},
     { MP_OBJ_NEW_QSTR(MP_QSTR_show_image),        (mp_obj_t)&show_image_obj},
 };
 

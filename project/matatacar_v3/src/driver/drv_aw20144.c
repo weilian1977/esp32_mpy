@@ -141,16 +141,6 @@ void aw20144_fast_clear_display(void)
     for(i = 0;i < AW20XXX_REG_NUM_PAG1; i++){
         aw20144_set_pwm_by_idx(i, 0x00);
     }
-
-    // ret = i2c_master_write_reg(I2C0_MASTER_NUM, AW20144_I2C_ADDRESS, AW20XXX_PAGE_ADDR, AW20XXX_CMD_PAGE2);
-    // if(ret != ESP_OK)
-    // {
-    //     ESP_LOGE(TAG, "set page2 for page addr error!");
-    // }
-
-    // for(i = 0;i < AW20XXX_REG_NUM_PAG2; i++){
-    //     aw20144_set_constant_current_by_idx(i, 0x00);
-    // }
 }
 
 void aw20144_set_monochrome_leds_brightness(uint8_t brightness)

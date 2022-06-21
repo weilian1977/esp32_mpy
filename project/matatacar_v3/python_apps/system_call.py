@@ -8,11 +8,12 @@ import communication
 import matatalab
 import drv_system
 import drv_led as leds
+import drv_led_matrix as led_matrix
+import drv_motion as motion
 import nvs
 import sensor
 import audio
-import drv_motion as motion
-import event
+#import event
 import action
 import errno
 import machine, neopixel
@@ -36,7 +37,6 @@ power_start_time = 0
 usb_connect_state = False
 power_indicator_time = 0
 button = matatalab.button()
-led_matrix = matatalab.led_matrix()
 
 def power_indicator():
     global power_indicator_time

@@ -23,7 +23,7 @@ def is_dir_exists(path, search_dir):
     return False
 
 def if_file_exists(path):
-    if(type(path)!=str):
+    if(type(path) != str):
         return False
         print("path is not str")
     uos.chdir("/")
@@ -43,7 +43,7 @@ def if_file_exists(path):
     #print("file not exists")
 
 def if_dir_exists(path):
-    if(type(path)!=str):
+    if(type(path) != str):
         return False
         print("path is not str")
     uos.chdir("/")
