@@ -11,6 +11,7 @@ def show_image(data_array, time = "None"):
     _led_matrix.show_image(data_array)
     if time != "None":
         time.sleep(time)
+        _led_matrix.clear()
 
 def set_pixel(x, y, brightness):
     brightness_data = int((round(brightness * 255.0 / 100.0)));
