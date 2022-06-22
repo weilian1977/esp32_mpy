@@ -41,6 +41,11 @@ esp_err_t i2s0_init(void)
     }
     SET_PERI_REG_BITS(PIN_CTRL, CLK_OUT1, 0, CLK_OUT1_S);
     PIN_FUNC_SELECT(PERIPHS_IO_MUX_GPIO0_U, 1);             //CHANGE
+    gpio_reset_pin(IIS_SCLK);
+    gpio_reset_pin(IIS_LCLK);
+    gpio_reset_pin(IIS_DSIN);
+    gpio_reset_pin(IIS_DOUT);
+    gpio_reset_pin(IIS_SHDN);
     ret = i2s_set_pin(I2S_NUM_0, &my_i2s_pin);
     return ret;
 }

@@ -96,7 +96,7 @@ typedef struct _audio_player_obj_t
 audio_board_handle_t board_handle;
 void audio_play_init(void)
 {
-    //i2s0_init();
+    i2s0_init();
     
     board_handle = audio_board_init();
 
@@ -216,7 +216,7 @@ void play_start(const char *uri)
         audio_element_set_uri(zh_hans_stream_reader, path);
         sonic_set_pitch_and_speed_info(sonic_el, sonic_pitch, sonic_speed);
     }
-    //i2s0_shdn_enable(0);
+    i2s0_shdn_enable(0);
     if(esp_audio_player_rate_change)
     {
         
@@ -226,7 +226,7 @@ void play_start(const char *uri)
     }
 
     audio_pipeline_set_listener(pipeline, evt);
-    //i2s0_shdn_enable(1);
+    i2s0_shdn_enable(1);
     esp_err_t ret = audio_pipeline_run(pipeline);
     if(get_music_info_flag)
     {
@@ -266,7 +266,7 @@ void play_stop(void)
         audio_pipeline_unlink(pipeline);
         ESP_LOGW(TAG, "audio_play_stop");
 //        i2s_stream_set_clk(i2s_stream_writer, 48000, 32, 2);
-        //i2s0_shdn_enable(0);
+        i2s0_shdn_enable(0);
         esp_audio_player_running = false;
     }
 }
@@ -428,7 +428,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(audio_player_rates_obj, audio_player_rates);
 STATIC mp_obj_t audio_player_enable(mp_obj_t self_in, mp_obj_t en)
 {
     int16_t value = mp_obj_get_int(en);
-    //i2s0_shdn_enable(value);
+    i2s0_shdn_enable(value);
     return mp_obj_new_int(value);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(audio_player_enable_obj, audio_player_enable);

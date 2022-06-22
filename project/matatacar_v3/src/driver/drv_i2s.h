@@ -4,12 +4,12 @@
 
 #include "esp_err.h"
 
-#define IIS_SCLK                    40
+#define IIS_SCLK                    9
 #define IIS_LCLK                    45
-#define IIS_DSIN                    39
-#define IIS_DOUT                    38
+#define IIS_DSIN                    10
+#define IIS_DOUT                    8
 
-#define IIS_SHDN                    39
+#define IIS_SHDN                    46
 
 #define AUDIO_OK                     0
 #define AUDIO_FAIL                   1
