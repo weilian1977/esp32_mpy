@@ -11,19 +11,19 @@ function check_cmd() {
 }
 
 cd ../../submodule/micropython
-check_cmd git apply --check ../../project/matatacar/tools/patch/patch_micropython.diff
+check_cmd git apply --check ../../project/matatacar_v3/tools/patch/patch_micropython.diff
 if [ $? -eq  0 ]; then
     echo "micropython patch check ok, then apply it"
-    git apply ../../project/matatacar/tools/patch/patch_micropython.diff
+    git apply ../../project/matatacar_v3/tools/patch/patch_micropython.diff
 else
     echo "micropython patch check failed!"
 fi
 
 cd ../../submodule/esp-idf
-check_cmd git apply --check ../../project/matatacar/tools/patch/patch_esp-idf.diff
+check_cmd git apply --check ../../project/matatacar_v3/tools/patch/patch_esp-idf.diff
 if [ $? -eq  0 ]; then
     echo "esp-idf patch check ok, then apply it"
-    git apply ../../project/matatacar/tools/patch/patch_esp-idf.diff
+    git apply ../../project/matatacar_v3/tools/patch/patch_esp-idf.diff
 else
     echo "esp-idf patch check failed!"
 fi

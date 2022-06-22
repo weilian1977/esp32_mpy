@@ -38,6 +38,9 @@ def show_side(mode, r, g, b):
     _leds.write()
 
 def display(data):
+    if(type(data) == str):
+        print("not support now!")
+        return
     data_len = len(data)
     for i in range(data_len / 3):
         _leds[i] = (data[3 * i], data[3 * i + 1], data[3 * i + 2])

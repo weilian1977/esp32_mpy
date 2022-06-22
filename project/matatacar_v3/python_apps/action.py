@@ -142,3 +142,17 @@ def action_movement(index):
     movement_list = action_movement_code_get(index)
     print("action_movement", movement_list)
     action_parse(movement_list)
+
+def dance(dance_name):
+    print("dance:%s" %(dance_name))
+    audio.play_dance(1, 0)
+    dance_list = action_dance_code_get(1)
+    action_parse(dance_list)
+
+def action_behavior(behavior_name):
+    print("behavior:%s" %(behavior_name))
+    movement_list = action_movement_code_get(1)
+    action_parse(movement_list)
+
+def emotion(emotion_name):
+    print("emotion:%s" %(emotion_name))
