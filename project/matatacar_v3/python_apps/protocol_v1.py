@@ -354,6 +354,9 @@ def check_new_protocol(carble, msg):
     print("error.crc_recive %x, crc calc:%x"%(crc_recive, crc_calc))
 
 def sensor_event(carble, msg):
+    global play_start_time
+    global command_start
+    global is_first_stop
     if msg[1] != 0x10:
         print("not sensor_event!")
         return
@@ -367,6 +370,10 @@ def sensor_event(carble, msg):
         pass
     elif event_monitor_id == 0x04:
         while(True):
+            cmd_cancel_flag = system_state.get_cmd_cancel_flag()
+            if(cmd_cancel_flag == True):
+                print("cancel sensor_event")
+                return
             if(sensor.get_obstacle_avoidance_value() > 2.8):
                 return
             else:
@@ -400,6 +407,10 @@ def sensor_event(carble, msg):
         pass
     elif event_monitor_id == 0x0a:
         while(True):
+            cmd_cancel_flag = system_state.get_cmd_cancel_flag()
+            if(cmd_cancel_flag == True):
+                print("cancel sensor_event")
+                return
             if(sensor.get_obstacle_avoidance_value() < 0.6):
                 return
             else:
