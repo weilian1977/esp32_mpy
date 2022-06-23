@@ -120,12 +120,14 @@ set(MICROPY_SOURCE_PORT
     ${PROJECT_DIR}/src/audio/audio_recorder.c
     ${PROJECT_DIR}/src/audio/speech_cn.c
     ${PROJECT_DIR}/src/audio/audio_tone_uri.c
+    ${PROJECT_DIR}/src/audio/i2s_mic.c
     ${PROJECT_DIR}/src/mpy_modules/modmatatalab.c
     ${PROJECT_DIR}/src/mpy_modules/mpy_button.c
     ${PROJECT_DIR}/src/mpy_modules/mt_mpy_event.c
     ${PROJECT_DIR}/src/mpy_modules/mt_mpy_ble.c
     ${PROJECT_DIR}/src/mpy_modules/mpy_leds.c
     ${PROJECT_DIR}/src/mpy_modules/mpy_led_matrix.c
+    ${PROJECT_DIR}/src/mpy_modules/mpy_i2s_mic.c
     ${PROJECT_DIR}/src/mpy_modules/motion/mpy_motion.c
     ${PROJECT_DIR}/src/mpy_modules/sensor/mpy_sensor.c
     ${PROJECT_DIR}/src/mpy_modules/modaudio.c

@@ -80,6 +80,7 @@
 #include "driver_update.h"
 #include "mt_event_mechanism.h"
 #include "drv_step_motor.h"
+#include "i2s_mic.h"
 
 // MicroPython runs as a task under FreeRTOS
 #define MP_TASK_PRIORITY        (ESP_TASK_PRIO_MIN + 1)
@@ -286,7 +287,7 @@ void app_main(void) {
     audio_play_init();
     audio_recorder_init();
     //speech_cn_init();
-
+    digital_mic_init();
     xTaskCreatePinnedToCore(system_management_task, "system_management_task", SYSTEM_MANAGEMENT_TASK_STACK_SIZE / sizeof(StackType_t), NULL, SYSTEM_MANAGEMENT_TASK_PRIORITY, NULL, 0);
     xTaskCreatePinnedToCore(mp_task, "mp_task", MP_TASK_STACK_SIZE / sizeof(StackType_t), NULL, MP_TASK_PRIORITY, &mp_main_task_handle, MP_TASK_COREID);
     // xTaskCreatePinnedToCore(test_leds, "test_leds", SYSTEM_MANAGEMENT_TASK_STACK_SIZE / sizeof(StackType_t), NULL, SYSTEM_MANAGEMENT_TASK_PRIORITY, NULL, 0);

@@ -35,18 +35,18 @@ const i2s_pin_config_t my_i2s_pin = {
 
 esp_err_t i2s0_init(void)
 {
-    int  ret = i2s_driver_install(I2S_NUM_0, &my_i2s_config, 0, NULL);
-    if (ret < 0) {
-        return ESP_FAIL;
-    }
-    SET_PERI_REG_BITS(PIN_CTRL, CLK_OUT1, 0, CLK_OUT1_S);
-    PIN_FUNC_SELECT(PERIPHS_IO_MUX_GPIO0_U, 1);             //CHANGE
-    gpio_reset_pin(IIS_SCLK);
-    gpio_reset_pin(IIS_LCLK);
-    gpio_reset_pin(IIS_DSIN);
-    gpio_reset_pin(IIS_DOUT);
+    int  ret = 0;//i2s_driver_install(I2S_NUM_0, &my_i2s_config, 0, NULL);
+    //if (ret < 0) {
+    //    return ESP_FAIL;
+    //}
+    //SET_PERI_REG_BITS(PIN_CTRL, CLK_OUT1, 0, CLK_OUT1_S);
+    //PIN_FUNC_SELECT(PERIPHS_IO_MUX_GPIO0_U, 1);             //CHANGE
+    //gpio_reset_pin(IIS_SCLK);
+    //gpio_reset_pin(IIS_LCLK);
+    //gpio_reset_pin(IIS_DSIN);
+    //gpio_reset_pin(IIS_DOUT);
     gpio_reset_pin(IIS_SHDN);
-    ret = i2s_set_pin(I2S_NUM_0, &my_i2s_pin);
+    //ret = i2s_set_pin(I2S_NUM_0, &my_i2s_pin);
     return ret;
 }
 

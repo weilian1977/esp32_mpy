@@ -31,7 +31,7 @@
 #include "py/runtime.h"
 
 #include "esp_audio.h"
-
+#include "mpy_i2s_mic.h"
 #include "audio_mem.h"
 
 const char *verno = "0.5-beta1";
@@ -68,6 +68,8 @@ STATIC const mp_rom_map_elem_t audio_module_globals_table[] = {
 
     { MP_ROM_QSTR(MP_QSTR_player), MP_ROM_PTR(&audio_player_type) },
     { MP_ROM_QSTR(MP_QSTR_recorder), MP_ROM_PTR(&audio_recorder_type) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_i2s_mic),                    (mp_obj_t)&mpy_i2s_mic_type},
+//    { MP_OBJ_NEW_QSTR(MP_QSTR_I2S_MIC_ENABLE),             MP_OBJ_NEW_SMALL_INT(MODULE_ENABLE_VALUE) },
 
     // audio_err_t
     { MP_ROM_QSTR(MP_QSTR_AUDIO_OK), MP_ROM_INT(ESP_ERR_AUDIO_NO_ERROR) },
