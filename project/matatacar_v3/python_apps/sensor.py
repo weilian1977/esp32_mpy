@@ -1,6 +1,7 @@
 import time
 import matatalab
 import nvs
+import mic
 
 color_red = 0
 color_green = 0
@@ -16,7 +17,7 @@ def get_right_light():
     return _sensor.get_light_value(0);
 
 def get_obstacle_avoidance_value():
-    return _sensor.get_obstacle_avoidance_value();
+    return _sensor.get_obstacle_avoidance_value() * 100.0 / 3.3;
 
 def get_left_infrared_tube():
     return _sensor.get_line_follower_2_value();
@@ -225,8 +226,92 @@ def get_color_id():
             return "unknown"
 
 def send_ir_code(addr, command):
-    _sensor.send_ir_code(addr, command)
+    if addr == 1234:
+        if command == 1:
+            _sensor.send_ir_code(addr, 0xf30c)
+        elif command == 2:
+            _sensor.send_ir_code(addr, 0xf30c)
+        elif command == 3:
+            _sensor.send_ir_code(addr, 0xf30c)
+        elif command == 4:
+            _sensor.send_ir_code(addr, 0xf30c)
+        elif command == 5:
+            _sensor.send_ir_code(addr, 0xf30c)
+        elif command == 6:
+            _sensor.send_ir_code(addr, 0xf30c)
+        else:
+            _sensor.send_ir_code(addr, command)
+    else:
+        _sensor.send_ir_code(addr, command)
 
 def get_ir_code():
-    return _sensor.get_ir_code()
+    ir_code_tuple = _sensor.get_ir_code()
+    if(ir_code_tuple[3] == 0xf30c):
+        return 1
+    elif(ir_code_tuple[3] == 0xe718):
+        return 2
+    elif(ir_code_tuple[3] == 0xa15e):
+        return 3
+    elif(ir_code_tuple[3] == 0xf708):
+        return 4
+    elif(ir_code_tuple[3] == 0xe31c):
+        return 5
+    elif(ir_code_tuple[3] == 0xa55a):
+        return 6
+    else:
+        return ir_code_tuple[3]
 
+def get_brightness(sensor_id):
+    value = 0
+    if sensor_id == "left":
+        value = get_left_light() * 100.0 / 3.3
+    elif sensor_id == "right":
+        value = get_right_light() * 100.0 / 3.3
+    return value
+
+def get_reflection_light(sensor_id):
+    value = 0
+    if sensor_id == "left":
+        value = get_left_infrared_tube() * 100.0 / 3.3
+    elif sensor_id == "right":
+        value = get_right_infrared_tube() * 100.0 / 3.3
+    return value
+
+def loudness():
+    return mic.get_loudness("maximum")
+
+def get_color_channel(channel):
+    r,g,b = get_color()
+    if channel == "red":
+        return r
+    elif channel == "green":
+        return g
+    elif channel == "blue":
+        return b
+    else:
+        return 0
+
+def is_ir_code_received(ir_code):
+    ir_code_read = get_ir_code()
+    if ir_code == ir_code_read:
+        return True
+    else:
+        return False
+
+def is_color_detected(color_id):
+    if get_color_id() == color_id:
+        return True
+    else:
+        return False
+
+def is_obstacle_ahead():
+    if get_obstacle_avoidance_value() > 50:
+        return True
+    else:
+        return False
+
+def is_brightness(dir, value):
+    if dir == ">":
+        return (get_brightness("left") > value) or (get_brightness("right") > value)
+    elif dir == "<":
+        return (get_brightness("left") < value) or (get_brightness("right") < value)

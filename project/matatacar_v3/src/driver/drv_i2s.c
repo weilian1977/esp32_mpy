@@ -35,7 +35,7 @@ const i2s_pin_config_t my_i2s_pin = {
 
 esp_err_t i2s0_init(void)
 {
-    int  ret = 0;//i2s_driver_install(I2S_NUM_0, &my_i2s_config, 0, NULL);
+    int  ret = 0; //i2s_driver_install(I2S_NUM_0, &my_i2s_config, 0, NULL);
     //if (ret < 0) {
     //    return ESP_FAIL;
     //}

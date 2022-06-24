@@ -7,10 +7,10 @@ import time
 
 _led_matrix = matatalab.led_matrix()
 
-def show_image(data_array, time = "None"):
+def show_image(data_array, time_data = "None"):
     _led_matrix.show_image(data_array)
-    if time != "None":
-        time.sleep(time)
+    if time_data != "None":
+        time.sleep(time_data)
         _led_matrix.clear()
 
 def set_pixel(x, y, brightness):

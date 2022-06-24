@@ -16,6 +16,7 @@ import audio
 import event
 import action
 import errno
+import button
 import machine, neopixel
 
 power_led = neopixel.NeoPixel(machine.Pin(39), 1)
@@ -36,7 +37,16 @@ key_pressed = KEY_UP
 power_start_time = 0
 usb_connect_state = False
 power_indicator_time = 0
-button = matatalab.button()
+
+def usb_state_process():
+    global usb_connect_state
+    if(matatalab.is_usb_detected() == True):
+        usb_connect_state = True
+    elif(usb_connect_state == True):
+        usb_connect_state = False
+        matatalab.reset()
+    else:
+        usb_connect_state = False
 
 def power_indicator():
     global power_indicator_time
@@ -64,7 +74,7 @@ def power_indicator():
         power_indicator_time = time.ticks_ms()
 
 def power_monitor():
-    global power_off_count, low_power_count, low_power_flag, key_pressed, power_start_time, usb_connect_state
+    global power_off_count, low_power_count, low_power_flag, key_pressed, power_start_time
 
     key_state = matatalab.get_power_state()
 
@@ -124,15 +134,10 @@ def main():
     time.sleep(0.1)
     event_manager.event_trigger(event_o.EVE_SYSTEM_LAUNCH)
     power_indicator_time = time.ticks_ms()
-    leds.show_single(1, 100, 0, 0)
-    leds.show_single(2, 0, 100, 0)
-    leds.show_single(3, 0, 0, 100)
-    leds.show_single(4, 100, 100, 0)
-    leds.show_single(5, 0, 100, 100)
-    leds.show_single(6, 100, 100, 100)
     while True:
         ble_state_monitor()
         power_monitor()
+        usb_state_process()
         time.sleep(0.02)
 
 def start():

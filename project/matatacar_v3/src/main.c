@@ -96,6 +96,8 @@
 bool first_start_flag = true;
 extern void ble_prph_main(void);
 
+void repl_push_chars(const uint8_t *data, int32_t len);
+
 int vprintf_null(const char *format, va_list ap) {
     // do nothing: this is used as a log target during raw repl mode
     return 0;
@@ -296,7 +298,23 @@ void app_main(void) {
 
 void nlr_jump_fail(void *val) {
     printf("NLR jump failed, val=%p\n", val);
-    esp_restart();
+    usb_status_update();
+    if(is_usb_detected() == true)
+    {
+        printf("usb detected, power off!\n");
+        power_off();
+        while(1);
+    }
+    else
+    {
+        esp_restart();
+    }
+}
+
+void mp_task_reset(void)
+{
+    uint8_t cmd = CHAR_CTRL_D;
+    repl_push_chars(&cmd, 1);
 }
 
 // modussl_mbedtls uses this function but it's not enabled in ESP IDF
@@ -315,4 +333,31 @@ void *esp_native_code_commit(void *buf, size_t len, void *reloc) {
     }
     memcpy(p, buf, len);
     return p;
+}
+
+/* call this funtionc only when repl is running  */
+void repl_push_chars(const uint8_t *data, int32_t len)
+{
+  uint8_t c = 0;
+  for(int32_t i = 0; i < len; i++)
+  {
+    c = data[i];
+    
+    if(c == mp_interrupt_char) 
+    {
+      // inline version of mp_keyboard_interrupt();
+      MP_STATE_MAIN_THREAD(mp_pending_exception) = MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_kbd_exception));
+#if MICROPY_ENABLE_SCHEDULER
+      if (MP_STATE_VM(sched_state) == MP_SCHED_IDLE) 
+      {
+        MP_STATE_VM(sched_state) = MP_SCHED_PENDING;
+      }
+#endif /* MICROPY_ENABLE_SCHEDULER */
+    }
+    else 
+    {
+      // this is an inline function so will be in IRAM
+      ringbuf_put(&stdin_ringbuf, c);
+    }
+  }
 }

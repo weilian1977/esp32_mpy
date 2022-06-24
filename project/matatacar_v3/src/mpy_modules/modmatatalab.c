@@ -40,7 +40,7 @@
 #define MODULE_ENABLE_VALUE   (1)
 #define MODULE_DISABLE_VALUE  (0)
 
-//extern void mp_task_reset(void);
+extern void mp_task_reset(void);
 STATIC mp_obj_t mpy_indicator_led(mp_obj_t led_status)
 {
     int16_t led_value = mp_obj_get_int(led_status);
@@ -109,12 +109,12 @@ STATIC mp_obj_t mpy_get_power_state(void)
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(get_power_state_obj, mpy_get_power_state);
 
-// STATIC mp_obj_t mpy_reset(void)
-// {
-//     mp_task_reset();
-//     return mp_const_none;
-// }
-// STATIC MP_DEFINE_CONST_FUN_OBJ_0(mpy_reset_obj, mpy_reset);
+STATIC mp_obj_t mpy_reset(void)
+{
+    mp_task_reset();
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(mpy_reset_obj, mpy_reset);
 
 STATIC mp_obj_t mpy_nvs_write_string(mp_uint_t n_args, const mp_obj_t *args)
 {
@@ -219,6 +219,7 @@ STATIC const mp_map_elem_t matatalab_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_power_off),                    (mp_obj_t)(&power_off_obj) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_power_on),                     (mp_obj_t)(&power_on_obj) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_get_power_state),              (mp_obj_t)(&get_power_state_obj) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_reset),                        (mp_obj_t)(&mpy_reset_obj) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_nvs_write_string),             (mp_obj_t)&nvs_write_string_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_nvs_read_string),              (mp_obj_t)&nvs_read_string_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_get_mac),                      (mp_obj_t)&get_mac_obj },
