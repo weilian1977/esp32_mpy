@@ -103,3 +103,1143 @@ index 24eb47b948..32c480c538 100644
                      mtCOVERAGE_TEST_MARKER();
                  }
              }
+diff --git a/components/tinyusb/CMakeLists.txt b/components/tinyusb/CMakeLists.txt
+index e7c1b7edbc..9b8935c996 100644
+--- a/components/tinyusb/CMakeLists.txt
++++ b/components/tinyusb/CMakeLists.txt
+@@ -37,7 +37,7 @@ if(CONFIG_TINYUSB)
+         "tinyusb/src/"
+         "additions/include"
+         # The FreeRTOS API include convention in tinyusb is different from esp-idf
+-        "${freertos_component_dir}/include/freertos"
++        "${freertos_component_dir}/FreeRTOS-Kernel/include/freertos"
+         )
+ 
+     list(APPEND srcs
+@@ -53,10 +53,13 @@ if(CONFIG_TINYUSB)
+         "tinyusb/src/tusb.c"
+         "additions/src/descriptors_control.c"
+         "additions/src/tinyusb.c"
+-        "additions/src/tusb_tasks.c"
+         "additions/src/usb_descriptors.c"
+         )
+ 
++    if(NOT CONFIG_TINYUSB_NO_DEFAULT_TASK)
++        list(APPEND srcs "additions/src/tusb_tasks.c")
++    endif()
++
+     # when no builtin class driver is enabled, an uint8_t data compared with `BUILTIN_DRIVER_COUNT` will always be false
+     set_source_files_properties("tinyusb/src/device/usbd.c" PROPERTIES COMPILE_FLAGS "-Wno-type-limits")
+ 
+@@ -73,7 +76,7 @@ endif() # CONFIG_TINYUSB
+ idf_component_register(SRCS ${srcs}
+                        INCLUDE_DIRS ${includes_public}
+                        PRIV_INCLUDE_DIRS ${includes_private}
+-                       PRIV_REQUIRES "vfs" "usb"
++                       PRIV_REQUIRES "vfs" "usb" "driver"
+                        )
+ 
+ if(CONFIG_TINYUSB)
+diff --git a/components/tinyusb/Kconfig b/components/tinyusb/Kconfig
+index 43e1265505..21a2f9fbe0 100644
+--- a/components/tinyusb/Kconfig
++++ b/components/tinyusb/Kconfig
+@@ -137,6 +137,14 @@ menu "TinyUSB Stack"
+                 help
+                     Enable TinyUSB CDC feature.
+ 
++            config TINYUSB_CDC_COUNT
++                int "CDC Channel Count"
++                default 1
++                range 1 2
++                depends on TINYUSB_CDC_ENABLED
++                help
++                    Number of independent serial ports.
++
+             config TINYUSB_CDC_RX_BUFSIZE
+                 depends on TINYUSB_CDC_ENABLED
+                 int "CDC FIFO size of RX channel"
+diff --git a/components/tinyusb/additions/include/tinyusb.h b/components/tinyusb/additions/include/tinyusb.h
+index aaa48fa725..f0832c2996 100644
+--- a/components/tinyusb/additions/include/tinyusb.h
++++ b/components/tinyusb/additions/include/tinyusb.h
+@@ -1,20 +1,13 @@
+-// Copyright 2020 Espressif Systems (Shanghai) PTE LTD
+-//
+-// Licensed under the Apache License, Version 2.0 (the "License");
+-// you may not use this file except in compliance with the License.
+-// You may obtain a copy of the License at
+-//
+-//     http://www.apache.org/licenses/LICENSE-2.0
+-//
+-// Unless required by applicable law or agreed to in writing, software
+-// distributed under the License is distributed on an "AS IS" BASIS,
+-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-// See the License for the specific language governing permissions and
+-// limitations under the License.
++/*
++ * SPDX-FileCopyrightText: 2020-2022 Espressif Systems (Shanghai) CO LTD
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ */
+ 
+ #pragma once
+ 
+ #include <stdbool.h>
++#include "esp_err.h"
+ #include "tusb.h"
+ #include "tusb_option.h"
+ #include "tusb_config.h"
+@@ -25,55 +18,17 @@
+ extern "C" {
+ #endif
+ 
+-
+-/* tinyusb uses buffers with type of uint8_t[] but in our driver we are reading them as a 32-bit word */
+-#if (CFG_TUD_ENDPOINT0_SIZE < 4)
+-#   define CFG_TUD_ENDPOINT0_SIZE 4
+-#   warning "CFG_TUD_ENDPOINT0_SIZE was too low and was set to 4"
+-#endif
+-
+-#if TUSB_OPT_DEVICE_ENABLED
+-
+-#   if CFG_TUD_HID
+-#      if (CFG_TUD_HID_BUFSIZE < 4)
+-#         define CFG_TUD_HID_BUFSIZE 4
+-#         warning "CFG_TUD_HID_BUFSIZE was too low and was set to 4"
+-#      endif
+-#   endif
+-
+-#   if CFG_TUD_CDC
+-#      if (CFG_TUD_CDC_EP_BUFSIZE < 4)
+-#         define CFG_TUD_CDC_EP_BUFSIZE 4
+-#         warning "CFG_TUD_CDC_EP_BUFSIZE was too low and was set to 4"
+-#      endif
+-#   endif
+-
+-#   if CFG_TUD_MSC
+-#      if (CFG_TUD_MSC_BUFSIZE < 4)
+-#         define CFG_TUD_MSC_BUFSIZE 4
+-#         warning "CFG_TUD_MSC_BUFSIZE was too low and was set to 4"
+-#      endif
+-#   endif
+-
+-#   if CFG_TUD_MIDI
+-#       if (CFG_TUD_MIDI_EPSIZE < 4)
+-#          define CFG_TUD_MIDI_EPSIZE 4
+-#          warning "CFG_TUD_MIDI_EPSIZE was too low and was set to 4"
+-#       endif
+-#   endif
+-
+-#   if CFG_TUD_CUSTOM_CLASS
+-#          warning "Please check that the buffer is more then 4 bytes"
+-#   endif
+-#endif
+-
+ /**
+  * @brief Configuration structure of the tinyUSB core
+  */
+ typedef struct {
+-    tusb_desc_device_t *descriptor; /*!< Pointer to a device descriptor */
+-    const char **string_descriptor; /*!< Pointer to an array of string descriptors */
+-    bool external_phy;              /*!< Should USB use an external PHY */
++    union {
++        const tusb_desc_device_t *device_descriptor; /*!< Pointer to a device descriptor. If set to NULL, the TinyUSB device will use a default device descriptor whose values are set in Kconfig */
++        const tusb_desc_device_t *descriptor  __attribute__((deprecated)); /*!< Alias to `device_descriptor` for backward compatibility */
++    };
++    const char **string_descriptor;            /*!< Pointer to an array of string descriptors */
++    bool external_phy;                         /*!< Should USB use an external PHY */
++    const uint8_t *configuration_descriptor;   /*!< Pointer to a configuration descriptor. If set to NULL, TinyUSB device will use a default configuration descriptor whose values are set in Kconfig */
+ } tinyusb_config_t;
+ 
+ /**
+diff --git a/components/tinyusb/additions/include/tinyusb_types.h b/components/tinyusb/additions/include/tinyusb_types.h
+index 0f226f3fa1..2c59f114a6 100644
+--- a/components/tinyusb/additions/include/tinyusb_types.h
++++ b/components/tinyusb/additions/include/tinyusb_types.h
+@@ -1,16 +1,8 @@
+-// Copyright 2020 Espressif Systems (Shanghai) Co. Ltd.
+-//
+-// Licensed under the Apache License, Version 2.0 (the "License");
+-// you may not use this file except in compliance with the License.
+-// You may obtain a copy of the License at
+-//
+-//     http://www.apache.org/licenses/LICENSE-2.0
+-//
+-// Unless required by applicable law or agreed to in writing, software
+-// distributed under the License is distributed on an "AS IS" BASIS,
+-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-// See the License for the specific language governing permissions and
+-// limitations under the License.
++/*
++ * SPDX-FileCopyrightText: 2020-2022 Espressif Systems (Shanghai) CO LTD
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ */
+ 
+ #pragma once
+ 
+diff --git a/components/tinyusb/additions/include/tusb_cdc_acm.h b/components/tinyusb/additions/include/tusb_cdc_acm.h
+index fb837a5f31..da197a67f0 100644
+--- a/components/tinyusb/additions/include/tusb_cdc_acm.h
++++ b/components/tinyusb/additions/include/tusb_cdc_acm.h
+@@ -1,16 +1,8 @@
+-// Copyright 2020 Espressif Systems (Shanghai) Co. Ltd.
+-//
+-// Licensed under the Apache License, Version 2.0 (the "License");
+-// you may not use this file except in compliance with the License.
+-// You may obtain a copy of the License at
+-//
+-//     http://www.apache.org/licenses/LICENSE-2.0
+-//
+-// Unless required by applicable law or agreed to in writing, software
+-// distributed under the License is distributed on an "AS IS" BASIS,
+-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-// See the License for the specific language governing permissions and
+-// limitations under the License.
++/*
++ * SPDX-FileCopyrightText: 2020-2022 Espressif Systems (Shanghai) CO LTD
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ */
+ 
+ #pragma once
+ 
+@@ -20,7 +12,6 @@ extern "C" {
+ 
+ #include <stdint.h>
+ #include "freertos/FreeRTOS.h"
+-#include "freertos/ringbuf.h"
+ #include "freertos/semphr.h"
+ #include "freertos/timers.h"
+ #include "tusb.h"
+@@ -29,9 +20,11 @@ extern "C" {
+ /**
+  * @brief CDC ports available to setup
+  */
+-typedef enum{
+-    TINYUSB_CDC_ACM_0 = 0x0
+-}tinyusb_cdcacm_itf_t;
++typedef enum {
++    TINYUSB_CDC_ACM_0 = 0x0,
++    TINYUSB_CDC_ACM_1,
++    TINYUSB_CDC_ACM_MAX
++} tinyusb_cdcacm_itf_t;
+ 
+ /* Callbacks and events
+    ********************************************************************* */
+diff --git a/components/tinyusb/additions/include/tusb_config.h b/components/tinyusb/additions/include/tusb_config.h
+index 81ae270076..fdf5468c98 100644
+--- a/components/tinyusb/additions/include/tusb_config.h
++++ b/components/tinyusb/additions/include/tusb_config.h
+@@ -86,7 +86,11 @@ extern "C" {
+ #define CFG_TUD_HID_BUFSIZE         CONFIG_TINYUSB_HID_BUFSIZE
+ 
+ // Enabled device class driver
+-#define CFG_TUD_CDC                 CONFIG_TINYUSB_CDC_ENABLED
++#if defined(CONFIG_TINYUSB_CDC_COUNT)
++#define CFG_TUD_CDC                 CONFIG_TINYUSB_CDC_COUNT
++#else
++#define CFG_TUD_CDC                 0
++#endif
+ #define CFG_TUD_MSC                 CONFIG_TINYUSB_MSC_ENABLED
+ #define CFG_TUD_HID                 CONFIG_TINYUSB_HID_ENABLED
+ #define CFG_TUD_MIDI                CONFIG_TINYUSB_MIDI_ENABLED
+diff --git a/components/tinyusb/additions/include/tusb_console.h b/components/tinyusb/additions/include/tusb_console.h
+index 530221dc6f..568fee0999 100644
+--- a/components/tinyusb/additions/include/tusb_console.h
++++ b/components/tinyusb/additions/include/tusb_console.h
+@@ -1,16 +1,8 @@
+-// Copyright 2020 Espressif Systems (Shanghai) Co. Ltd.
+-//
+-// Licensed under the Apache License, Version 2.0 (the "License");
+-// you may not use this file except in compliance with the License.
+-// You may obtain a copy of the License at
+-//
+-//     http://www.apache.org/licenses/LICENSE-2.0
+-//
+-// Unless required by applicable law or agreed to in writing, software
+-// distributed under the License is distributed on an "AS IS" BASIS,
+-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-// See the License for the specific language governing permissions and
+-// limitations under the License.
++/*
++ * SPDX-FileCopyrightText: 2020-2022 Espressif Systems (Shanghai) CO LTD
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ */
+ 
+ #pragma once
+ 
+diff --git a/components/tinyusb/additions/include/tusb_tasks.h b/components/tinyusb/additions/include/tusb_tasks.h
+index 7f3209db51..22b6df6c27 100644
+--- a/components/tinyusb/additions/include/tusb_tasks.h
++++ b/components/tinyusb/additions/include/tusb_tasks.h
+@@ -1,16 +1,8 @@
+-// Copyright 2020 Espressif Systems (Shanghai) PTE LTD
+-//
+-// Licensed under the Apache License, Version 2.0 (the "License");
+-// you may not use this file except in compliance with the License.
+-// You may obtain a copy of the License at
+-//
+-//     http://www.apache.org/licenses/LICENSE-2.0
+-//
+-// Unless required by applicable law or agreed to in writing, software
+-// distributed under the License is distributed on an "AS IS" BASIS,
+-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-// See the License for the specific language governing permissions and
+-// limitations under the License.
++/*
++ * SPDX-FileCopyrightText: 2020-2022 Espressif Systems (Shanghai) CO LTD
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ */
+ 
+ #pragma once
+ 
+diff --git a/components/tinyusb/additions/include/vfs_tinyusb.h b/components/tinyusb/additions/include/vfs_tinyusb.h
+index 233b7f149f..79c69bd726 100644
+--- a/components/tinyusb/additions/include/vfs_tinyusb.h
++++ b/components/tinyusb/additions/include/vfs_tinyusb.h
+@@ -1,16 +1,8 @@
+-// Copyright 2020 Espressif Systems (Shanghai) Co. Ltd.
+-//
+-// Licensed under the Apache License, Version 2.0 (the "License");
+-// you may not use this file except in compliance with the License.
+-// You may obtain a copy of the License at
+-//
+-//     http://www.apache.org/licenses/LICENSE-2.0
+-//
+-// Unless required by applicable law or agreed to in writing, software
+-// distributed under the License is distributed on an "AS IS" BASIS,
+-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-// See the License for the specific language governing permissions and
+-// limitations under the License.
++/*
++ * SPDX-FileCopyrightText: 2020-2022 Espressif Systems (Shanghai) CO LTD
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ */
+ 
+ #pragma once
+ 
+diff --git a/components/tinyusb/additions/include_private/cdc.h b/components/tinyusb/additions/include_private/cdc.h
+index b3aa870f25..e3c85f9570 100644
+--- a/components/tinyusb/additions/include_private/cdc.h
++++ b/components/tinyusb/additions/include_private/cdc.h
+@@ -1,16 +1,8 @@
+-// Copyright 2020 Espressif Systems (Shanghai) Co. Ltd.
+-//
+-// Licensed under the Apache License, Version 2.0 (the "License");
+-// you may not use this file except in compliance with the License.
+-// You may obtain a copy of the License at
+-//
+-//     http://www.apache.org/licenses/LICENSE-2.0
+-//
+-// Unless required by applicable law or agreed to in writing, software
+-// distributed under the License is distributed on an "AS IS" BASIS,
+-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-// See the License for the specific language governing permissions and
+-// limitations under the License.
++/*
++ * SPDX-FileCopyrightText: 2020-2022 Espressif Systems (Shanghai) CO LTD
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ */
+ 
+ #pragma once
+ 
+@@ -20,7 +12,6 @@ extern "C" {
+ 
+ #include <stdint.h>
+ #include "freertos/FreeRTOS.h"
+-#include "freertos/ringbuf.h"
+ #include "freertos/semphr.h"
+ #include "freertos/timers.h"
+ #include "tusb.h"
+@@ -77,14 +68,6 @@ esp_err_t tinyusb_cdc_init(int itf, const tinyusb_config_cdc_t *cfg);
+ esp_err_t tinyusb_cdc_deinit(int itf);
+ 
+ 
+-/**
+- * @brief Checks if the CDC initialized and ready to interaction
+- *
+- * @return true or false
+- */
+-bool tinyusb_cdc_initialized(int itf);
+-
+-
+ /**
+  * @brief Return interface of a CDC device
+  *
+diff --git a/components/tinyusb/additions/include_private/descriptors_control.h b/components/tinyusb/additions/include_private/descriptors_control.h
+index 461ffa85e9..b6516e1a75 100644
+--- a/components/tinyusb/additions/include_private/descriptors_control.h
++++ b/components/tinyusb/additions/include_private/descriptors_control.h
+@@ -1,67 +1,19 @@
+-// Copyright 2020 Espressif Systems (Shanghai) PTE LTD
+-//
+-// Licensed under the Apache License, Version 2.0 (the "License");
+-// you may not use this file except in compliance with the License.
+-// You may obtain a copy of the License at
+-//
+-//     http://www.apache.org/licenses/LICENSE-2.0
+-//
+-// Unless required by applicable law or agreed to in writing, software
+-// distributed under the License is distributed on an "AS IS" BASIS,
+-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-// See the License for the specific language governing permissions and
+-// limitations under the License.
++/*
++ * SPDX-FileCopyrightText: 2020-2022 Espressif Systems (Shanghai) CO LTD
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ */
+ 
+ #pragma once
+ 
+-#include <string.h>
+-#include "usb_descriptors.h"
+-
+-
+-/* A combination of interfaces must have a unique product id, since PC will save device driver after the first plug.
+- * Same VID/PID with different interface e.g MSC (first), then CDC (later) will possibly cause system error on PC.
+- *
+- * Auto ProductID layout's Bitmap:
+- *   [MSB]         HID | MSC | CDC          [LSB]
+- */
+-#define EPNUM_MSC 0x03
++#include "tusb.h"
++#include "tinyusb_types.h"
+ 
+ #ifdef __cplusplus
+ extern "C" {
+ #endif
+-//------------- HID Report Descriptor -------------//
+-#if CFG_TUD_HID
+-enum {
+-    REPORT_ID_KEYBOARD = 1,
+-    REPORT_ID_MOUSE
+-};
+-#endif
+-
+-//------------- Configuration Descriptor -------------//
+-enum {
+-#   if CFG_TUD_CDC
+-    ITF_NUM_CDC = 0,
+-    ITF_NUM_CDC_DATA,
+-#   endif
+-
+-#   if CFG_TUD_MSC
+-    ITF_NUM_MSC,
+-#   endif
+-
+-#   if CFG_TUD_HID
+-    ITF_NUM_HID,
+-#   endif
+-
+-    ITF_NUM_TOTAL
+-};
+-
+-enum {
+-    TUSB_DESC_TOTAL_LEN = TUD_CONFIG_DESC_LEN + CFG_TUD_CDC * TUD_CDC_DESC_LEN + CFG_TUD_MSC * TUD_MSC_DESC_LEN +
+-                       CFG_TUD_HID * TUD_HID_DESC_LEN
+-};
+ 
+-bool tusb_desc_set;
+-void tusb_set_descriptor(tusb_desc_device_t *desc, const char **str_desc);
++void tusb_set_descriptor(const tusb_desc_device_t *dev_desc, const char **str_desc, const uint8_t *cfg_desc);
+ tusb_desc_device_t *tusb_get_active_desc(void);
+ char **tusb_get_active_str_desc(void);
+ void tusb_clear_descriptor(void);
+diff --git a/components/tinyusb/additions/include_private/usb_descriptors.h b/components/tinyusb/additions/include_private/usb_descriptors.h
+index 76c2b54b91..215010c94f 100644
+--- a/components/tinyusb/additions/include_private/usb_descriptors.h
++++ b/components/tinyusb/additions/include_private/usb_descriptors.h
+@@ -1,16 +1,8 @@
+-// Copyright 2020 Espressif Systems (Shanghai) PTE LTD
+-//
+-// Licensed under the Apache License, Version 2.0 (the "License");
+-// you may not use this file except in compliance with the License.
+-// You may obtain a copy of the License at
+-//
+-//     http://www.apache.org/licenses/LICENSE-2.0
+-//
+-// Unless required by applicable law or agreed to in writing, software
+-// distributed under the License is distributed on an "AS IS" BASIS,
+-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-// See the License for the specific language governing permissions and
+-// limitations under the License.
++/*
++ * SPDX-FileCopyrightText: 2020-2022 Espressif Systems (Shanghai) CO LTD
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ */
+ 
+ #pragma once
+ 
+@@ -26,8 +18,9 @@ extern "C" {
+ extern tusb_desc_device_t descriptor_tinyusb;
+ extern tusb_desc_strarray_device_t descriptor_str_tinyusb;
+ 
+-extern tusb_desc_device_t descriptor_kconfig;
++extern const tusb_desc_device_t descriptor_dev_kconfig;
+ extern tusb_desc_strarray_device_t descriptor_str_kconfig;
++extern const uint8_t descriptor_cfg_kconfig[];
+ 
+ #ifdef __cplusplus
+ }
+diff --git a/components/tinyusb/additions/src/cdc.c b/components/tinyusb/additions/src/cdc.c
+index ce46497f72..9e46c7ca47 100644
+--- a/components/tinyusb/additions/src/cdc.c
++++ b/components/tinyusb/additions/src/cdc.c
+@@ -1,16 +1,8 @@
+-// Copyright 2020 Espressif Systems (Shanghai) Co. Ltd.
+-//
+-// Licensed under the Apache License, Version 2.0 (the "License");
+-// you may not use this file except in compliance with the License.
+-// You may obtain a copy of the License at
+-//
+-//     http://www.apache.org/licenses/LICENSE-2.0
+-//
+-// Unless required by applicable law or agreed to in writing, software
+-// distributed under the License is distributed on an "AS IS" BASIS,
+-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-// See the License for the specific language governing permissions and
+-// limitations under the License.
++/*
++ * SPDX-FileCopyrightText: 2020-2022 Espressif Systems (Shanghai) CO LTD
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ */
+ 
+ #include <stdint.h>
+ #include "esp_check.h"
+@@ -18,65 +10,29 @@
+ #include "esp_log.h"
+ #include "tusb.h"
+ #include "cdc.h"
+-#include "sdkconfig.h"
+-
+-static const char *TAG = "tusb_cdc";
+ 
+ #define CDC_INTF_NUM            CFG_TUD_CDC // number of cdc blocks
+-
+ static esp_tusb_cdc_t *cdc_obj[CDC_INTF_NUM] = {};
++static const char *TAG = "tusb_cdc";
+ 
+-/* Common CDC functions
+-   ********************************************************************* */
+-bool tinyusb_cdc_initialized(int itf)
+-{
+-    return (cdc_obj[itf] != NULL);
+-}
+-
+-static esp_err_t cdc_interface_check(int itf)
++esp_tusb_cdc_t *tinyusb_cdc_get_intf(int itf_num)
+ {
+-    if (tinyusb_cdc_initialized(itf)) {
+-        return ESP_OK;
+-    } else {
+-        ESP_LOGE(TAG, "Interface is not initialized. Use `tinyusb_cdc_init` for initialization");
+-        return ESP_ERR_INVALID_STATE;
++    if (itf_num >= CDC_INTF_NUM || itf_num < 0) {
++        return NULL;
+     }
++    return cdc_obj[itf_num];
+ }
+ 
+-/**
+- * @brief
+- *
+- * @param itf
+- * @param expected_inited
+- * @param expected_type use -1 if you don't care
+- * @return esp_err_t
+- */
+ static esp_err_t cdc_obj_check(int itf, bool expected_inited, tusb_class_code_t expected_type)
+ {
+-    bool inited = (cdc_obj[itf] != NULL);
+-    if (expected_inited != inited) {
+-        ESP_LOGE(TAG, "Wrong state of the interface. Expected state: %s",
+-                 expected_inited ? "initialized" : "not initialized");
+-        return ESP_ERR_INVALID_STATE;
+-    }
+-    if (inited && (expected_type != -1) && !(cdc_obj[itf]->type == expected_type)) {
+-        ESP_LOGE(TAG, "Wrong type of the interface. Should be : 0x%x (tusb_class_code_t)", expected_type);
+-        return ESP_ERR_INVALID_ARG;
+-    }
+-    return ESP_OK;
+-}
++    esp_tusb_cdc_t *this_itf = tinyusb_cdc_get_intf(itf);
+ 
+-esp_tusb_cdc_t *tinyusb_cdc_get_intf(int itf_num)
+-{
+-    if (cdc_interface_check(itf_num) != ESP_OK) {
+-        return NULL;
+-    }
+-    return cdc_obj[itf_num];
++    bool inited = (this_itf != NULL);
++    ESP_RETURN_ON_FALSE(expected_inited == inited, ESP_ERR_INVALID_STATE, TAG, "Wrong state of the interface. Expected state: %s", expected_inited ? "initialized" : "not initialized");
++    ESP_RETURN_ON_FALSE(!(inited && (expected_type != -1) && !(this_itf->type == expected_type)), ESP_ERR_INVALID_STATE, TAG, "Wrong type of the interface. Should be : 0x%x (tusb_class_code_t)", expected_type);
++    return ESP_OK;
+ }
+ 
+-/*********************************************************************** Common CDC functions*/
+-/* CDC class funcs
+-   ********************************************************************* */
+ static esp_err_t tusb_cdc_comm_init(int itf)
+ {
+     ESP_RETURN_ON_ERROR(cdc_obj_check(itf, false, -1), TAG, "cdc_obj_check failed");
+@@ -120,16 +76,12 @@ static esp_err_t tusb_cdc_deinit_data(int itf)
+     cdc_obj[itf] = NULL;
+     return ESP_OK;
+ }
+-/*********************************************************************** CDC class funcs*/
+-/* CDC initialization
+-   ********************************************************************* */
++
+ esp_err_t tinyusb_cdc_init(int itf, const tinyusb_config_cdc_t *cfg)
+ {
+-    ESP_LOGD(TAG, "CDC initialization...");
+-    if (itf != 0) {
+-        ESP_LOGE(TAG, "There is not CDC no.%d", itf);
+-        return ESP_ERR_INVALID_ARG;
+-    }
++    ESP_RETURN_ON_ERROR(cdc_obj_check(itf, false, -1), TAG, "cdc_obj_check failed");
++
++    ESP_LOGD(TAG, "Init CDC %d", itf);
+     if (cfg->cdc_class == TUSB_CLASS_CDC) {
+         ESP_RETURN_ON_ERROR(tusb_cdc_comm_init(itf), TAG, "tusb_cdc_comm_init failed");
+         cdc_obj[itf]->cdc_subclass.comm_subclass = cfg->cdc_subclass.comm_subclass;
+@@ -141,13 +93,11 @@ esp_err_t tinyusb_cdc_init(int itf, const tinyusb_config_cdc_t *cfg)
+     return ESP_OK;
+ }
+ 
+-
+ esp_err_t tinyusb_cdc_deinit(int itf)
+ {
+-    if (itf != 0) {
+-        ESP_LOGE(TAG, "There is not CDC no.%d", itf);
+-        return ESP_ERR_INVALID_ARG;
+-    }
++    ESP_RETURN_ON_ERROR(cdc_obj_check(itf, true, -1), TAG, "cdc_obj_check failed");
++
++    ESP_LOGD(TAG, "Deinit CDC %d", itf);
+     if (cdc_obj[itf]->type == TUSB_CLASS_CDC) {
+         ESP_RETURN_ON_ERROR(tusb_cdc_deinit_comm(itf), TAG, "tusb_cdc_deinit_comm failed");
+     } else if (cdc_obj[itf]->type == TUSB_CLASS_CDC_DATA) {
+@@ -155,7 +105,5 @@ esp_err_t tinyusb_cdc_deinit(int itf)
+     } else {
+         return ESP_ERR_INVALID_ARG;
+     }
+-    ESP_LOGD(TAG, "De-initialized");
+     return ESP_OK;
+ }
+-/*********************************************************************** CDC initialization*/
+diff --git a/components/tinyusb/additions/src/descriptors_control.c b/components/tinyusb/additions/src/descriptors_control.c
+index d7fbf0bda7..3857e2ebcb 100644
+--- a/components/tinyusb/additions/src/descriptors_control.c
++++ b/components/tinyusb/additions/src/descriptors_control.c
+@@ -1,50 +1,19 @@
+-// Copyright 2020 Espressif Systems (Shanghai) PTE LTD
+-//
+-// Licensed under the Apache License, Version 2.0 (the "License");
+-// you may not use this file except in compliance with the License.
+-// You may obtain a copy of the License at
+-//
+-//     http://www.apache.org/licenses/LICENSE-2.0
+-//
+-// Unless required by applicable law or agreed to in writing, software
+-// distributed under the License is distributed on an "AS IS" BASIS,
+-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-// See the License for the specific language governing permissions and
+-// limitations under the License.
++/*
++ * SPDX-FileCopyrightText: 2020-2022 Espressif Systems (Shanghai) CO LTD
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ */
+ 
++#include <string.h>
+ #include "esp_log.h"
+ #include "descriptors_control.h"
+ 
+ static const char *TAG = "tusb_desc";
+-static tusb_desc_device_t s_descriptor;
++static tusb_desc_device_t s_device_descriptor;
++static const uint8_t *s_configuration_descriptor;
+ static char *s_str_descriptor[USB_STRING_DESCRIPTOR_ARRAY_SIZE];
+ #define MAX_DESC_BUF_SIZE 32
+ 
+-#if CFG_TUD_HID //HID Report Descriptor
+-uint8_t const desc_hid_report[] = {
+-    TUD_HID_REPORT_DESC_KEYBOARD(HID_REPORT_ID(REPORT_ID_KEYBOARD), ),
+-    TUD_HID_REPORT_DESC_MOUSE(HID_REPORT_ID(REPORT_ID_MOUSE), )
+-};
+-#endif
+-
+-uint8_t const desc_configuration[] = {
+-    // interface count, string index, total length, attribute, power in mA
+-    TUD_CONFIG_DESCRIPTOR(1, ITF_NUM_TOTAL, 0, TUSB_DESC_TOTAL_LEN, TUSB_DESC_CONFIG_ATT_REMOTE_WAKEUP, 100),
+-
+-#   if CFG_TUD_CDC
+-    // Interface number, string index, EP notification address and size, EP data address (out, in) and size.
+-    TUD_CDC_DESCRIPTOR(ITF_NUM_CDC, 4, 0x81, 8, 0x02, 0x82, 64),
+-#   endif
+-#   if CFG_TUD_MSC
+-    // Interface number, string index, EP Out & EP In address, EP size
+-    TUD_MSC_DESCRIPTOR(ITF_NUM_MSC, 5, EPNUM_MSC, 0x80 | EPNUM_MSC, 64), // highspeed 512
+-#   endif
+-#   if CFG_TUD_HID
+-    // Interface number, string index, protocol, report descriptor len, EP In address, size & polling interval
+-    TUD_HID_DESCRIPTOR(ITF_NUM_HID, 6, HID_PROTOCOL_NONE, sizeof(desc_hid_report), 0x84, 16, 10)
+-#   endif
+-};
+-
+ // =============================================================================
+ // CALLBACKS
+ // =============================================================================
+@@ -57,7 +26,7 @@ uint8_t const desc_configuration[] = {
+  */
+ uint8_t const *tud_descriptor_device_cb(void)
+ {
+-    return (uint8_t const *)&s_descriptor;
++    return (uint8_t const *)&s_device_descriptor;
+ }
+ 
+ /**
+@@ -70,7 +39,7 @@ uint8_t const *tud_descriptor_device_cb(void)
+ uint8_t const *tud_descriptor_configuration_cb(uint8_t index)
+ {
+     (void)index; // for multiple configurations
+-    return desc_configuration;
++    return s_configuration_descriptor;
+ }
+ 
+ static uint16_t _desc_str[MAX_DESC_BUF_SIZE];
+@@ -112,25 +81,11 @@ uint16_t const *tud_descriptor_string_cb(uint8_t index, uint16_t langid)
+     return _desc_str;
+ }
+ 
+-/**
+- * @brief Invoked when received GET HID REPORT DESCRIPTOR
+- * Application returns pointer to descriptor. Descriptor contents must exist
+- * long enough for transfer to complete
+- *
+- * @return uint8_t const*
+- */
+-#if CFG_TUD_HID
+-uint8_t const *tud_hid_descriptor_report_cb(void)
+-{
+-    return desc_hid_report;
+-}
+-#endif
+-
+ // =============================================================================
+ // Driver functions
+ // =============================================================================
+ 
+-void tusb_set_descriptor(tusb_desc_device_t *dev_desc, const char **str_desc)
++void tusb_set_descriptor(const tusb_desc_device_t *dev_desc, const char **str_desc, const uint8_t *cfg_desc)
+ {
+     ESP_LOGI(TAG, "\n"
+              "┌─────────────────────────────────┐\n"
+@@ -163,18 +118,18 @@ void tusb_set_descriptor(tusb_desc_device_t *dev_desc, const char **str_desc)
+              dev_desc->idVendor, dev_desc->idProduct, dev_desc->bcdDevice,
+              dev_desc->iManufacturer, dev_desc->iProduct, dev_desc->iSerialNumber,
+              dev_desc->bNumConfigurations);
+-    s_descriptor = *dev_desc;
++    s_device_descriptor = *dev_desc;
++    s_configuration_descriptor = cfg_desc;
+ 
+     if (str_desc != NULL) {
+         memcpy(s_str_descriptor, str_desc,
+                sizeof(s_str_descriptor[0])*USB_STRING_DESCRIPTOR_ARRAY_SIZE);
+     }
+-    tusb_desc_set = true;
+ }
+ 
+ tusb_desc_device_t *tusb_get_active_desc(void)
+ {
+-    return &s_descriptor;
++    return &s_device_descriptor;
+ }
+ 
+ char **tusb_get_active_str_desc(void)
+@@ -184,7 +139,6 @@ char **tusb_get_active_str_desc(void)
+ 
+ void tusb_clear_descriptor(void)
+ {
+-    memset(&s_descriptor, 0, sizeof(s_descriptor));
++    memset(&s_device_descriptor, 0, sizeof(s_device_descriptor));
+     memset(&s_str_descriptor, 0, sizeof(s_str_descriptor));
+-    tusb_desc_set = false;
+ }
+diff --git a/components/tinyusb/additions/src/tinyusb.c b/components/tinyusb/additions/src/tinyusb.c
+index f11429582e..79633b8f9b 100644
+--- a/components/tinyusb/additions/src/tinyusb.c
++++ b/components/tinyusb/additions/src/tinyusb.c
+@@ -1,25 +1,19 @@
+-// Copyright 2020 Espressif Systems (Shanghai) PTE LTD
+-//
+-// Licensed under the Apache License, Version 2.0 (the "License");
+-// you may not use this file except in compliance with the License.
+-// You may obtain a copy of the License at
+-//
+-//     http://www.apache.org/licenses/LICENSE-2.0
+-//
+-// Unless required by applicable law or agreed to in writing, software
+-// distributed under the License is distributed on an "AS IS" BASIS,
+-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-// See the License for the specific language governing permissions and
+-// limitations under the License.
++/*
++ * SPDX-FileCopyrightText: 2020-2022 Espressif Systems (Shanghai) CO LTD
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ */
+ 
+ #include "sdkconfig.h"
+ #include "esp_log.h"
+ #include "esp_check.h"
+ #include "esp_err.h"
++//#include "esp_private/periph_ctrl.h"
+ #include "esp_private/usb_phy.h"
+ #include "soc/usb_pins.h"
+ #include "tinyusb.h"
+ #include "descriptors_control.h"
++#include "usb_descriptors.h"
+ #include "tusb.h"
+ #include "tusb_tasks.h"
+ 
+@@ -28,8 +22,9 @@ static usb_phy_handle_t phy_hdl;
+ 
+ esp_err_t tinyusb_driver_install(const tinyusb_config_t *config)
+ {
+-    tusb_desc_device_t *dev_descriptor;
++    const tusb_desc_device_t *dev_descriptor;
+     const char **string_descriptor;
++    const uint8_t *cfg_descriptor;
+     ESP_RETURN_ON_FALSE(config, ESP_ERR_INVALID_ARG, TAG, "invalid argument");
+ 
+     // Configure USB PHY
+@@ -53,10 +48,11 @@ esp_err_t tinyusb_driver_install(const tinyusb_config_t *config)
+     }
+     ESP_RETURN_ON_ERROR(usb_new_phy(&phy_conf, &phy_hdl), TAG, "Install USB PHY failed");
+ 
+-    dev_descriptor = config->descriptor ? config->descriptor : &descriptor_kconfig;
++    dev_descriptor = config->device_descriptor ? config->device_descriptor : &descriptor_dev_kconfig;
+     string_descriptor = config->string_descriptor ? config->string_descriptor : descriptor_str_kconfig;
++    cfg_descriptor = config->configuration_descriptor ? config->configuration_descriptor : descriptor_cfg_kconfig;
+ 
+-    tusb_set_descriptor(dev_descriptor, string_descriptor);
++    tusb_set_descriptor(dev_descriptor, string_descriptor, cfg_descriptor);
+ 
+     ESP_RETURN_ON_FALSE(tusb_init(), ESP_FAIL, TAG, "Init TinyUSB stack failed");
+ #if !CONFIG_TINYUSB_NO_DEFAULT_TASK
+diff --git a/components/tinyusb/additions/src/tusb_cdc_acm.c b/components/tinyusb/additions/src/tusb_cdc_acm.c
+index 2384c56f43..b046ce5050 100644
+--- a/components/tinyusb/additions/src/tusb_cdc_acm.c
++++ b/components/tinyusb/additions/src/tusb_cdc_acm.c
+@@ -1,16 +1,8 @@
+-// Copyright 2020 Espressif Systems (Shanghai) Co. Ltd.
+-//
+-// Licensed under the Apache License, Version 2.0 (the "License");
+-// you may not use this file except in compliance with the License.
+-// You may obtain a copy of the License at
+-//
+-//     http://www.apache.org/licenses/LICENSE-2.0
+-//
+-// Unless required by applicable law or agreed to in writing, software
+-// distributed under the License is distributed on an "AS IS" BASIS,
+-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-// See the License for the specific language governing permissions and
+-// limitations under the License.
++/*
++ * SPDX-FileCopyrightText: 2020-2022 Espressif Systems (Shanghai) CO LTD
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ */
+ 
+ #include <stdint.h>
+ #include "esp_check.h"
+@@ -18,6 +10,7 @@
+ #include "esp_log.h"
+ #include "freertos/FreeRTOS.h"
+ #include "freertos/task.h"
++#include "freertos/ringbuf.h"
+ #include "tusb.h"
+ #include "tusb_cdc_acm.h"
+ #include "cdc.h"
+@@ -26,11 +19,12 @@
+ #define RX_UNREADBUF_SZ_DEFAULT 64 // buffer storing all unread RX data
+ #define MIN(x, y) (((x) < (y)) ? (x) : (y))
+ 
++
+ typedef struct {
+     bool initialized;
+     size_t rx_unread_buf_sz;
+     RingbufHandle_t rx_unread_buf;
+-    xSemaphoreHandle ringbuf_read_mux;
++    SemaphoreHandle_t ringbuf_read_mux;
+     uint8_t *rx_tfbuf;
+     tusb_cdcacm_callback_t callback_rx;
+     tusb_cdcacm_callback_t callback_rx_wanted_char;
+diff --git a/components/tinyusb/additions/src/tusb_console.c b/components/tinyusb/additions/src/tusb_console.c
+index 1942a05b1f..97c3e256dc 100644
+--- a/components/tinyusb/additions/src/tusb_console.c
++++ b/components/tinyusb/additions/src/tusb_console.c
+@@ -1,16 +1,8 @@
+-// Copyright 2020 Espressif Systems (Shanghai) Co. Ltd.
+-//
+-// Licensed under the Apache License, Version 2.0 (the "License");
+-// you may not use this file except in compliance with the License.
+-// You may obtain a copy of the License at
+-//
+-//     http://www.apache.org/licenses/LICENSE-2.0
+-//
+-// Unless required by applicable law or agreed to in writing, software
+-// distributed under the License is distributed on an "AS IS" BASIS,
+-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-// See the License for the specific language governing permissions and
+-// limitations under the License.
++/*
++ * SPDX-FileCopyrightText: 2020-2022 Espressif Systems (Shanghai) CO LTD
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ */
+ 
+ 
+ #include <stdio.h>
+@@ -20,6 +12,7 @@
+ #include "tusb_console.h"
+ #include "tinyusb.h"
+ #include "vfs_tinyusb.h"
++#include "esp_check.h"
+ 
+ #define STRINGIFY(s) STRINGIFY2(s)
+ #define STRINGIFY2(s) #s
+@@ -108,35 +101,15 @@ static esp_err_t restore_std_streams(FILE **f_in, FILE **f_out, FILE **f_err)
+ 
+ esp_err_t esp_tusb_init_console(int cdc_intf)
+ {
+-    if (!tinyusb_cdc_initialized(cdc_intf)) {
+-        ESP_LOGE(TAG, "Can't init the console because TinyUSB's CDC is not initialized!");
+-        return ESP_ERR_INVALID_STATE;
+-    }
+     /* Registering TUSB at VFS */
+-    int res = esp_vfs_tusb_cdc_register(cdc_intf, NULL);
+-    if (res != ESP_OK) {
+-        return res;
+-    }
+-
+-    res = redirect_std_streams_to(&con.in, &con.out, &con.err, "/dev/tusb_cdc");
+-    if (res != ESP_OK) {
+-        return res;
+-    }
+-
++    ESP_RETURN_ON_ERROR(esp_vfs_tusb_cdc_register(cdc_intf, NULL), TAG, "");
++    ESP_RETURN_ON_ERROR(redirect_std_streams_to(&con.in, &con.out, &con.err, "/dev/tusb_cdc"), TAG, "Failed to redirect STD streams");
+     return ESP_OK;
+ }
+ 
+ esp_err_t esp_tusb_deinit_console(int cdc_intf)
+ {
+-    if (!tinyusb_cdc_initialized(cdc_intf)) {
+-        ESP_LOGE(TAG, "Can't deinit the console because TinyUSB's CDC is not initialized!");
+-        return ESP_ERR_INVALID_STATE;
+-    }
+-
+-    int res = restore_std_streams(&con.in, &con.out, &con.err);
+-    if (res != ESP_OK) {
+-        return res;
+-    }
++    ESP_RETURN_ON_ERROR(restore_std_streams(&con.in, &con.out, &con.err), TAG, "Failed to restore STD streams");
+     esp_vfs_tusb_cdc_unregister(NULL);
+     return ESP_OK;
+ }
+diff --git a/components/tinyusb/additions/src/tusb_tasks.c b/components/tinyusb/additions/src/tusb_tasks.c
+index 731247380a..bf0681db54 100644
+--- a/components/tinyusb/additions/src/tusb_tasks.c
++++ b/components/tinyusb/additions/src/tusb_tasks.c
+@@ -1,16 +1,8 @@
+-// Copyright 2020 Espressif Systems (Shanghai) PTE LTD
+-//
+-// Licensed under the Apache License, Version 2.0 (the "License");
+-// you may not use this file except in compliance with the License.
+-// You may obtain a copy of the License at
+-//
+-//     http://www.apache.org/licenses/LICENSE-2.0
+-//
+-// Unless required by applicable law or agreed to in writing, software
+-// distributed under the License is distributed on an "AS IS" BASIS,
+-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-// See the License for the specific language governing permissions and
+-// limitations under the License.
++/*
++ * SPDX-FileCopyrightText: 2020-2022 Espressif Systems (Shanghai) CO LTD
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ */
+ 
+ #include "sdkconfig.h"
+ #include "freertos/FreeRTOS.h"
+diff --git a/components/tinyusb/additions/src/usb_descriptors.c b/components/tinyusb/additions/src/usb_descriptors.c
+index 3b24337f83..f0c3228d15 100644
+--- a/components/tinyusb/additions/src/usb_descriptors.c
++++ b/components/tinyusb/additions/src/usb_descriptors.c
+@@ -1,20 +1,19 @@
+-// Copyright 2020 Espressif Systems (Shanghai) PTE LTD
+-//
+-// Licensed under the Apache License, Version 2.0 (the "License");
+-// you may not use this file except in compliance with the License.
+-// You may obtain a copy of the License at
+-//
+-//     http://www.apache.org/licenses/LICENSE-2.0
+-//
+-// Unless required by applicable law or agreed to in writing, software
+-// distributed under the License is distributed on an "AS IS" BASIS,
+-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-// See the License for the specific language governing permissions and
+-// limitations under the License.
++/*
++ * SPDX-FileCopyrightText: 2020-2022 Espressif Systems (Shanghai) CO LTD
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ */
+ 
+ #include "usb_descriptors.h"
+ #include "sdkconfig.h"
+ 
++/*
++ * A combination of interfaces must have a unique product id, since PC will save device driver after the first plug.
++ * Same VID/PID with different interface e.g MSC (first), then CDC (later) will possibly cause system error on PC.
++ *
++ * Auto ProductID layout's Bitmap:
++ *   [MSB]         HID | MSC | CDC          [LSB]
++ */
+ #define USB_TUSB_PID (0x4000 | _PID_MAP(CDC, 0) | _PID_MAP(MSC, 1) | _PID_MAP(HID, 2) | _PID_MAP(MIDI, 3))
+ 
+ /**** TinyUSB default ****/
+@@ -61,8 +60,8 @@ tusb_desc_strarray_device_t descriptor_str_tinyusb = {
+ /* End of TinyUSB default */
+ 
+ /**** Kconfig driven Descriptor ****/
+-tusb_desc_device_t descriptor_kconfig = {
+-    .bLength = sizeof(descriptor_kconfig),
++const tusb_desc_device_t descriptor_dev_kconfig = {
++    .bLength = sizeof(descriptor_dev_kconfig),
+     .bDescriptorType = TUSB_DESC_DEVICE,
+     .bcdUSB = 0x0200,
+ 
+@@ -127,4 +126,76 @@ tusb_desc_strarray_device_t descriptor_str_kconfig = {
+ #endif
+ 
+ };
++
++//------------- HID Report Descriptor -------------//
++#if CFG_TUD_HID
++enum {
++    REPORT_ID_KEYBOARD = 1,
++    REPORT_ID_MOUSE
++};
++#endif
++
++//------------- Configuration Descriptor -------------//
++enum {
++#   if CFG_TUD_CDC
++    ITF_NUM_CDC = 0,
++    ITF_NUM_CDC_DATA,
++#   endif
++
++#   if CFG_TUD_CDC > 1
++    ITF_NUM_CDC1,
++    ITF_NUM_CDC1_DATA,
++#   endif
++
++#   if CFG_TUD_MSC
++    ITF_NUM_MSC,
++#   endif
++
++#   if CFG_TUD_HID
++    ITF_NUM_HID,
++#   endif
++
++    ITF_NUM_TOTAL
++};
++
++enum {
++    TUSB_DESC_TOTAL_LEN = TUD_CONFIG_DESC_LEN + CFG_TUD_CDC * TUD_CDC_DESC_LEN + CFG_TUD_MSC * TUD_MSC_DESC_LEN +
++                       CFG_TUD_HID * TUD_HID_DESC_LEN
++};
++
++#define EPNUM_MSC ((CFG_TUD_CDC * 2) + 1)
++#define EPNUM_HID (EPNUM_MSC + 1)
++
++#if CFG_TUD_HID //HID Report Descriptor
++uint8_t const desc_hid_report[] = {
++    TUD_HID_REPORT_DESC_KEYBOARD(HID_REPORT_ID(REPORT_ID_KEYBOARD), ),
++    TUD_HID_REPORT_DESC_MOUSE(HID_REPORT_ID(REPORT_ID_MOUSE), )
++};
++#endif
++
++uint8_t const descriptor_cfg_kconfig[] = {
++    // interface count, string index, total length, attribute, power in mA
++    TUD_CONFIG_DESCRIPTOR(1, ITF_NUM_TOTAL, 0, TUSB_DESC_TOTAL_LEN, TUSB_DESC_CONFIG_ATT_REMOTE_WAKEUP, 100),
++
++#   if CFG_TUD_CDC
++    // Interface number, string index, EP notification address and size, EP data address (out, in) and size.
++    TUD_CDC_DESCRIPTOR(ITF_NUM_CDC, 4, 0x81, 8, 0x02, 0x82, CFG_TUD_CDC_EP_BUFSIZE),
++#   endif
++
++#   if CFG_TUD_CDC > 1
++    // Interface number, string index, EP notification address and size, EP data address (out, in) and size.
++    TUD_CDC_DESCRIPTOR(ITF_NUM_CDC1, 4, 0x83, 8, 0x04, 0x84, CFG_TUD_CDC_EP_BUFSIZE),
++#   endif
++
++#   if CFG_TUD_MSC
++    // Interface number, string index, EP Out & EP In address, EP size
++    TUD_MSC_DESCRIPTOR(ITF_NUM_MSC, 5, EPNUM_MSC, 0x80 | EPNUM_MSC, 64), // highspeed 512
++#   endif
++
++#   if CFG_TUD_HID
++    // Interface number, string index, protocol, report descriptor len, EP In address, size & polling interval
++    TUD_HID_DESCRIPTOR(ITF_NUM_HID, 6, HID_PROTOCOL_NONE, sizeof(desc_hid_report), 0x80 | EPNUM_HID, 16, 10)
++#   endif
++};
++
+ /* End of Kconfig driven Descriptor */
+diff --git a/components/tinyusb/additions/src/vfs_tinyusb.c b/components/tinyusb/additions/src/vfs_tinyusb.c
+index 0349bb8696..fdf31e6a9a 100644
+--- a/components/tinyusb/additions/src/vfs_tinyusb.c
++++ b/components/tinyusb/additions/src/vfs_tinyusb.c
+@@ -1,16 +1,8 @@
+-// Copyright 2020 Espressif Systems (Shanghai) Co. Ltd.
+-//
+-// Licensed under the Apache License, Version 2.0 (the "License");
+-// you may not use this file except in compliance with the License.
+-// You may obtain a copy of the License at
+-//
+-//     http://www.apache.org/licenses/LICENSE-2.0
+-//
+-// Unless required by applicable law or agreed to in writing, software
+-// distributed under the License is distributed on an "AS IS" BASIS,
+-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-// See the License for the specific language governing permissions and
+-// limitations under the License.
++/*
++ * SPDX-FileCopyrightText: 2020-2022 Espressif Systems (Shanghai) CO LTD
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ */
+ 
+ #include <stdarg.h>
+ #include <stdbool.h>
+diff --git a/components/tinyusb/tinyusb b/components/tinyusb/tinyusb
+index c4badd394e..c198658609 160000
+--- a/components/tinyusb/tinyusb
++++ b/components/tinyusb/tinyusb
+@@ -1 +1 @@
+-Subproject commit c4badd394eda18199c0196ed0be1e2d635f0a5f6
++Subproject commit c1986586098643edfa6b75a776299c576ad0ce8b
