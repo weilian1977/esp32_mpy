@@ -65,7 +65,7 @@ void usb_callback_line_state_changed(int itf, cdcacm_event_t *event) {
     int dtr = event->line_state_changed_data.dtr;
     int rts = event->line_state_changed_data.rts;
     // If dtr && rts are both true, the CDC is connected to a HOST.
-    //usb_cdc_connected = dtr && rts;
+    usb_cdc_connected = dtr && rts;
 }
 
 void usb_init(void) {
@@ -83,7 +83,7 @@ void usb_init(void) {
         .callback_line_state_changed = &usb_callback_line_state_changed,
         .callback_line_coding_changed = NULL
     };
-    usb_cdc_connected = 1;
+    usb_cdc_connected = 0;
     ESP_ERROR_CHECK(tusb_cdc_acm_init(&amc_cfg));
 
     ESP_ERROR_CHECK(usb_msc_init());
