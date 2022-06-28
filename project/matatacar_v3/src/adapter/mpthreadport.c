@@ -218,13 +218,9 @@ void vPortCleanUpTCB(void *tcb) {
             }
 #if CONFIG_ESP32S3_SPIRAM_SUPPORT
             if (th->stack_type == MP_THREAD_STACK_TYPE_INTERNEL) {
-                free((StaticTask_t*)th->tcb);
                 free(th->stack);
-                //m_del(thread_t, th, 1);
             } else {
-                free((StaticTask_t*)th->tcb);
                 free(th->stack);
-                //m_del(thread_t, th, 1);
             }
 #else
             free((StaticTask_t*)th->tcb);

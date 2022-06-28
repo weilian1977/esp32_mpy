@@ -18,7 +18,7 @@ play_time = 0
 play_the_end_path = 0
 
 resample_rate =22050.0
-tempo = 500.0
+tempo = 2000.0
 beats = 1
 volume_set = 70
 say_language = 'english'
