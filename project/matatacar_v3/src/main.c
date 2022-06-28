@@ -145,8 +145,15 @@ void mp_task(void *pvParameter) {
     // Try to use the entire external SPIRAM directly for the heap
     size_t esp_spiram_size = esp_spiram_get_size();
     if (esp_spiram_size > 0) {
-        mp_task_heap = (void *)SOC_EXTRAM_DATA_HIGH - esp_spiram_size;
-        mp_task_heap_size = esp_spiram_size;
+        // mp_task_heap = (void *)SOC_EXTRAM_DATA_HIGH - esp_spiram_size;
+        // mp_task_heap_size = esp_spiram_size;
+        mp_task_heap_size = 4 * 1024 * 1024;
+        mp_task_heap = heap_caps_malloc(mp_task_heap_size, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
+        if(mp_task_heap == NULL)
+        {
+            printf("malloc heap for mp task failed, heap size if %d\n", mp_task_heap_size);
+        }
+        printf("esp_spiram_size:%d, heap size:%d\n", esp_spiram_size, mp_task_heap_size);
     }
     #endif
 

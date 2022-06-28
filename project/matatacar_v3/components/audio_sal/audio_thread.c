@@ -43,7 +43,8 @@ esp_err_t audio_thread_create(audio_thread_t *p_handle, const char *name, void(*
                               uint32_t stack, int prio, bool stack_in_ext, int core_id)
 {
     StackType_t *task_stack = NULL;
-    if (stack_in_ext && audio_mem_spiram_stack_is_enabled()) {
+    //if (stack_in_ext && audio_mem_spiram_stack_is_enabled()) {
+    if (0) {
         /*
          * Note: 1. ESP32-ECO3 chip support stack on external memory only.
          *       2. Make sure selected the `CONFIG_SPIRAM_BOOT_INIT` and `CONFIG_SPIRAM_ALLOW_STACK_EXTERNAL_MEMORY` by `make menuconfig`
