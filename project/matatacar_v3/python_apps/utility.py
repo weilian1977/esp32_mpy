@@ -26,21 +26,17 @@ def if_file_exists(path):
     if(type(path) != str):
         return False
         print("path is not str")
-    uos.chdir("/")
-    dirs=path.split("/")
-    #print(path)
-    #print(dirs)
-    for index in range (1,(len(dirs))-1):
-        if not is_dir_exists(uos.getcwd(),dirs[index]):
-            uos.chdir("/")
-            return False
-        uos.chdir(dirs[index])
-    files=uos.listdir()
-    uos.chdir("/")
-    if dirs[len(dirs)-1] in files:
-        return True
-    return False
-    #print("file not exists")
+    dirs = path.rpartition("/")[0]
+    name = path.rpartition("/")[2]
+    try:
+        files = uos.listdir(dirs)
+        for f in files:
+            if(f == name):
+                return True
+        return False
+    except:
+        print("path dir error")
+        return False
 
 def if_dir_exists(path):
     if(type(path) != str):

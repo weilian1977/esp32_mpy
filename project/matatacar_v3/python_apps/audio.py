@@ -153,25 +153,16 @@ def set_play_info(path, sync = False, s_time = 0,rate_info = '', speed_info = 1.
 
 def play(path, sync = False, play_time = 0, speed = 1.0, pitch =1.0, rate = ''):
     type = "file:/"
-    if(if_file_exists(path) == False):
-        print('file no exists')
-        path = '/sdcard/ding.mp3'
     play_path = "%s%s" % (type,path)
     set_play_info(play_path,sync,play_time,rate,speed,pitch)
     
 def play_times(path, play_time = 0):
     type = "file:/"
-    if(if_file_exists(path) == False):
-        print('file no exists')
-        path = '/sdcard/ding.mp3'
     play_path = "%s%s" % (type,path)
     set_play_info(play_path,True,play_time)
     
 def play_until_done(path):
     type = "file:/"
-    if(if_file_exists(path) == False):
-        print('file no exists')
-        path = '/sdcard/ding.mp3'
     play_path = "%s%s" % (type,path)
     set_play_info(play_path,True,0)
 
@@ -444,6 +435,9 @@ def media_process_running():
             if(system_state.get_audio_stop_flag() == True):
                 system_state.set_play_state(system_state.PLAY_IDLE)
             else:
+                file_name = play_path.rpartition('://')[2]
+                if("file" in play_path and if_file_exists(file_name) == False):
+                    play_path = 'file://sdcard/ding.mp3'
                 mPlayer.play(play_path, 0, play_sync , play_time)
                 if(play_sync ==True):
                     system_state.set_play_state(system_state.PLAY_IDLE)
