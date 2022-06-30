@@ -188,6 +188,9 @@ void *esp_native_code_commit(void *, size_t, void *);
 #define MICROPY_PY_USOCKET_EVENTS_HANDLER
 #endif
 
+extern void mb_thread_exe_hook_t(void);
+#define MICROPY_VM_HOOK_LOOP mt_thread_exe_hook_t();
+
 #if MICROPY_PY_THREAD
 #define MICROPY_EVENT_POLL_HOOK \
     do { \

@@ -128,6 +128,8 @@ uint32_t mp_hal_ticks_us(void) {
     return esp_timer_get_time();
 }
 
+extern void mt_thread_exe_hook_t(void);
+
 void mp_hal_delay_ms(uint32_t ms) {
     uint64_t us = ms * 1000;
     uint64_t dt;
@@ -135,7 +137,9 @@ void mp_hal_delay_ms(uint32_t ms) {
     for (;;) {
         mp_handle_pending(true);
         MICROPY_PY_USOCKET_EVENTS_HANDLER
+        //mt_thread_exe_hook_t();
         MP_THREAD_GIL_EXIT();
+        //mt_thread_exe_hook_t();
         uint64_t t1 = esp_timer_get_time();
         dt = t1 - t0;
         if (dt + portTICK_PERIOD_MS * 1000 >= us) {
@@ -148,6 +152,7 @@ void mp_hal_delay_ms(uint32_t ms) {
         } else {
             ulTaskNotifyTake(pdFALSE, 1);
             MP_THREAD_GIL_ENTER();
+            mt_thread_exe_hook_t();
         }
     }
     if (dt < us) {

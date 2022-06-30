@@ -26,7 +26,7 @@
 #include "drv_nvs.h"
 #include "mpy_leds.h"
 #include "mpy_led_matrix.h"
-//#include "mt_mpy_stop_script.h"
+#include "mt_mpy_stop_script.h"
 #include "mpy_button.h"
 #include "mt_mpy_ble.h"
 #include "battery_check.h"
@@ -263,6 +263,13 @@ STATIC const mp_map_elem_t matatalab_module_globals_table[] = {
 #else
     { MP_OBJ_NEW_QSTR(MP_QSTR_SENSOR_ENABLE),                MP_OBJ_NEW_SMALL_INT(MODULE_DISABLE_VALUE) },
 #endif /*MODULE_SENSOR_ENABLE */
+
+#if MODULE_STOP_PYTHON_THREAD_ENABLE
+    { MP_OBJ_NEW_QSTR(MP_QSTR_stop_script),                (mp_obj_t)&mt_mpy_stop_thread_type},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_STOP_PYTHON_THREAD_ENABLE),  MP_OBJ_NEW_SMALL_INT(MODULE_ENABLE_VALUE) },
+#else
+    { MP_OBJ_NEW_QSTR(MP_QSTR_STOP_PYTHON_THREAD_ENABLE),  MP_OBJ_NEW_SMALL_INT(MODULE_DISABLE_VALUE) },     
+#endif /* MODULE_STOP_PYTHON_THREAD_ENABLE */
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_ble),                          (mp_obj_t)(&mt_mpy_ble_type)},
 };

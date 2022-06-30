@@ -89,6 +89,7 @@ set(MICROPY_SOURCE_PORT
     ${PROJECT_DIR}/src/driver/vfs_stream.c
     ${PROJECT_DIR}/src/driver/drv_step_motor.c
     ${PROJECT_DIR}/src/driver/mt_event_mechanism.c
+    ${PROJECT_DIR}/src/driver/mt_stop_python_thread.c
     ${PROJECT_DIR}/src/driver/drv_light_sensor.c
     ${PROJECT_DIR}/src/driver/drv_infrared_tube.c
     ${PROJECT_DIR}/src/driver/drv_aw20144.c
@@ -124,6 +125,7 @@ set(MICROPY_SOURCE_PORT
     ${PROJECT_DIR}/src/mpy_modules/modmatatalab.c
     ${PROJECT_DIR}/src/mpy_modules/mpy_button.c
     ${PROJECT_DIR}/src/mpy_modules/mt_mpy_event.c
+    ${PROJECT_DIR}/src/mpy_modules/mt_mpy_stop_script.c
     ${PROJECT_DIR}/src/mpy_modules/mt_mpy_ble.c
     ${PROJECT_DIR}/src/mpy_modules/mpy_leds.c
     ${PROJECT_DIR}/src/mpy_modules/mpy_led_matrix.c
