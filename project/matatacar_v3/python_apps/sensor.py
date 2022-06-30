@@ -264,6 +264,8 @@ def get_ir_code():
         return 8
     elif(ir_code_tuple[3] == 46410):
         return 9
+    elif(ir_code_tuple[3] == 59670):
+        return 0
     elif(ir_code_tuple[3] == 47685):
         return "A"
     elif(ir_code_tuple[3] == 47430):
@@ -287,7 +289,7 @@ def get_ir_code():
     elif(ir_code_tuple[3] == 59925):
         return "Stop"
     else:
-        return ir_code_tuple[3]
+        return -1
 
 def get_brightness(sensor_id):
     value = 0

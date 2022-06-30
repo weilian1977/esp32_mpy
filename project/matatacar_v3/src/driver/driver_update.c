@@ -226,6 +226,10 @@ void driver_event_listenning(void)
       strcpy((char*)para, "9");
       mt_eve_trigger_by_type_t(EVENT_MESSAGE, para);
       break;
+    case 59670:
+      strcpy((char*)para, "0");
+      mt_eve_trigger_by_type_t(EVENT_MESSAGE, para);
+      break;
     case 47685:
       strcpy((char*)para, "A");
       mt_eve_trigger_by_type_t(EVENT_MESSAGE, para);
@@ -268,6 +272,10 @@ void driver_event_listenning(void)
       break;
     case 59925:
       strcpy((char*)para, "Stop");
+      mt_eve_trigger_by_type_t(EVENT_MESSAGE, para);
+      break;
+    case 0:
+      strcpy((char*)para, "Unknown");
       mt_eve_trigger_by_type_t(EVENT_MESSAGE, para);
       break;
   }

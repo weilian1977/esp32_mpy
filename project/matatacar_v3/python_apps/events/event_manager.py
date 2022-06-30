@@ -131,13 +131,16 @@ class event_operation(object):
             # but other function will still use this sema, then a fatal system error happend
             # catch the exception and make this task never out is a temporary solution
             except KeyboardInterrupt:
+                stop_script_o.set_thread_sta(thread_id, stop_script_o.THREAD_RESTARTED)
+                print("restart the thread proactively", "id is", self.eve_id)
                 KeyboardInterrupt_flag = True
             
             except Exception as e:
                 # when error occured, set the item in event_sema_list to None, 
                 # idicating that this callback had been destroyed
                 if not KeyboardInterrupt_flag:
-
+                    stop_script_o.set_thread_sta(thread_id, stop_script_o.THREAD_FATAL_ERROR)
+                    
                     if __is_event_id_valid(self.eve_id):
                         __event_info_set(self.eve_id, None)
                     
