@@ -1,6 +1,9 @@
 import _thread
 import time
 from event_obj import event_o
+from matatalab import stop_script
+
+stop_script_o = stop_script()
 
 EVENT_THREAD_DEFAULT_STACK_SIZE = 1024 * 8
 EVENT_THREAD_DEFAULT_PRIORITY = 1
@@ -102,6 +105,7 @@ class event_operation(object):
         self.cb = self.event_class.user_cb
 
     def __event_cb_task(self):
+        thread_id = stop_script_o.add_thread()
         # only call this function once at the top of thread function
         while True:
             event_o.clear_sync(self.eve_id)
@@ -110,10 +114,12 @@ class event_operation(object):
                 while True:
                     if __is_event_id_valid(self.eve_id):
                         self.event_class.event_status = EVENT_STATUS_READY
+                        stop_script_o.set_thread_sta(thread_id, stop_script_o.THREAD_RESTARTED)
                         if event_o.wait_trigger(self.eve_id) == True:
                             # Call user callback function
                             if is_function(self.cb):
                                 self.event_class.event_status = EVENT_STATUS_RUNNING
+                                stop_script_o.set_thread_sta(thread_id, stop_script_o.THREAD_EXECUTING)
                                 self.cb()
                             event_o.clear_sync(self.eve_id)
                         else:

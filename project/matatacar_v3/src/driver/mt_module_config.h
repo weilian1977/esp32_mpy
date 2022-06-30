@@ -28,5 +28,6 @@ typedef int32_t mt_module_status_t;
     #define MODULE_MOTION_ENABLE                 1
     #define MODULE_SENSOR_ENABLE                 1
     #define MODULE_LED_MATRIX_ENABLE             1
+    #define MODULE_STOP_PYTHON_THREAD_ENABLE     1
 #endif
 #endif

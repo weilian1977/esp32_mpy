@@ -79,6 +79,7 @@
 
 #include "driver_update.h"
 #include "mt_event_mechanism.h"
+#include "mt_stop_python_thread.h"
 #include "drv_step_motor.h"
 #include "i2s_mic.h"
 
@@ -188,6 +189,10 @@ void mp_task(void *pvParameter) {
         machine_i2s_init0();
         #endif
 
+        mt_thread_table_init_t();
+        int8_t thread_id = -1;
+        mt_thread_add_thread_to_table_t(NULL, &thread_id);
+
         // run boot-up scripts
         pyexec_frozen_module("_boot.py");
         pyexec_file_if_exists("boot.py");
@@ -242,6 +247,7 @@ void mp_task(void *pvParameter) {
         mp_thread_deinit();
         #endif
 
+        mt_thread_table_deinit_t();
         gc_sweep_all();
 
         mp_hal_stdout_tx_str("MPY: soft reboot\r\n");
@@ -320,8 +326,9 @@ void nlr_jump_fail(void *val) {
 
 void mp_task_reset(void)
 {
-    uint8_t cmd = CHAR_CTRL_D;
-    repl_push_chars(&cmd, 1);
+    //uint8_t cmd = CHAR_CTRL_D;
+    //repl_push_chars(&cmd, 1);
+    esp_restart();
 }
 
 // modussl_mbedtls uses this function but it's not enabled in ESP IDF
