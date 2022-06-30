@@ -34,6 +34,8 @@
 #include "drv_light_sensor.h"
 #include "drv_infrared_tube.h"
 #include "drv_coprocessor.h"
+#include "drv_infrared_transceiver.h"
+#include "i2s_mic.h"
 
 /******************************************************************************
  DEFINE MACROS
@@ -176,6 +178,99 @@ void driver_event_listenning(void)
       break;
   }
 #endif
+
+  float volume_value;
+  get_loudness_value(average_value_type, &volume_value);
+  memcpy(para, &volume_value, sizeof(float)); 
+  mt_eve_trigger_by_type_t(EVENT_MICROPHONE_LESS, para);
+  mt_eve_trigger_by_type_t(EVENT_MICROPHONE_MORE, para);
+
+  ir_code_t ir_code_data;
+  ir_code_data = get_ir_code();
+  int32_t cmd = ir_code_data.cmd;
+  switch(cmd)
+  {
+    case 0xf30c:
+      strcpy((char*)para, "1");
+      mt_eve_trigger_by_type_t(EVENT_MESSAGE, para);
+      break;
+    case 0xe718:
+      strcpy((char*)para, "2");
+      mt_eve_trigger_by_type_t(EVENT_MESSAGE, para);
+      break;
+    case 0xa15e:
+      strcpy((char*)para, "3");
+      mt_eve_trigger_by_type_t(EVENT_MESSAGE, para);
+      break;
+    case 0xf708:
+      strcpy((char*)para, "4");
+      mt_eve_trigger_by_type_t(EVENT_MESSAGE, para);
+      break;
+    case 0xe31c:
+      strcpy((char*)para, "5");
+      mt_eve_trigger_by_type_t(EVENT_MESSAGE, para);
+      break;
+    case 0xa55a:
+      strcpy((char*)para, "6");
+      mt_eve_trigger_by_type_t(EVENT_MESSAGE, para);
+      break;
+    case 48450:
+      strcpy((char*)para, "7");
+      mt_eve_trigger_by_type_t(EVENT_MESSAGE, para);
+      break;
+    case 44370:
+      strcpy((char*)para, "8");
+      mt_eve_trigger_by_type_t(EVENT_MESSAGE, para);
+      break;
+    case 46410:
+      strcpy((char*)para, "9");
+      mt_eve_trigger_by_type_t(EVENT_MESSAGE, para);
+      break;
+    case 47685:
+      strcpy((char*)para, "A");
+      mt_eve_trigger_by_type_t(EVENT_MESSAGE, para);
+      break;
+    case 47430:
+      strcpy((char*)para, "B");
+      mt_eve_trigger_by_type_t(EVENT_MESSAGE, para);
+      break;
+    case 47175:
+      strcpy((char*)para, "C");
+      mt_eve_trigger_by_type_t(EVENT_MESSAGE, para);
+      break;
+    case 47940:
+      strcpy((char*)para, "D");
+      mt_eve_trigger_by_type_t(EVENT_MESSAGE, para);
+      break;
+    case 48195:
+      strcpy((char*)para, "E");
+      mt_eve_trigger_by_type_t(EVENT_MESSAGE, para);
+      break;
+    case 61965:
+      strcpy((char*)para, "F");
+      mt_eve_trigger_by_type_t(EVENT_MESSAGE, para);
+      break;
+    case 48960:
+      strcpy((char*)para, "Forward");
+      mt_eve_trigger_by_type_t(EVENT_MESSAGE, para);
+      break;
+    case 58905:
+      strcpy((char*)para, "Backward");
+      mt_eve_trigger_by_type_t(EVENT_MESSAGE, para);
+      break;
+    case 63495:
+      strcpy((char*)para, "Left");
+      mt_eve_trigger_by_type_t(EVENT_MESSAGE, para);
+      break;
+      case 62985:
+      strcpy((char*)para, "Right");
+      mt_eve_trigger_by_type_t(EVENT_MESSAGE, para);
+      break;
+    case 59925:
+      strcpy((char*)para, "Stop");
+      mt_eve_trigger_by_type_t(EVENT_MESSAGE, para);
+      break;
+  }
 
   //float temp = (float)get_timer_value_second_t(0);
   //memcpy(para, &temp, sizeof(float)); 

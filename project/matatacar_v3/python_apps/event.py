@@ -85,8 +85,34 @@ def light_right_less_than(threshold):
         event_manager.event_register(event_o.EVENT_LIGHT_RIGHT_LESS, event_o.TRIGGER_ONCE_BY_VALUE_SMALLER, callback, threshold_data)
     return decorator
 
+def loudness_more_than(threshold):
+    def decorator(callback):
+        if not isinstance(threshold, (int, float)):
+            return
+        threshold_data = threshold
+        if threshold_data < 0:
+            threshold_data = 0
+        event_manager.event_register(event_o.EVENT_MICROPHONE_MORE, event_o.TRIGGER_ONCE_BY_VALUE_LARGER, callback, threshold_data)
+    return decorator
+
+def loudness_less_than(threshold):
+    def decorator(callback):
+        if not isinstance(threshold, (int, float)):
+             return
+        threshold_data = threshold
+        if threshold_data < 0:
+            threshold_data = 0
+        event_manager.event_register(event_o.EVENT_MICROPHONE_LESS, event_o.TRIGGER_ONCE_BY_VALUE_SMALLER, callback, threshold_data)
+    return decorator
+
 def color_detected(mstr):
     def decorator(callback):
         mstr_str = str(mstr)
         event_manager.event_register(event_o.EVENT_COLOR_DETECTED, event_o.TRIGGER_BY_STRING_MATCHING, callback, mstr_str)
+    return decorator
+
+def message_received(mstr):
+    def decorator(callback):
+        mstr_str = str(mstr)
+        event_manager.event_register(event_o.EVENT_MESSAGE, event_o.TRIGGER_BY_STRING_MATCHING, callback, mstr_str)
     return decorator

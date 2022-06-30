@@ -134,30 +134,30 @@ void mt_thread_exe_hook_t(void)
     /* get current task handle */
     current_handle = xTaskGetCurrentTaskHandle();
     mt_thread_find_id_by_handle_t(current_handle, &id);
-    ESP_LOGI("HOOK", "thread id is %d thread handle is %p", id, current_handle);
+    //ESP_LOGI("HOOK", "thread id is %d thread handle is %p", id, current_handle);
     if(id == -1)
     {
-      ESP_LOGI("HOOK", " thread is not registered");
+      //ESP_LOGI("HOOK", " thread is not registered");
       return;
     }
     if(mp_thread_table.mp_thread_status[id] != MP_THREAD_WAIT_TO_RESTART)
     {
-      ESP_LOGI("HOOK", " thread do not need to be restart\n\n\n");
+      //ESP_LOGI("HOOK", " thread do not need to be restart\n\n\n");
       return;
     }
-    ESP_LOGI("HOOK", "prerare to restart thread");
+    //ESP_LOGI("HOOK", "prerare to restart thread");
     /* we can't execute this line after thread restart, because programming pointer will jump to other place */
     mt_thread_set_status_by_handle_t(current_handle, MP_THREAD_RESTARTED);
     /* check if once operation have finished */
     if(mt_thread_once_done_check_t() == true)
     {
-      ESP_LOGI("HOOK", "once stop thread succceed, give the sema");
+      //ESP_LOGI("HOOK", "once stop thread succceed, give the sema");
       mp_thread_table.mp_thread_stop_flag = 0;
       mp_thread_table.mp_thread_stop_status = MP_THREAD_SCHEDULE_RESTARTED;
       xSemaphoreGive(mp_thread_table.mp_thread_stop_sema);
     }
     
-    ESP_LOGI("HOOK", "exec mp_handle_pending\n\n\n");
+    //ESP_LOGI("HOOK", "exec mp_handle_pending\n\n\n");
 
     MP_STATE_THREAD(mp_pending_exception) = MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_kbd_exception));
 #if MICROPY_ENABLE_SCHEDULER
@@ -256,14 +256,12 @@ stop_thread_err mt_thread_add_thread_to_table_t(TaskHandle_t han, int8_t *thread
     mp_thread_table.mp_thread_handle[mp_thread_table.mp_thread_num] = current_handle;
     (*thread_id) = mp_thread_table.mp_thread_num;
     //ESP_LOGI(TAG, "thread id is %d, thread handle is %p", mp_thread_table.mp_thread_num, mp_thread_table.mp_thread_handle[mp_thread_table.mp_thread_num]);
-    ESP_LOGI(TAG, "thread id is %d, thread handle is %p", mp_thread_table.mp_thread_num, mp_thread_table.mp_thread_handle[mp_thread_table.mp_thread_num]);
     mp_thread_table.mp_thread_num++;
   }
   else
   {
     (*thread_id) = id;
     //ESP_LOGI(TAG, "thread id is %d, thread handle is %p already existed", mp_thread_table.mp_thread_num, mp_thread_table.mp_thread_handle[mp_thread_table.mp_thread_num]);
-    ESP_LOGI(TAG, "thread id is %d, thread handle is %p already existed", mp_thread_table.mp_thread_num, mp_thread_table.mp_thread_handle[mp_thread_table.mp_thread_num]);
   }
   return FUNC_OK;
 }
@@ -297,7 +295,7 @@ stop_thread_err mt_thread_set_status_by_id_t(int8_t id, uint8_t sta)
       return FUNC_FAIL;
     }
     mp_thread_table.mp_thread_status[id] = sta;
-    ESP_LOGI(TAG, "mt_thread_set_status_by_id_t thread id is %d, status is %d", id, sta);
+    //ESP_LOGI(TAG, "mt_thread_set_status_by_id_t thread id is %d, status is %d", id, sta);
     return FUNC_OK;
   }
   else
@@ -466,24 +464,20 @@ stop_thread_err mt_thread_table_remove_item_by_id_t(int8_t id)
 /* for stop scripts */
 stop_thread_err mt_thread_stop_other_script_t(void)
 {
-  ESP_LOGI(TAG, "thread id is %d, thread handle is %p already existed", mp_thread_table.mp_thread_num, mp_thread_table.mp_thread_handle[mp_thread_table.mp_thread_num]);
   TaskHandle_t current_handle = NULL;
   current_handle = xTaskGetCurrentTaskHandle();
   /* from 1 not 0 to eliminate main thread  */
   for(uint8_t i = 1; i < mp_thread_table.mp_thread_num; i++)
   {
-    ESP_LOGI(TAG, "thread id is %d, thread status is %d", i, mp_thread_table.mp_thread_status[i]);
     if(mp_thread_table.mp_thread_handle[i] == current_handle)
     {
       mt_thread_set_status_by_id_t(i, MP_THREAD_EXECUTING);
     }
     else if(mp_thread_table.mp_thread_handle[i] != NULL)
     {
-      ESP_LOGI(TAG, "!= NULL");
       if(mp_thread_table.mp_thread_status[i] != MP_THREAD_RESTARTED
          && mp_thread_table.mp_thread_status[i] != MP_THREAD_FATAL_ERROR)
       {
-        ESP_LOGI(TAG, "!= mt_thread_stop_thread_by_id_t");
         mt_thread_stop_thread_by_id_t(i);
       }
     }
