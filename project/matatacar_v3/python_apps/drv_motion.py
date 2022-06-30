@@ -30,14 +30,17 @@ def turn_right(angle, wait_flag):
 def move_speed(speed_left, speed_right):
     moto.move_speed(speed_left, speed_right)
 
-def move_position(dir, position, unit, wait_flag = False):
+def move_position(dir, position, unit, wait_flag = True):
     moto.set_max_speed(700 * 32)
     position_value = position
+    time_speed = 108
     if dir == "backward":
         position_value = -position_value
+        time_speed = -time_speed
     if unit == "seconds":
-        moto.move_speed(108, 108)
+        moto.move_speed(time_speed, time_speed)
         time.sleep(abs(position_value))
+        moto.move_speed(0, 0)
     elif unit == "mm":
         position_value = int(position_value)
         moto.move_position(position_value, wait_flag)
@@ -48,14 +51,17 @@ def move_position(dir, position, unit, wait_flag = False):
         position_value = int(round(position_value * 25.4))
         moto.move_position(position_value, wait_flag)
 
-def move_angle(dir, angle, unit, wait_flag = False):
+def move_angle(dir, angle, unit, wait_flag = True):
     moto.set_max_speed(700 * 32)
     angle_value = angle
+    time_speed = 108
     if dir == "left":
         angle_value = -angle_value
+        time_speed = -time_speed
     if unit == "seconds":
-        moto.move_speed(-108, 108)
+        moto.move_speed(-time_speed, time_speed)
         time.sleep(abs(angle_value))
+        moto.move_speed(0, 0)
     elif unit == "rotations":
         angle_value = int(round(angle_value * 360 * (nvs.save_angle) / 90.0))
         moto.move_angle(angle_value, wait_flag)
@@ -63,20 +69,20 @@ def move_angle(dir, angle, unit, wait_flag = False):
         angle_value = int(round(angle_value * (nvs.save_angle) / 90.0))
         moto.move_angle(angle_value, wait_flag)
 
-def start_moving(dir):
+def start_moving(dir, speed = 100):
     if dir == "forward":
-        moto.move_speed(108, 108)
+        moto.move_speed(speed, speed)
     elif dir == "backward":
-        moto.move_speed(-108, -108)
+        moto.move_speed(-speed, -speed)
     elif dir == "left":
-        moto.move_speed(-108, 108)
+        moto.move_speed(-speed, speed)
     elif dir == "right":
-        moto.move_speed(108, -108)
+        moto.move_speed(speed, -speed)
 
 def stop_moving():
     return moto.stop(2)
 
-def motor_run(motor, value, unit, speed, dir, wait_flag = False):
+def motor_run(motor, value, unit, speed, dir, wait_flag = True):
     motor_temp = motor
     speed_temp = abs(int(speed))
     if motor_temp == "A+B":
@@ -91,6 +97,7 @@ def motor_run(motor, value, unit, speed, dir, wait_flag = False):
         else:
             moto.motor_speed(motor_temp, speed_temp)
             time.sleep(abs(value))
+            moto.motor_speed(motor_temp, 0)
     elif unit == "rotations":
         moto.set_max_speed(speed_temp * 8 * 32)
         pos = int(round(45.6 * 3.14 * value))

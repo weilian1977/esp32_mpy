@@ -8,7 +8,7 @@ import communication
 import matatalab
 import drv_system
 import drv_led as leds
-import drv_led_matrix as led_matrix
+import drv_led_matrix
 import drv_motion as motion
 import nvs
 import sensor
@@ -20,6 +20,7 @@ import button
 import machine, neopixel
 
 power_led = neopixel.NeoPixel(machine.Pin(39), 1)
+led_matrix = drv_led_matrix.display()
 
 KEY_UP = 0
 KEY_DOWN = 1

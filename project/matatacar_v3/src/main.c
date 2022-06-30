@@ -273,22 +273,6 @@ void boardctrl_startup(void) {
     }
 }
 
-void test_leds(void *pvParameter)
-{
-    vTaskDelay(1000 / portTICK_PERIOD_MS);
-    aw20144_show_table_1();
-    while(true)
-    {
-        int a = rand() % 5;
-        aw20144_show_table_1();
-        vTaskDelay((500 +  1000 * a)/ portTICK_PERIOD_MS);
-        aw20144_show_table_2();
-        vTaskDelay(50 / portTICK_PERIOD_MS);
-        aw20144_show_table_3();
-        vTaskDelay(100 / portTICK_PERIOD_MS);
-    }
-}
-
 void app_main(void) {
     // Hook for a board to run code at start up.
     // This defaults to initialising NVS.
@@ -305,7 +289,6 @@ void app_main(void) {
     digital_mic_init();
     xTaskCreatePinnedToCore(system_management_task, "system_management_task", SYSTEM_MANAGEMENT_TASK_STACK_SIZE / sizeof(StackType_t), NULL, SYSTEM_MANAGEMENT_TASK_PRIORITY, NULL, 0);
     xTaskCreatePinnedToCore(mp_task, "mp_task", MP_TASK_STACK_SIZE / sizeof(StackType_t), NULL, MP_TASK_PRIORITY, &mp_main_task_handle, MP_TASK_COREID);
-    // xTaskCreatePinnedToCore(test_leds, "test_leds", SYSTEM_MANAGEMENT_TASK_STACK_SIZE / sizeof(StackType_t), NULL, SYSTEM_MANAGEMENT_TASK_PRIORITY, NULL, 0);
     xTaskCreatePinnedToCore(driver_ir_task, "driver_ir_task", INFRARED_TRANSCEIVER_TASK_STACK_SIZE / sizeof(StackType_t), NULL, INFRARED_TRANSCEIVER_TASK_PRIORITY, NULL, 0);
 }
 
@@ -326,8 +309,8 @@ void nlr_jump_fail(void *val) {
 
 void mp_task_reset(void)
 {
-    //uint8_t cmd = CHAR_CTRL_D;
-    //repl_push_chars(&cmd, 1);
+    // uint8_t cmd = CHAR_CTRL_D;
+    // repl_push_chars(&cmd, 1);
     esp_restart();
 }
 

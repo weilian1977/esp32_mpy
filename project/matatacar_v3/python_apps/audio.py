@@ -1,9 +1,12 @@
+# -*- coding: UTF-8 -*-
+# coding=utf-8
 from _audio import player,recorder
 import time
 import speech
 from utility import if_file_exists
 import system_state
 import _thread
+import re
 lock = _thread.allocate_lock()
 
 mRecorder = recorder()
@@ -166,7 +169,7 @@ def play_until_done(path):
     play_path = "%s%s" % (type,path)
     set_play_info(play_path,True,0)
 
-def play_say(language,text,sync = True):
+def play_say(language, text, sync = True):
     speech_recognition_stop()
     if(language == "english"):
         type = "sam://"
@@ -192,9 +195,18 @@ def get_say_language(language):
     global say_language
     say_language = language
 
-def say(text,sync = False):
-    global say_language
-    play_say(say_language,text,sync)
+def say(text, sync = False):
+    is_english = re.compile("[A-Za-z0-9\,\.\?]")
+    is_chinese = re.compile("[\u4e00-\u9fa5\,\.\?]")
+    chinese_str = re.sub(is_english, "", text)
+    english_str = re.sub(is_chinese, "", text)
+    if(len(chinese_str) >= len(english_str)):
+        if(len(chinese_str) > 0):
+            print(text)
+            play_say("chinese", text, sync)
+    elif(len(english_str) > 0):
+        print(english_str)
+        play_say("english", english_str, sync)
 
 def play_pause():
     mPlayer.pause()

@@ -158,9 +158,6 @@ extern void aw20144_fast_clear_display(void);
 extern void aw20144_set_monochrome_leds_brightness(uint8_t brightness);
 extern void aw20144_show_image(uint8_t *data, uint8_t data_Length);
 extern void aw20144_set_pixel(uint8_t x, uint8_t y, uint8_t brightness);
-extern void aw20144_show_table_1(void);
-extern void aw20144_show_table_2(void);
-extern void aw20144_show_table_3(void);
 extern esp_err_t aw20144_init(void);
 extern bool is_aw20144_initialized(void);
 

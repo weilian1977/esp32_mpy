@@ -766,6 +766,11 @@ void motor_move(motor_configure_type motor, long relative, bool sync)
 
 void motor_set_speed(motor_configure_type motor, int32_t run_speed, bool immediately)
 {
+    if(motor_get_speed(motor) == run_speed)
+    {
+        return 0;
+    }
+
     if(immediately == false)
     {
         set_max_speed(motor, DEFALUT_MAX_SPEED);

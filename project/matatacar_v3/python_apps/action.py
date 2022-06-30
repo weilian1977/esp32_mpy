@@ -149,7 +149,7 @@ def dance(dance_name):
     dance_list = action_dance_code_get(1)
     action_parse(dance_list)
 
-def action_behavior(behavior_name):
+def behavior(behavior_name):
     print("behavior:%s" %(behavior_name))
     movement_list = action_movement_code_get(1)
     action_parse(movement_list)

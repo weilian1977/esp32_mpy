@@ -43,7 +43,6 @@ void system_management_task(void *pvParameter)
     light_sensor_init();
     infrared_tube_sensor_init();
     show_firmware_version_t();
-    aw20144_show_table_1();
     indicator_led_init();
     while(true)
     {       
