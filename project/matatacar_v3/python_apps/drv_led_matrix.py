@@ -31,7 +31,7 @@ class display():
     _refresh_time = 0.1
 
     def __init__(self):
-        self._frame = None
+        self._frame = 0
         self.init()
 
     def init(self):
@@ -50,6 +50,13 @@ class display():
         for i in range(len(data_array)):
             self._display_bank[bank][i] = data_array[i]
 
+    def auto_play(self, frames = 0):
+        self._frame = frames
+        if self._frame > 0:
+            self._mode = ANIMATION_MODE
+        else:
+            self._mode = PICTURE_MODE
+
     def sleep(self, value):
         if value is True:
             _led_matrix.set_brightness(0)
@@ -62,14 +69,6 @@ class display():
         time.sleep(time_value)  # 10 MS pause to reset.
         self.sleep(False)
 
-    def pixel_addr(self, x, y):
-        if x > 7:
-            x = 15 - x
-            y += 8
-        else:
-            y = 7 - y
-        return x * 16 + y
-
     def show_image(self, data_array, time_data = "None"):
         self._mode = PICTURE_MODE
         _led_matrix.show_image(data_array)
@@ -78,7 +77,7 @@ class display():
             _led_matrix.clear()
 
     def set_pixel(self, x, y, brightness):
-        self._mode = CHARACTER_MODE
+        self._mode = PICTURE_MODE
         brightness_data = int(brightness * 2);
         _led_matrix.set_pixel(x, y, brightness_data)
 
@@ -143,7 +142,81 @@ _display = display()
 
 def led_matrix_process():
     while True:
-        if(_display._mode == CHARACTER_MODE):
+        if(_display._mode == ANIMATION_MODE) and _display._frame > 0:
+            if (_display._refresh_mode == TURN_PAGES_MODE):
+                for frame_index in range(_display._frame):
+                    char_bytes = _display._display_bank[frame_index]
+                    if (_display._refresh_mode != TURN_PAGES_MODE):
+                        break
+                    for frame_byte in range(16):
+                        _display._currently_display_data[frame_byte] =  char_bytes[frame_byte]
+                    _led_matrix.show_image(bytearray(_display._currently_display_data))
+                    time.sleep(_display._refresh_time * 8)
+            elif (_display._refresh_mode == MOVE_LEFT_MODE) or (_display._refresh_mode == MOVE_RIGHT_MODE):
+                char_byte_list = [[0 for i in range(16)] for j in range(2)]
+                for frame_index in range(_display._frame):
+                    for i in range(2):
+                        char_byte_list[i] =  _display._display_bank[(frame_index + i) % _display._frame]
+                    if(_display._refresh_mode == MOVE_LEFT_MODE):
+                        for j in range(16):
+                            if (_display._refresh_mode != MOVE_LEFT_MODE):
+                                break
+                            for frame_byte in range(8):
+                                if j < 8:
+                                    _display._currently_display_data[frame_byte * 2] =  ((char_byte_list[0][frame_byte * 2] >> j) | (char_byte_list[0][frame_byte * 2 + 1] << (8 - j))) & 0xff
+                                    _display._currently_display_data[frame_byte * 2 + 1] =  ((char_byte_list[0][frame_byte * 2 + 1] >> j) | (char_byte_list[1][frame_byte * 2] << (8 -j))) & 0xff
+                                else:
+                                    _display._currently_display_data[frame_byte * 2] =  ((char_byte_list[0][frame_byte * 2 + 1] >> (j - 8)) | (char_byte_list[1][frame_byte * 2] << (16 - j))) & 0xff
+                                    _display._currently_display_data[frame_byte * 2 + 1] =  ((char_byte_list[1][frame_byte * 2] >> (j - 8)) | (char_byte_list[1][frame_byte * 2 + 1] << (16 -j))) & 0xff
+                            _led_matrix.show_image(bytearray(_display._currently_display_data))
+                            time.sleep(_display._refresh_time)
+                    elif (_display._refresh_mode == MOVE_RIGHT_MODE):
+                        for j in range(16):
+                            if (_display._refresh_mode != MOVE_RIGHT_MODE):
+                                break
+                            for frame_byte in range(8):
+                                if j < 8:
+                                    _display._currently_display_data[frame_byte * 2 + 1] =  ((char_byte_list[0][frame_byte * 2] << j) | (char_byte_list[0][frame_byte * 2 + 1] >> (8 - j))) & 0xff
+                                    _display._currently_display_data[frame_byte * 2] =  ((char_byte_list[0][frame_byte * 2 + 1] << j) | (char_byte_list[1][frame_byte * 2] >> (8 -j))) & 0xff
+                                else:
+                                    _display._currently_display_data[frame_byte * 2 + 1] =  ((char_byte_list[0][frame_byte * 2 + 1] << (j - 8)) | (char_byte_list[1][frame_byte * 2] >> (16 - j))) & 0xff
+                                    _display._currently_display_data[frame_byte * 2] =  ((char_byte_list[1][frame_byte * 2] << (j - 8)) | (char_byte_list[1][frame_byte * 2 + 1] >> (16 -j))) & 0xff
+                            _led_matrix.show_image(bytearray(_display._currently_display_data))
+                            time.sleep(_display._refresh_time)
+            elif (_display._refresh_mode == MOVE_UP_MODE) or (_display._refresh_mode == MOVE_DOWN_MODE):
+                char_byte_list = [[0 for i in range(16)] for j in range(2)]
+                for frame_index in range(_display._frame):
+                    for i in range(2):
+                        char_byte_list[i] = _display._display_bank[(frame_index + i) % _display._frame]
+                    if (_display._refresh_mode == MOVE_UP_MODE):
+                        for j in range(8):
+                            if (_display._refresh_mode != MOVE_UP_MODE):
+                                break
+                            for frame_byte in range(8):
+                                if((frame_byte + j) < 8):
+                                    _display._currently_display_data[frame_byte * 2] = char_byte_list[0][(frame_byte + j) * 2]
+                                    _display._currently_display_data[frame_byte * 2 + 1] = char_byte_list[0][(frame_byte + j) * 2 + 1]
+                                else:
+                                    _display._currently_display_data[frame_byte * 2] = char_byte_list[1][(frame_byte + j - 8) * 2]
+                                    _display._currently_display_data[frame_byte * 2 + 1] = char_byte_list[1][(frame_byte + j - 8) * 2 + 1]
+                            _led_matrix.show_image(bytearray(_display._currently_display_data))
+                            time.sleep(_display._refresh_time)
+                    elif (_display._refresh_mode == MOVE_DOWN_MODE):
+                        for j in range(8):
+                            if (_display._refresh_mode != MOVE_DOWN_MODE):
+                                break
+                            for frame_byte in range(8):
+                                if(frame_byte < j):
+                                    _display._currently_display_data[frame_byte * 2] = char_byte_list[1][(frame_byte + 8 - j) * 2]
+                                    _display._currently_display_data[frame_byte * 2 + 1] = char_byte_list[1][(frame_byte + 8 - j) * 2 + 1]
+                                else:
+                                    _display._currently_display_data[frame_byte * 2] = char_byte_list[0][(frame_byte - j) * 2]
+                                    _display._currently_display_data[frame_byte * 2 + 1] = char_byte_list[0][(frame_byte - j) * 2 + 1]
+                            _led_matrix.show_image(bytearray(_display._currently_display_data))
+                            time.sleep(_display._refresh_time)
+            else:
+                time.sleep(0.1)
+        elif(_display._mode == CHARACTER_MODE):
             if (_display._refresh_mode == TURN_PAGES_MODE):
                 for char_index in range(len(_display._char_string)):
                     char_data = _display._char_string[char_index % len(_display._char_string)]
@@ -168,7 +241,7 @@ def led_matrix_process():
                         time.sleep(_display._refresh_time * 8)
             elif (_display._refresh_mode == MOVE_LEFT_MODE) or (_display._refresh_mode == MOVE_RIGHT_MODE):
                 char_data_buffer = [0] * 3
-                char_byte_list = [[0 for i in range(16)] for j in range(3)]
+                char_byte_list = [[0 for i in range(8)] for j in range(3)]
                 for char_index in range(len(_display._char_string) - 2 ):
                     for i in range(3):
                         char_data_buffer[i] = _display._char_string[(char_index + i) % len(_display._char_string)]
@@ -177,16 +250,20 @@ def led_matrix_process():
                             char_byte_list[i] = led_matrix_data.character_data_table.get(" ")
                     if(_display._refresh_mode == MOVE_LEFT_MODE):
                         for j in range(8):
+                            if (_display._refresh_mode != MOVE_LEFT_MODE):
+                                break
                             for frame_byte in range(8):
-                                _display._currently_display_data[frame_byte * 2] =  (char_byte_list[0][frame_byte] >> j) | (char_byte_list[1][frame_byte] << (8 - j))
-                                _display._currently_display_data[frame_byte * 2 + 1] =  (char_byte_list[1][frame_byte] >> j) | (char_byte_list[2][frame_byte] << (8 -j))
+                                _display._currently_display_data[frame_byte * 2] =  ((char_byte_list[0][frame_byte] >> j) | (char_byte_list[1][frame_byte] << (8 - j))) & 0xff
+                                _display._currently_display_data[frame_byte * 2 + 1] =  ((char_byte_list[1][frame_byte] >> j) | (char_byte_list[2][frame_byte] << (8 -j))) & 0xff
                             _led_matrix.show_image(bytearray(_display._currently_display_data))
                             time.sleep(_display._refresh_time)
                     elif (_display._refresh_mode == MOVE_RIGHT_MODE):
                         for j in range(8):
+                            if (_display._refresh_mode != MOVE_RIGHT_MODE):
+                                break
                             for frame_byte in range(8):
-                                _display._currently_display_data[frame_byte * 2 + 1] =  (char_byte_list[0][frame_byte] << j) | (char_byte_list[1][frame_byte] >> (8 - j))
-                                _display._currently_display_data[frame_byte * 2] =  (char_byte_list[1][frame_byte] << j) | (char_byte_list[2][frame_byte] >> (8 -j))
+                                _display._currently_display_data[frame_byte * 2 + 1] =  ((char_byte_list[0][frame_byte] << j) | (char_byte_list[1][frame_byte] >> (8 - j))) & 0xff
+                                _display._currently_display_data[frame_byte * 2] =  ((char_byte_list[1][frame_byte] << j) | (char_byte_list[2][frame_byte] >> (8 -j))) & 0xff
                             _led_matrix.show_image(bytearray(_display._currently_display_data))
                             time.sleep(_display._refresh_time)
                     else:
@@ -194,19 +271,18 @@ def led_matrix_process():
                 time.sleep(_display._refresh_time * 2)
             elif (_display._refresh_mode == MOVE_UP_MODE) or (_display._refresh_mode == MOVE_DOWN_MODE):
                 if len(_display._char_string) % 2 != 0:
-                    _display._char_string = "%s%s" %(_display._char_string, " ")
                 char_data_buffer = [0] * 4
-                char_byte_list = [[0 for i in range(16)] for j in range(4)]
+                char_byte_list = [[0 for i in range(8)] for j in range(4)]
                 for char_index in range(len(_display._char_string) / 2):
                     for i in range(4):
                         char_data_buffer[i] = _display._char_string[(char_index * 2 + i) % len(_display._char_string)]
                         char_byte_list[i] = led_matrix_data.character_data_table.get(char_data_buffer[i])
                         if(char_byte_list[i] is None):
                             char_byte_list[i] = led_matrix_data.character_data_table.get(" ")
-                    if char_index * 2 + 3 < len(_display._char_string):
-                        print("data[%d]: %c,%c,%c,%c" %(char_index, _display._char_string[char_index * 2],_display._char_string[char_index * 2 + 1],_display._char_string[char_index * 2 + 2],_display._char_string[char_index * 2 + 3]))
                     if (_display._refresh_mode == MOVE_UP_MODE):
                         for j in range(8):
+                            if (_display._refresh_mode != MOVE_UP_MODE):
+                                break
                             for frame_byte in range(8):
                                 if((frame_byte + j) < 8):
                                     _display._currently_display_data[frame_byte * 2] = char_byte_list[0][frame_byte + j]
@@ -219,6 +295,8 @@ def led_matrix_process():
 
                     elif (_display._refresh_mode == MOVE_DOWN_MODE):
                         for j in range(8):
+                            if (_display._refresh_mode != MOVE_DOWN_MODE):
+                                break
                             for frame_byte in range(8):
                                 if(frame_byte < j):
                                     _display._currently_display_data[frame_byte * 2] = char_byte_list[2][frame_byte + 8 - j]
@@ -230,6 +308,9 @@ def led_matrix_process():
                             time.sleep(_display._refresh_time)
                     else:
                         break
+
                 time.sleep(_display._refresh_time * 2)
+            else:
+                time.sleep(0.1)
         else:
-            time.sleep(0.2)
+            time.sleep(0.1)
