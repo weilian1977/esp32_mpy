@@ -34,6 +34,7 @@
 #include "indicator_led.h"
 #include "power_management.h"
 #include "firmware_version.h"
+#include "mpy_ota.h"
 
 #define   TAG                         ("matatalab")
 
@@ -270,7 +271,9 @@ STATIC const mp_map_elem_t matatalab_module_globals_table[] = {
 #else
     { MP_OBJ_NEW_QSTR(MP_QSTR_STOP_PYTHON_THREAD_ENABLE),  MP_OBJ_NEW_SMALL_INT(MODULE_DISABLE_VALUE) },     
 #endif /* MODULE_STOP_PYTHON_THREAD_ENABLE */
-
+    
+    { MP_OBJ_NEW_QSTR(MP_QSTR_ota),                     (mp_obj_t)&mpy_ota_type},
+    
     { MP_OBJ_NEW_QSTR(MP_QSTR_ble),                          (mp_obj_t)(&mt_mpy_ble_type)},
 };
 STATIC MP_DEFINE_CONST_DICT(matatalab_module_globals, matatalab_module_globals_table);
