@@ -217,7 +217,7 @@ esp_err_t aw20144_init(void)
     aw20144_set_global_current(0xff);
 
     /* set constant current for monochrome leds broghtness */
-    aw20144_set_monochrome_leds_brightness((int)(20 * 255.0 / 100));
+    aw20144_set_monochrome_leds_brightness((int)(20 * 2));
 
     /* low power mode */
     ret = i2c_master_write_reg(I2C0_MASTER_NUM, AW20144_I2C_ADDRESS, REG_MIXCR, 0x04);

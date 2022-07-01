@@ -9,6 +9,7 @@ import matatalab
 import drv_system
 import drv_led as leds
 import drv_led_matrix
+from drv_led_matrix import led_matrix_process
 import drv_motion as motion
 import nvs
 import sensor
@@ -23,7 +24,7 @@ from matatalab import stop_script
 stop_script_o = stop_script()
 
 power_led = neopixel.NeoPixel(machine.Pin(39), 1)
-led_matrix = drv_led_matrix.display()
+led_matrix = drv_led_matrix._display
 
 KEY_UP = 0
 KEY_DOWN = 1
@@ -31,6 +32,7 @@ POWER_OFF_TIME = 1000
 
 THREAD_MAIN_SIZE = 8 * 1024
 THREAD_COMMUNICATION_SIZE = 8 * 1024
+THREAD_LED_MATRIX_SIZE = 16 * 1024
 POWER_OFF_VOLTAGE = 3.40
 LOW_POWER_VOLTAGE = 3.55
 
@@ -48,6 +50,8 @@ def usb_state_process():
         usb_connect_state = True
     elif(usb_connect_state == True):
         usb_connect_state = False
+        print("matatalab.reset")
+        time.sleep(1)
         matatalab.reset()
     else:
         usb_connect_state = False
@@ -166,3 +170,6 @@ if __name__ == '__main__':
 
     _thread.stack_size(THREAD_COMMUNICATION_SIZE)
     _thread.start_new_thread(communication_process, ())
+
+    _thread.stack_size(THREAD_LED_MATRIX_SIZE)
+    _thread.start_new_thread(led_matrix_process, ())
