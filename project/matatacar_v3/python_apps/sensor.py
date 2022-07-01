@@ -258,8 +258,38 @@ def get_ir_code():
         return 5
     elif(ir_code_tuple[3] == 0xa55a):
         return 6
+    elif(ir_code_tuple[3] == 48450):
+        return 7
+    elif(ir_code_tuple[3] == 44370):
+        return 8
+    elif(ir_code_tuple[3] == 46410):
+        return 9
+    elif(ir_code_tuple[3] == 59670):
+        return 0
+    elif(ir_code_tuple[3] == 47685):
+        return "A"
+    elif(ir_code_tuple[3] == 47430):
+        return "B"
+    elif(ir_code_tuple[3] == 47175):
+        return "C"
+    elif(ir_code_tuple[3] == 47940):
+        return "D"
+    elif(ir_code_tuple[3] == 48195):
+        return "E"
+    elif(ir_code_tuple[3] == 61965):
+        return "F"
+    elif(ir_code_tuple[3] == 48960):
+        return "Forward"
+    elif(ir_code_tuple[3] == 58905):
+        return "Backward"
+    elif(ir_code_tuple[3] == 63495):
+        return "Left"
+    elif(ir_code_tuple[3] == 62985):
+        return "Right"
+    elif(ir_code_tuple[3] == 59925):
+        return "Stop"
     else:
-        return ir_code_tuple[3]
+        return -1
 
 def get_brightness(sensor_id):
     value = 0

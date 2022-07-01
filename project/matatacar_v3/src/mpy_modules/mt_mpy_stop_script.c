@@ -118,7 +118,7 @@ static mp_obj_t mt_mpy_set_thread_status_by_id(mp_obj_t self_in, mp_obj_t arg1, 
   uint8_t id = mp_obj_get_int(arg1);
   uint8_t sta = mp_obj_get_int(arg2);
   mt_thread_set_status_by_id_t(id, sta);
-  ESP_LOGI(TAG, "set_status thread id is %d, status is %d", id, sta);
+  //ESP_LOGI(TAG, "set_status thread id is %d, status is %d", id, sta);
   return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_3(mt_mpy_set_thread_status_by_id_obj, mt_mpy_set_thread_status_by_id);
@@ -128,7 +128,7 @@ static mp_obj_t mt_mpy_get_thread_status_by_id(mp_obj_t self_in, mp_obj_t arg1)
   uint8_t id = mp_obj_get_int(arg1);
   int8_t sta = 0;
   mt_thread_get_status_by_id_t(id, &sta);
-  ESP_LOGI(TAG, "get_status thread id is %d, status is %d", id, sta);
+  //ESP_LOGI(TAG, "get_status thread id is %d, status is %d", id, sta);
   return mp_obj_new_int(sta);
 }
 static MP_DEFINE_CONST_FUN_OBJ_2(mt_mpy_get_thread_status_by_id_obj, mt_mpy_get_thread_status_by_id);
@@ -137,12 +137,12 @@ static mp_obj_t mp_mpy_stop_other_script(mp_obj_t self_in)
 { 
   int8_t status = -1;
   mt_thread_get_module_status_t(&status);
-  ESP_LOGI(TAG, "mt_thread_get_module_status_t is %d", status);
+  //ESP_LOGI(TAG, "mt_thread_get_module_status_t is %d", status);
   if(status == MP_THREAD_SCHEDULE_RESTARTING)
   {
     return mp_const_false;
   }
-  ESP_LOGI(TAG, "mt_thread_stop_other_script_t");
+  //ESP_LOGI(TAG, "mt_thread_stop_other_script_t");
   mt_thread_stop_other_script_t();
   mt_thread_stop_scripts_wait_done_t(STOP_SCRIPT_WAIT_MAX_TIEM_MS);
   return mp_const_none;
