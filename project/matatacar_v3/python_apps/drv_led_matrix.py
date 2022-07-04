@@ -271,6 +271,7 @@ def led_matrix_process():
                 time.sleep(_display._refresh_time * 2)
             elif (_display._refresh_mode == MOVE_UP_MODE) or (_display._refresh_mode == MOVE_DOWN_MODE):
                 if len(_display._char_string) % 2 != 0:
+                    _display._char_string = "%s%s" %(_display._char_string, " ")
                 char_data_buffer = [0] * 4
                 char_byte_list = [[0 for i in range(8)] for j in range(4)]
                 for char_index in range(len(_display._char_string) / 2):
@@ -308,7 +309,6 @@ def led_matrix_process():
                             time.sleep(_display._refresh_time)
                     else:
                         break
-
                 time.sleep(_display._refresh_time * 2)
             else:
                 time.sleep(0.1)
