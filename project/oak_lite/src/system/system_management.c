@@ -23,7 +23,7 @@ void system_management_task(void *pvParameter)
 {
     usb_pin_init();
     //nvs_init();
-    //esp32_ota_config_init();  
+    esp32_ota_config_init();  
     battery_check_init();
     //hardware_version_check_init();
     //show_firmware_version_t();

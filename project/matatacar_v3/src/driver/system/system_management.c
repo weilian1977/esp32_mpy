@@ -15,6 +15,7 @@
 #include "drv_aw20144.h"
 #include "adc_check.h"
 #include "drv_infrared_transceiver.h"
+#include "drv_ota.h"
 
 extern void mp_hal_delay_ms(uint32_t ms);
 
@@ -44,6 +45,7 @@ void system_management_task(void *pvParameter)
     infrared_tube_sensor_init();
     show_firmware_version_t();
     indicator_led_init();
+    esp32_ota_config_init();  
     while(true)
     {       
         system_status_update();
