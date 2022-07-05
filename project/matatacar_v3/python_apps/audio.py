@@ -86,11 +86,11 @@ def rates(rate):
 
 def set_tempo(pct):
     global tempo
-    if(pct > 4000):
-        pct = 4000
-    if(pct < 100):
-        pct = 100
-    tempo = pct
+    if(pct > 240):
+        pct = 240
+    if(pct < 15):
+        pct = 15
+    tempo = 2 * pct * 1000 / 60
 
 def get_tempo():
     global tempo
@@ -348,16 +348,18 @@ def play_melody(name, sync = True, play_time = 0):
 def rest(meter):
     global beats
     beats = meter
+    time_space = tempo * beats
+    time.sleep(time_space / 1000)
 
 def play_drums(name, meter):
-    global tempo,beats
+    global tempo, beats
     beats = meter
     path = dir_find('drums', name)
     play(path, False)
     time_start = time.ticks_ms()
     
     time_space = time.ticks_diff(time.ticks_ms(), time_start)
-    time_space=tempo * beats - time_space
+    time_space = tempo * beats - time_space
     if(time_space < 0):
         time_space = 0
     time.sleep(time_space / 1000)

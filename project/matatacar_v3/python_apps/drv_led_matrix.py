@@ -18,6 +18,10 @@ MOVE_DOWN_MODE = const(0X02)
 MOVE_LEFT_MODE = const(0X03)
 MOVE_RIGHT_MODE = const(0X04)
 
+
+tempdis_bit_array = bytearray([0] * 256)
+tempdis_array = bytearray([0] * 32)
+
 class display():
     _width = 15
     _height = 7
@@ -29,6 +33,7 @@ class display():
     _char_string = ""
     _refresh_mode = MOVE_LEFT_MODE
     _refresh_time = 0.1
+    _screen_rotate_flag = False
 
     def __init__(self):
         self._frame = 0
@@ -41,8 +46,9 @@ class display():
             empty_picture = bytearray([0] * 16)
             self.picture_bank(frame, empty_picture)
         self.sleep(False)
-        data_array = bytearray(led_matrix_data.face_data_table.get('face1'))
-        self.show_image(data_array, "None")
+        self._currently_display_data = bytearray(led_matrix_data.face_data_table.get('face1'))
+        self._screen_rotate_flag = False
+        self.show_image(self._currently_display_data, "None")
 
     def picture_bank(self, bank, data_array):
         if(bank < 0) or (bank > 7):
@@ -71,7 +77,9 @@ class display():
 
     def show_image(self, data_array, time_data = "None"):
         self._mode = PICTURE_MODE
-        _led_matrix.show_image(data_array)
+        self._currently_display_data =  data_array
+        self._screen_rotate_flag = False
+        _led_matrix.show_image(self._currently_display_data)
         if time_data != "None":
             time.sleep(time_data)
             _led_matrix.clear()
@@ -79,6 +87,12 @@ class display():
     def set_pixel(self, x, y, brightness):
         self._mode = PICTURE_MODE
         brightness_data = int(brightness * 2);
+        data_num = (2 * y) + (x / 8)
+        data_bit = x % 8
+        if brightness_data > 0:
+            self._currently_display_data[data_num] = self._currently_display_data[data_num] | (0x01 << data_bit);
+        else:
+            self._currently_display_data[data_num] = self._currently_display_data[data_num] & (~(0x01 << data_bit) & 0xff);
         _led_matrix.set_pixel(x, y, brightness_data)
 
     def write(self, input):
@@ -106,21 +120,54 @@ class display():
     def clear(self):
         self._mode = PICTURE_MODE
         self._char_string = ""
+        for frame_byte in range(16):
+            self._currently_display_data[frame_byte] =  0x00
+        self._screen_rotate_flag = False
         _led_matrix.clear()
 
     def set_brightness(self, brightness):
         self._brightness = brightness
-        brightness_data = int(self._brightness  * 2);
+        brightness_data = int(self._brightness * 2);
         _led_matrix.set_brightness(brightness_data)
 
     def get_brightness(self):
         return self._brightness
 
     def screen_rotate(self, rotate):
-        print("screen_rotate:%s" %(rotate))
+        global tempdis_bit_array
+        global tempdis_array
+        if self._mode == PICTURE_MODE:
+            if self._screen_rotate_flag == False:
+                for frame_byte in range(8):
+                    tempdis_array[frame_byte] = 0x00
+                for frame_byte in range(16):
+                    tempdis_array[frame_byte + 8] =  self._currently_display_data[frame_byte]
+                for frame_byte in range(8):
+                    tempdis_array[frame_byte + 24] = 0x00
+                self._screen_rotate_flag = True
+            for frame_bit in range(256):
+                tempdis_bit_array[frame_bit] = (tempdis_array[int(frame_bit / 8)] >> (frame_bit % 8)) & 0x01
+            if rotate == "counterclockwise":
+                for frame_byte in range(16):
+                    temp_data = 0x0000
+                    for i in range(16):
+                        temp_data = temp_data | (tempdis_bit_array[(15 - frame_byte) + 16 * i] << i) & 0xffff
+                        tempdis_array[2 * frame_byte] = temp_data & 0xff
+                        tempdis_array[2 * frame_byte + 1] = (temp_data >> 8) & 0xff
+                _led_matrix.show_image(bytearray(tempdis_array[8:24]))
+            elif rotate == "clockwise":
+                for frame_byte in range(16):
+                    temp_data = 0x0000
+                    for i in range(16):
+                        temp_data = temp_data | (tempdis_bit_array[frame_byte + 16 * (15 - i)] << i) & 0xffff
+                        tempdis_array[2 * frame_byte] = temp_data & 0xff
+                        tempdis_array[2 * frame_byte + 1] = (temp_data >> 8) & 0xff
+                _led_matrix.show_image(bytearray(tempdis_array[8:24]))   
+        else:
+            pass
 
     def set_orientation(self, orientation):
-        print("set_orientation:%s" %(orientation))
+        # print("set_orientation:%s" %(orientation))
         if orientation == "upright":
             self._refresh_mode = MOVE_UP_MODE
         elif orientation == "left":
@@ -129,6 +176,8 @@ class display():
             self._refresh_mode = MOVE_RIGHT_MODE
         elif orientation == "upside down":
             self._refresh_mode = MOVE_DOWN_MODE
+        elif orientation == "turn pages":
+            self._refresh_mode = TURN_PAGES_MODE
         else:
             self._refresh_mode = MOVE_LEFT_MODE
 
