@@ -85,6 +85,46 @@ def light_right_less_than(threshold):
         event_manager.event_register(event_o.EVENT_LIGHT_RIGHT_LESS, event_o.TRIGGER_ONCE_BY_VALUE_SMALLER, callback, threshold_data)
     return decorator
 
+def left_light_more_than(threshold):
+    def decorator(callback):
+        if not isinstance(threshold, (int, float)):
+             return
+        threshold_data = threshold
+        if threshold_data < 0:
+            threshold_data = 0
+        event_manager.event_register(event_o.EVENT_LIGHT_LEFT_MORE, event_o.TRIGGER_ONCE_BY_VALUE_LARGER, callback, threshold_data)
+    return decorator
+
+def left_light_less_than(threshold):
+    def decorator(callback):
+        if not isinstance(threshold, (int, float)):
+            return
+        threshold_data = threshold
+        if threshold_data < 0:
+            threshold_data = 0
+        event_manager.event_register(event_o.EVENT_LIGHT_LEFT_LESS, event_o.TRIGGER_ONCE_BY_VALUE_SMALLER, callback, threshold_data)
+    return decorator
+
+def right_light_more_than(threshold):
+    def decorator(callback):
+        if not isinstance(threshold, (int, float)):
+            return
+        threshold_data = threshold
+        if threshold_data < 0:
+            threshold_data = 0
+        event_manager.event_register(event_o.EVENT_LIGHT_RIGHT_MORE, event_o.TRIGGER_ONCE_BY_VALUE_LARGER, callback, threshold_data)
+    return decorator
+
+def right_light_less_than(threshold):
+    def decorator(callback):
+        if not isinstance(threshold, (int, float)):
+             return
+        threshold_data = threshold
+        if threshold_data < 0:
+            threshold_data = 0
+        event_manager.event_register(event_o.EVENT_LIGHT_RIGHT_LESS, event_o.TRIGGER_ONCE_BY_VALUE_SMALLER, callback, threshold_data)
+    return decorator
+
 def loudness_more_than(threshold):
     def decorator(callback):
         if not isinstance(threshold, (int, float)):

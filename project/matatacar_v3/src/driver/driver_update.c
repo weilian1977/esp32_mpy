@@ -109,10 +109,12 @@ void driver_event_listenning(void)
 #endif
 #if MODULE_LIGHT_SENSOR_ENABLE
   float temp = get_light_value(1);
+  temp *= 100.0 / 3.3;
   memcpy(para, &temp, sizeof(float)); 
   mt_eve_trigger_by_type_t(EVENT_LIGHT_LEFT_LESS, para);
   mt_eve_trigger_by_type_t(EVENT_LIGHT_LEFT_MORE, para);
   temp = get_light_value(0);
+  temp *= 100.0 / 3.3;
   memcpy(para, &temp, sizeof(float)); 
   mt_eve_trigger_by_type_t(EVENT_LIGHT_RIGHT_LESS, para);
   mt_eve_trigger_by_type_t(EVENT_LIGHT_RIGHT_MORE, para);
