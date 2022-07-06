@@ -20,6 +20,7 @@ import errno
 import button
 import machine, neopixel
 import script
+import random
 
 power_led = neopixel.NeoPixel(machine.Pin(39), 1)
 led_matrix = drv_led_matrix._display
