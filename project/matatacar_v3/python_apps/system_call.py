@@ -19,6 +19,7 @@ import action
 import errno
 import button
 import machine, neopixel
+import script
 
 power_led = neopixel.NeoPixel(machine.Pin(39), 1)
 led_matrix = drv_led_matrix._display
