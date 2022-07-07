@@ -836,6 +836,7 @@ void motor_stop(motor_configure_type motor)
     if(MOTOR_LEFT == motor)
     {
         motion_data.motor_data[MOTOR_LEFT].speed = 0;
+        motion_data.motor_data[MOTOR_LEFT].target_speed = 0;
         motion_data.motor_data[MOTOR_LEFT]._n = 0;
         motion_data.motor_data[MOTOR_LEFT].target_pos = motion_data.motor_data[MOTOR_LEFT].current_pos;
         REG_CLR_BIT(LEDC_INT_ENA_REG, LEDC_LSTIMER0_OVF_INT_ENA);
@@ -846,6 +847,7 @@ void motor_stop(motor_configure_type motor)
     else
     {
         motion_data.motor_data[MOTOR_RIGHT].speed = 0;
+        motion_data.motor_data[MOTOR_RIGHT].target_speed = 0;
         motion_data.motor_data[MOTOR_RIGHT]._n = 0;
         motion_data.motor_data[MOTOR_RIGHT].target_pos = motion_data.motor_data[MOTOR_RIGHT].current_pos;
         REG_CLR_BIT(LEDC_INT_ENA_REG, LEDC_LSTIMER1_OVF_INT_ENA);
