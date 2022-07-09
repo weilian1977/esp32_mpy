@@ -60,7 +60,8 @@ upload_fatfs:
 
 #mpy_ota
 upload_factory_app:
-	./tools/esptool_py/esptool/esptool.py --before default_reset --after hard_reset -p $(PORT) -b $(BAUD) write_flash 0xC80000 ../../../mpy_ota/build/talebotpro-ota.bin
+	./tools/esptool_py/esptool/esptool.py --before default_reset --after hard_reset -p $(PORT) -b $(BAUD) write_flash 0xC80000 ./tools/ota_bin/ota.bin
+	#./tools/esptool_py/esptool/esptool.py --before default_reset --after hard_reset -p $(PORT) -b $(BAUD) write_flash 0xC80000 ../../../mpy_ota/build/talebotpro-ota.bin
 
 #ota0
 upload_ota:
