@@ -153,7 +153,7 @@ void get_color_sensor_calibration_value()
     color_bri_ratio_cali = atoi(value_buffer);
     memset(value_buffer, 0, NVS_STRING_LENGTH_MAX);
 
-    printf("get color_red_cali: %d, color_green_cali: %d, color_blue_cali: %d, color_bri_ratio_cali: %d\n", color_red_cali, color_green_cali, color_blue_cali, color_bri_ratio_cali);
+    //printf("get color_red_cali: %d, color_green_cali: %d, color_blue_cali: %d, color_bri_ratio_cali: %d\n", color_red_cali, color_green_cali, color_blue_cali, color_bri_ratio_cali);
 }
 
 void get_color_offset(int16_t *red, int16_t *green, int16_t *blue)
