@@ -116,6 +116,7 @@ set(MICROPY_SOURCE_PORT
     ${PROJECT_DIR}/src/driver/infrared_tools/ir_parser_rmt_nec.c
     ${PROJECT_DIR}/src/driver/infrared_tools/ir_parser_rmt_rc5.c
     ${PROJECT_DIR}/src/driver/drv_infrared_transceiver.c
+    ${PROJECT_DIR}/src/driver/drv_ota.c
     ${PROJECT_DIR}/src/driver/adc_check.c
     ${PROJECT_DIR}/src/audio/audio_player.c
     ${PROJECT_DIR}/src/audio/audio_recorder.c
@@ -132,6 +133,7 @@ set(MICROPY_SOURCE_PORT
     ${PROJECT_DIR}/src/mpy_modules/mpy_i2s_mic.c
     ${PROJECT_DIR}/src/mpy_modules/motion/mpy_motion.c
     ${PROJECT_DIR}/src/mpy_modules/sensor/mpy_sensor.c
+    ${PROJECT_DIR}/src/mpy_modules/ota/mpy_ota.c
     ${PROJECT_DIR}/src/mpy_modules/modaudio.c
 )
 
@@ -239,6 +241,7 @@ idf_component_register(
         ${MICROPY_PORT_DIR}/src/driver/infrared_tools/
         ${MICROPY_PORT_DIR}/src/mpy_modules/motion/
         ${MICROPY_PORT_DIR}/src/mpy_modules/sensor/
+        ${MICROPY_PORT_DIR}/src/mpy_modules/ota/
         ${MICROPY_BOARD_DIR}
         ${CMAKE_BINARY_DIR}
         ${MICROPY_DIR}/py

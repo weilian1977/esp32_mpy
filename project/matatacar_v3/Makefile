@@ -10,7 +10,7 @@ BOARD ?= $(notdir $(CURDIR))
 BUILD ?= build-$(BOARD)
 
 # Device serial settings.
-PORT ?= /dev/ttyS14
+PORT ?= /dev/ttyS4
 BAUD ?= 921600
 
 PYTHON ?= python3
@@ -53,10 +53,21 @@ erase:
 	idf.py $(IDFPY_FLAGS) -p $(PORT) -b $(BAUD) erase_flash
 
 make_fatfs:
-	./tools/mkfatfs/mkfatfs_linux_x86 -c ./tools/fatdisk/vfsroot/ -s 0x890000 -t fatfs ./tools/fatdisk/vfs.bin
+	./tools/mkfatfs/mkfatfs_linux_x86 -c ./tools/fatdisk/vfsroot/ -s 0x720000 -t fatfs ./tools/fatdisk/vfs.bin
 
 upload_fatfs:
 	./tools/esptool_py/esptool/esptool.py --before default_reset --after hard_reset -p $(PORT) -b $(BAUD) write_flash 0x560000 ./tools/fatdisk/vfs.bin
+
+#mpy_ota
+upload_factory_app:
+	./tools/esptool_py/esptool/esptool.py --before default_reset --after hard_reset -p $(PORT) -b $(BAUD) write_flash 0xC80000 ../../../mpy_ota/build/talebotpro-ota.bin
+
+#ota0
+upload_ota:
+	./tools/esptool_py/esptool/esptool.py --before default_reset --after hard_reset -p $(PORT) -b $(BAUD) write_flash 0x10000 ./build-matatacar_v3/matatacar_v3.bin
+
+upload_bootloader:
+	./tools/esptool_py/esptool/esptool.py --before default_reset --after hard_reset -p $(PORT) -b $(BAUD) write_flash 0x1000 ./build-matatacar_v3/bootloader/bootloader.bin 0x8000 ./build-matatacar_v3/partition_table/partition-table.bin
 
 submodules:
 	git submodule update --init $(addprefix ../../,$(GIT_SUBMODULES))
