@@ -130,54 +130,30 @@ void drv_coprpcessor_task(void *arg)
     }
 }
 
-esp_err_t get_color_sensor_calibration_value()
+void get_color_sensor_calibration_value()
 {
-    esp_err_t ret = ESP_OK;
-    nvs_handle_t my_handle;
-    size_t len = NVS_STRING_LENGTH_MAX;
     char *namespace = "user_config";
 
     char value_buffer[NVS_STRING_LENGTH_MAX];
     memset(value_buffer, 0, NVS_STRING_LENGTH_MAX);
-    if(!is_nvs_initialized())
-    {
-        nvs_init();
-    }
-    //Open   
-    ret = nvs_open(namespace, NVS_READONLY, &my_handle);
-    if(ret != ESP_OK)
-    {
-        ESP_LOGE(TAG, "Error (%s) opening NVS handle!", esp_err_to_name(ret));
-        return ret;
-    } 
-    else 
-    {
-        size_t len = NVS_STRING_LENGTH_MAX;
-        ret = nvs_get_str(my_handle, "color_red", value_buffer, &len);
-        color_red_cali = atoi(value_buffer);
 
-        memset(value_buffer, 0, NVS_STRING_LENGTH_MAX);
-        ret = nvs_get_str(my_handle, "color_green", value_buffer, &len);
-        color_green_cali = atoi(value_buffer);
+    nvs_read_string(namespace, "color_red", value_buffer);
+    color_red_cali = atoi(value_buffer);
+    memset(value_buffer, 0, NVS_STRING_LENGTH_MAX);
 
-        memset(value_buffer, 0, NVS_STRING_LENGTH_MAX);
-        ret = nvs_get_str(my_handle, "color_blue", value_buffer, &len);
-        color_blue_cali = atoi(value_buffer);
-        memset(value_buffer, 0, NVS_STRING_LENGTH_MAX);
-        ret = nvs_get_str(my_handle, "bri_ratio", value_buffer, &len);
-        color_bri_ratio_cali = atoi(value_buffer);
-        if(ret != ESP_OK)
-        {
-            ESP_LOGE(TAG, "Error (%s) read to nv flash!\n", esp_err_to_name(ret));
-            nvs_close(my_handle);
-            return ret;
-        }
-        else
-        {
-            nvs_close(my_handle);
-            return ret;
-        }
-    }
+    nvs_read_string(namespace, "color_green", value_buffer);
+    color_green_cali = atoi(value_buffer);
+    memset(value_buffer, 0, NVS_STRING_LENGTH_MAX);
+
+    nvs_read_string(namespace, "color_blue", value_buffer);
+    color_blue_cali = atoi(value_buffer);
+    memset(value_buffer, 0, NVS_STRING_LENGTH_MAX);
+
+    nvs_read_string(namespace, "bri_ratio", value_buffer);
+    color_bri_ratio_cali = atoi(value_buffer);
+    memset(value_buffer, 0, NVS_STRING_LENGTH_MAX);
+
+    printf("get color_red_cali: %d, color_green_cali: %d, color_blue_cali: %d, color_bri_ratio_cali: %d\n", color_red_cali, color_green_cali, color_blue_cali, color_bri_ratio_cali);
 }
 
 void get_color_offset(int16_t *red, int16_t *green, int16_t *blue)

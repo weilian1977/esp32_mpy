@@ -59,7 +59,7 @@ uint16_t color_bri_ratio_cali;
 void drv_coprpcessor_init(void);
 void drv_coprpcessor_printf(char *fmt,...);
 void drv_coprpcessor_task(void *arg);
-esp_err_t get_color_sensor_calibration_value(void);
+void get_color_sensor_calibration_value(void);
 uint8_t drv_get_color_id(void);
 
 #endif /* __DRV_COPROCESSOR_H__ */ 
