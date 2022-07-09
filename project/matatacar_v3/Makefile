@@ -53,14 +53,14 @@ erase:
 	idf.py $(IDFPY_FLAGS) -p $(PORT) -b $(BAUD) erase_flash
 
 make_fatfs:
-	./tools/mkfatfs/mkfatfs_linux_x86 -c ./tools/fatdisk/vfsroot/ -s 0x600000 -t fatfs ./tools/fatdisk/vfs.bin
+	./tools/mkfatfs/mkfatfs_linux_x86 -c ./tools/fatdisk/vfsroot/ -s 0x720000 -t fatfs ./tools/fatdisk/vfs.bin
 
 upload_fatfs:
 	./tools/esptool_py/esptool/esptool.py --before default_reset --after hard_reset -p $(PORT) -b $(BAUD) write_flash 0x560000 ./tools/fatdisk/vfs.bin
 
 #mpy_ota
 upload_factory_app:
-	./tools/esptool_py/esptool/esptool.py --before default_reset --after hard_reset -p $(PORT) -b $(BAUD) write_flash 0xB60000 ../../../mpy_ota/build/talebotpro-ota.bin
+	./tools/esptool_py/esptool/esptool.py --before default_reset --after hard_reset -p $(PORT) -b $(BAUD) write_flash 0xC80000 ../../../mpy_ota/build/talebotpro-ota.bin
 
 #ota0
 upload_ota:
