@@ -6,7 +6,7 @@ import mic
 color_red = 0
 color_green = 0
 color_blue = 0
-color_bri_ratio = 0
+color_bri_ratio = 1000
 
 _sensor = matatalab.sensor()
 

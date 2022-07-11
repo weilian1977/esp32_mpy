@@ -97,6 +97,7 @@ def power_off():
     matatalab.indicator_led(matatalab.OFF)
     audio.play_stop()  
     drv_motion.stop(2)
+    audio.set_volume(70)
     audio.play('/sdcard/music/system/1-off.mp3', True)
     while True:
         matatalab.power_off()

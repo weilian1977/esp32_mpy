@@ -22,7 +22,7 @@ play_the_end_path = 0
 
 resample_rate =22050.0
 tempo = 2000.0
-beats = 1
+beats = 0.25
 volume_set = 70
 say_language = 'english'
 instrument_type = '1-piano'
@@ -293,11 +293,11 @@ def play_tone(tone, meter, instruments = ''):
     play_stop()
     mPlayer.set_vol(volume_set)
 
-def play_alto(tone_id, beat = 1):
+def play_alto(tone_id, beat = 0.25):
     offset = note_offset.get(tone_id, 0)
     play_tone((offset + 60), beat)
 
-def play_treble(tone_id, beat = 1):
+def play_treble(tone_id, beat = 0.25):
     offset = note_offset.get(tone_id, 0)
     play_tone((offset + 72), beat)
 
