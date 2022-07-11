@@ -53,16 +53,16 @@ erase:
 	idf.py $(IDFPY_FLAGS) -p $(PORT) -b $(BAUD) erase_flash
 
 make_fatfs:
-	./tools/mkfatfs/mkfatfs_linux_x86 -c ./tools/fatdisk/vfsroot/ -s 0x720000 -t fatfs ./tools/fatdisk/vfs.bin
+	./tools/mkfatfs/mkfatfs_linux_x86 -c ./tools/fatdisk/vfsroot/ -s 0x600000 -t fatfs ./tools/fatdisk/vfs.bin
 
 make_fatfs_music:
-	./tools/mkfatfs/mkfatfs_linux_x86 -c ./tools/fatdisk/vfsroot_music/ -s 0x500000 -t fatfs ./tools/fatdisk/vfs_music.bin
+	./tools/mkfatfs/mkfatfs_linux_x86 -c ./tools/fatdisk/vfsroot_music/ -s 0x600000 -t fatfs ./tools/fatdisk/vfs_music.bin
 
 upload_fatfs:
-	./tools/esptool_py/esptool/esptool.py --before default_reset --after hard_reset -p $(PORT) -b $(BAUD) write_flash 0x760000 ./tools/fatdisk/vfs.bin
+	./tools/esptool_py/esptool/esptool.py --before default_reset --after hard_reset -p $(PORT) -b $(BAUD) write_flash 0x880000 ./tools/fatdisk/vfs.bin
 
 upload_fatfs_music:
-	./tools/esptool_py/esptool/esptool.py --before default_reset --after hard_reset -p $(PORT) -b $(BAUD) write_flash 0x260000 ./tools/fatdisk/vfs_music.bin
+	./tools/esptool_py/esptool/esptool.py --before default_reset --after hard_reset -p $(PORT) -b $(BAUD) write_flash 0x280000 ./tools/fatdisk/vfs_music.bin
 
 #mpy_ota
 upload_factory_app:
@@ -74,7 +74,7 @@ upload_ota:
 	./tools/esptool_py/esptool/esptool.py --before default_reset --after hard_reset -p $(PORT) -b $(BAUD) write_flash 0x10000 ./build-matatacar_v3/matatacar_v3.bin
 
 upload_bootloader:
-	./tools/esptool_py/esptool/esptool.py --before default_reset --after hard_reset -p $(PORT) -b $(BAUD) write_flash 0x1000 ./build-matatacar_v3/bootloader/bootloader.bin 0x8000 ./build-matatacar_v3/partition_table/partition-table.bin
+	./tools/esptool_py/esptool/esptool.py --before default_reset --after hard_reset -p $(PORT) -b $(BAUD) write_flash 0x0 ./build-matatacar_v3/bootloader/bootloader.bin 0x8000 ./build-matatacar_v3/partition_table/partition-table.bin
 
 submodules:
 	git submodule update --init $(addprefix ../../,$(GIT_SUBMODULES))
