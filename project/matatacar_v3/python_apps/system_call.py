@@ -22,9 +22,6 @@ import machine, neopixel
 import script
 import random
 
-from matatalab import stop_script
-stop_script_o = stop_script()
-
 power_led = neopixel.NeoPixel(machine.Pin(39), 1)
 led_matrix = drv_led_matrix._display
 

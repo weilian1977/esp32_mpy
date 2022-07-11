@@ -86,18 +86,18 @@ class display():
 
     def set_pixel(self, x, y, brightness):
         self._mode = PICTURE_MODE
-        brightness_data = int(brightness * 2);
-        data_num = (2 * y) + (x / 8)
+        brightness_data = int(brightness * 2)
+        data_num = int((2 * y) + (x / 8))
         data_bit = x % 8
         if brightness_data > 0:
-            self._currently_display_data[data_num] = self._currently_display_data[data_num] | (0x01 << data_bit);
+            self._currently_display_data[data_num] = self._currently_display_data[data_num] | (0x01 << data_bit)
         else:
-            self._currently_display_data[data_num] = self._currently_display_data[data_num] & (~(0x01 << data_bit) & 0xff);
+            self._currently_display_data[data_num] = self._currently_display_data[data_num] & (~(0x01 << data_bit) & 0xff)
         _led_matrix.set_pixel(x, y, brightness_data)
 
     def write(self, input):
         strlist = str(input)
-        print("write:%s" %(strlist))
+        # print("write:%s" %(strlist))
         if len(strlist) > 2:
             self._char_string = "%s%s" %(strlist, "  ")
             self._mode = CHARACTER_MODE
@@ -189,7 +189,7 @@ class display():
 
 _display = display()
 
-def led_matrix_process():
+def _led_matrix_process():
     while True:
         if(_display._mode == ANIMATION_MODE) and _display._frame > 0:
             if (_display._refresh_mode == TURN_PAGES_MODE):
@@ -363,3 +363,11 @@ def led_matrix_process():
                 time.sleep(0.1)
         else:
             time.sleep(0.1)
+
+def led_matrix_process():
+    try:
+        _led_matrix_process()
+    except Exception as e:
+        print("ERROR : " + str(e))
+    except:
+        print("led_matrix_process error")
