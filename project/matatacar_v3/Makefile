@@ -10,7 +10,7 @@ BOARD ?= $(notdir $(CURDIR))
 BUILD ?= build-$(BOARD)
 
 # Device serial settings.
-PORT ?= /dev/ttyS4
+PORT ?= /dev/ttyS14
 BAUD ?= 921600
 
 PYTHON ?= python3
@@ -55,13 +55,19 @@ erase:
 make_fatfs:
 	./tools/mkfatfs/mkfatfs_linux_x86 -c ./tools/fatdisk/vfsroot/ -s 0x720000 -t fatfs ./tools/fatdisk/vfs.bin
 
+make_fatfs_music:
+	./tools/mkfatfs/mkfatfs_linux_x86 -c ./tools/fatdisk/vfsroot_music/ -s 0x500000 -t fatfs ./tools/fatdisk/vfs_music.bin
+
 upload_fatfs:
-	./tools/esptool_py/esptool/esptool.py --before default_reset --after hard_reset -p $(PORT) -b $(BAUD) write_flash 0x560000 ./tools/fatdisk/vfs.bin
+	./tools/esptool_py/esptool/esptool.py --before default_reset --after hard_reset -p $(PORT) -b $(BAUD) write_flash 0x760000 ./tools/fatdisk/vfs.bin
+
+upload_fatfs_music:
+	./tools/esptool_py/esptool/esptool.py --before default_reset --after hard_reset -p $(PORT) -b $(BAUD) write_flash 0x260000 ./tools/fatdisk/vfs_music.bin
 
 #mpy_ota
 upload_factory_app:
-	./tools/esptool_py/esptool/esptool.py --before default_reset --after hard_reset -p $(PORT) -b $(BAUD) write_flash 0xC80000 ./tools/ota_bin/ota.bin
-	#./tools/esptool_py/esptool/esptool.py --before default_reset --after hard_reset -p $(PORT) -b $(BAUD) write_flash 0xC80000 ../../../mpy_ota/build/talebotpro-ota.bin
+	./tools/esptool_py/esptool/esptool.py --before default_reset --after hard_reset -p $(PORT) -b $(BAUD) write_flash 0xE80000 ./tools/ota_bin/ota.bin
+	#./tools/esptool_py/esptool/esptool.py --before default_reset --after hard_reset -p $(PORT) -b $(BAUD) write_flash 0xE80000 ../../../mpy_ota/build/talebotpro-ota.bin
 
 #ota0
 upload_ota:
