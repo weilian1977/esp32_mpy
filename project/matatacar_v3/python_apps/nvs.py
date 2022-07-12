@@ -9,6 +9,7 @@ MACHINE_NAMESPACE = "machine_info"
 
 FIREFLY_VERSION = "firefly_version"
 WIFI_SSID       = "wifi_ssid"
+OTA_BLE         = "ota_ble_control"
 WIFI_PASSWORD   = "wifi_password"
 OTA_HOST_NAME   = "ota_host_name"
 OTA_INFO_URL    = "ota_info_url"

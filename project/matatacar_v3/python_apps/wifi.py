@@ -47,3 +47,8 @@ def set_cloud_url(cloud_url):
     ota_url = nvs.read(nvs.OTA_INFO_URL, nvs.OTA_NAMESPACE)
     if(ota_url != cloud_url):
         nvs.write(nvs.OTA_INFO_URL, cloud_url, nvs.OTA_NAMESPACE)
+
+def set_ota_ble(ota_ble_control):
+    ota_ble = nvs.read(nvs.OTA_BLE, nvs.OTA_NAMESPACE)
+    if(ota_ble != ota_ble_control):
+        nvs.write(nvs.OTA_BLE, ota_ble_control, nvs.OTA_NAMESPACE)
