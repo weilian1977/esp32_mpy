@@ -192,88 +192,72 @@ void driver_event_listenning(void)
   int32_t cmd = ir_code_data.cmd;
   switch(cmd)
   {
-    case 0xf30c:
+    case 0xF708:
       strcpy((char*)para, "1");
       mt_eve_trigger_by_type_t(EVENT_MESSAGE, para);
       break;
-    case 0xe718:
+    case 0xE31C:
       strcpy((char*)para, "2");
       mt_eve_trigger_by_type_t(EVENT_MESSAGE, para);
       break;
-    case 0xa15e:
+    case 0xA55A:
       strcpy((char*)para, "3");
       mt_eve_trigger_by_type_t(EVENT_MESSAGE, para);
       break;
-    case 0xf708:
+    case 0xBD42:
       strcpy((char*)para, "4");
       mt_eve_trigger_by_type_t(EVENT_MESSAGE, para);
       break;
-    case 0xe31c:
+    case 0xAD52:
       strcpy((char*)para, "5");
       mt_eve_trigger_by_type_t(EVENT_MESSAGE, para);
       break;
-    case 0xa55a:
+    case 0xB54A:
       strcpy((char*)para, "6");
       mt_eve_trigger_by_type_t(EVENT_MESSAGE, para);
       break;
-    case 48450:
-      strcpy((char*)para, "7");
+    case 0xBA45:
+      strcpy((char*)para, "volume");
       mt_eve_trigger_by_type_t(EVENT_MESSAGE, para);
       break;
-    case 44370:
-      strcpy((char*)para, "8");
+    case 0xB946:
+      strcpy((char*)para, "mode");
       mt_eve_trigger_by_type_t(EVENT_MESSAGE, para);
       break;
-    case 46410:
-      strcpy((char*)para, "9");
+    case 0xB847:
+      strcpy((char*)para, "speed");
       mt_eve_trigger_by_type_t(EVENT_MESSAGE, para);
       break;
-    case 59670:
-      strcpy((char*)para, "0");
+    case 0xF30C:
+      strcpy((char*)para, "dance");
       mt_eve_trigger_by_type_t(EVENT_MESSAGE, para);
       break;
-    case 47685:
-      strcpy((char*)para, "A");
+    case 0xE718:
+      strcpy((char*)para, "led");
       mt_eve_trigger_by_type_t(EVENT_MESSAGE, para);
       break;
-    case 47430:
-      strcpy((char*)para, "B");
+    case 0xA15E:
+      strcpy((char*)para, "music");
       mt_eve_trigger_by_type_t(EVENT_MESSAGE, para);
       break;
-    case 47175:
-      strcpy((char*)para, "C");
+    case 0xBF40:
+      strcpy((char*)para, "forward");
       mt_eve_trigger_by_type_t(EVENT_MESSAGE, para);
       break;
-    case 47940:
-      strcpy((char*)para, "D");
+    case 0xE619:
+      strcpy((char*)para, "backward");
       mt_eve_trigger_by_type_t(EVENT_MESSAGE, para);
       break;
-    case 48195:
-      strcpy((char*)para, "E");
+    case 0xF807:
+      strcpy((char*)para, "left");
       mt_eve_trigger_by_type_t(EVENT_MESSAGE, para);
       break;
-    case 61965:
-      strcpy((char*)para, "F");
+    case 0xF609:
+      strcpy((char*)para, "right");
       mt_eve_trigger_by_type_t(EVENT_MESSAGE, para);
       break;
-    case 48960:
-      strcpy((char*)para, "Forward");
-      mt_eve_trigger_by_type_t(EVENT_MESSAGE, para);
-      break;
-    case 58905:
-      strcpy((char*)para, "Backward");
-      mt_eve_trigger_by_type_t(EVENT_MESSAGE, para);
-      break;
-    case 63495:
-      strcpy((char*)para, "Left");
-      mt_eve_trigger_by_type_t(EVENT_MESSAGE, para);
-      break;
-      case 62985:
-      strcpy((char*)para, "Right");
-      mt_eve_trigger_by_type_t(EVENT_MESSAGE, para);
-      break;
-    case 59925:
-      strcpy((char*)para, "Stop");
+    case 0xEA15:
+      strcpy((char*)para, "play");
       mt_eve_trigger_by_type_t(EVENT_MESSAGE, para);
       break;
     case 0:

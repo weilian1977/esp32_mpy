@@ -228,68 +228,64 @@ def get_color_id():
 def send_ir_code(addr, command):
     if addr == 1234:
         if command == 1:
-            _sensor.send_ir_code(addr, 0xf30c)
+            _sensor.send_ir_code(addr, 0xF708)
         elif command == 2:
-            _sensor.send_ir_code(addr, 0xf30c)
+            _sensor.send_ir_code(addr, 0xE31C)
         elif command == 3:
-            _sensor.send_ir_code(addr, 0xf30c)
+            _sensor.send_ir_code(addr, 0xA55A)
         elif command == 4:
-            _sensor.send_ir_code(addr, 0xf30c)
+            _sensor.send_ir_code(addr, 0xBD42)
         elif command == 5:
-            _sensor.send_ir_code(addr, 0xf30c)
+            _sensor.send_ir_code(addr, 0xAD52)
         elif command == 6:
-            _sensor.send_ir_code(addr, 0xf30c)
+            _sensor.send_ir_code(addr, 0xB54A)
         else:
             _sensor.send_ir_code(addr, command)
     else:
         _sensor.send_ir_code(addr, command)
 
+def get_raw_ir_code():
+    ir_code_tuple = _sensor.get_ir_code()
+    return ir_code_tuple
+
 def get_ir_code():
     ir_code_tuple = _sensor.get_ir_code()
-    if(ir_code_tuple[3] == 0xf30c):
-        return 1
-    elif(ir_code_tuple[3] == 0xe718):
-        return 2
-    elif(ir_code_tuple[3] == 0xa15e):
-        return 3
-    elif(ir_code_tuple[3] == 0xf708):
-        return 4
-    elif(ir_code_tuple[3] == 0xe31c):
-        return 5
-    elif(ir_code_tuple[3] == 0xa55a):
-        return 6
-    elif(ir_code_tuple[3] == 48450):
-        return 7
-    elif(ir_code_tuple[3] == 44370):
-        return 8
-    elif(ir_code_tuple[3] == 46410):
-        return 9
-    elif(ir_code_tuple[3] == 59670):
-        return 0
-    elif(ir_code_tuple[3] == 47685):
-        return "A"
-    elif(ir_code_tuple[3] == 47430):
-        return "B"
-    elif(ir_code_tuple[3] == 47175):
-        return "C"
-    elif(ir_code_tuple[3] == 47940):
-        return "D"
-    elif(ir_code_tuple[3] == 48195):
-        return "E"
-    elif(ir_code_tuple[3] == 61965):
-        return "F"
-    elif(ir_code_tuple[3] == 48960):
-        return "Forward"
-    elif(ir_code_tuple[3] == 58905):
-        return "Backward"
-    elif(ir_code_tuple[3] == 63495):
-        return "Left"
-    elif(ir_code_tuple[3] == 62985):
-        return "Right"
-    elif(ir_code_tuple[3] == 59925):
-        return "Stop"
+    if(ir_code_tuple[3] == 0xF708):
+        return '1'
+    elif(ir_code_tuple[3] == 0xE31C):
+        return '2'
+    elif(ir_code_tuple[3] == 0xA55A):
+        return '3'
+    elif(ir_code_tuple[3] == 0xBD42):
+        return '4'
+    elif(ir_code_tuple[3] == 0xAD52):
+        return '5'
+    elif(ir_code_tuple[3] == 0xB54A):
+        return '6'
+    elif(ir_code_tuple[3] == 0xBA45):
+        return 'volume'
+    elif(ir_code_tuple[3] == 0xB946):
+        return 'mode'
+    elif(ir_code_tuple[3] == 0xB847):
+        return 'speed'
+    elif(ir_code_tuple[3] == 0xF30C):
+        return 'dance'
+    elif(ir_code_tuple[3] == 0xE718):
+        return 'led'
+    elif(ir_code_tuple[3] == 0xA15E):
+        return 'music'
+    elif(ir_code_tuple[3] == 0xBF40):
+        return "forward"
+    elif(ir_code_tuple[3] == 0xE619):
+        return "backward"
+    elif(ir_code_tuple[3] == 0xF807):
+        return "left"
+    elif(ir_code_tuple[3] == 0xF609):
+        return "right"
+    elif(ir_code_tuple[3] == 0xEA15):
+        return "play"
     else:
-        return -1
+        return ir_code_tuple[3]
 
 def get_brightness(sensor_id):
     value = 0

@@ -150,12 +150,12 @@ def main():
 
 def start():
     try:
-        if(if_file_exists("/main.py") == True):
-            print('/main.py exists')
-            execfile('/main.py')
-        elif(if_file_exists("/default.py") == True):
-            print("/default.py exists ")
-            execfile('/default.py')
+        if(if_file_exists("main.py") == True):
+            print('main.py exists')
+            execfile('main.py')
+        elif(if_file_exists("sdcard/default.py") == True):
+            print("sdcard/default.py exists ")
+            execfile('sdcard/default.py')
         else:
             print("no main.py or default.py file exists")
         #print("try main.py")
