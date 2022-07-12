@@ -202,6 +202,8 @@ def say(text, sync = False):
     english_str = re.sub(is_chinese, "", text)
     if(len(chinese_str) >= len(english_str)):
         if(len(chinese_str) > 0):
+            print('error language')
+            return
             print(text)
             play_say("chinese", text, sync)
     elif(len(english_str) > 0):

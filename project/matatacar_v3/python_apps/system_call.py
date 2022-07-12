@@ -9,6 +9,7 @@ import matatalab
 import drv_system
 import drv_led as leds
 import drv_led_matrix
+from utility import if_file_exists
 from drv_led_matrix import led_matrix_process
 import drv_motion as motion
 import nvs
@@ -149,9 +150,17 @@ def main():
 
 def start():
     try:
-        print("try main.py")
-        uos.stat("/main.py")
-        execfile("/main.py")
+        if(if_file_exists("/main.py") == True):
+            print('/main.py exists')
+            execfile('/main.py')
+        elif(if_file_exists("/default.py") == True):
+            print("/default.py exists ")
+            execfile('/default.py')
+        else:
+            print("no main.py or default.py file exists")
+        #print("try main.py")
+        #uos.stat("/main.py")
+        #execfile("/main.py")
     except Exception as e:
         print("ERROR : " + str(e))
     except:
