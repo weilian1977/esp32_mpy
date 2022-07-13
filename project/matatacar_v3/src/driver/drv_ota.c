@@ -58,10 +58,10 @@ void esp32_ota_config_show(char *tag)
   printf("\n");
   printf("%s: ota config informaion\n", tag);
   printf("version is %s\n", esp32_wifi_ota_config_structure.info_t.esp32_firmware_version);
-  printf("sta ssid is %s\n", esp32_wifi_ota_config_structure.info_t.sta_ssid);
-  printf("sta password is %s\n", esp32_wifi_ota_config_structure.info_t.sta_password);
-  printf("host is %s\n", esp32_wifi_ota_config_structure.info_t.ota_information_file_host);
-  printf("url is %s\n", esp32_wifi_ota_config_structure.info_t.ota_information_file_url);
+  // printf("sta ssid is %s\n", esp32_wifi_ota_config_structure.info_t.sta_ssid);
+  // printf("sta password is %s\n", esp32_wifi_ota_config_structure.info_t.sta_password);
+  // printf("host is %s\n", esp32_wifi_ota_config_structure.info_t.ota_information_file_host);
+  // printf("url is %s\n", esp32_wifi_ota_config_structure.info_t.ota_information_file_url);
   printf("\n");
 }
 
