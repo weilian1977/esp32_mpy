@@ -115,5 +115,6 @@ def processGcode(line):
     elif("G28" in line):
         tarX = 0
         tarY = 0
-        prepareMove()
         initPosition()
+        prepareMove()
+        #initPosition()
