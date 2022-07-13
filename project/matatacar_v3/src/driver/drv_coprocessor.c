@@ -163,7 +163,7 @@ void get_color_offset(int16_t *red, int16_t *green, int16_t *blue)
     *blue = sensor_value.b_value - 160;
     if(*red < 0)
     {
-        red = 0;
+        *red = 0;
     }
     if(*green < 0)
     {
@@ -261,6 +261,7 @@ uint8_t drv_get_color_id()
         uint16_t s;
         uint16_t v;
         light_driver_rgb2hsv(red_value, green_value, blue_value, &h, &s, &v);
+        //printf("red: %d, green: %d, blue: %d, h: %d, s: %d, v: %d\n", red_value, green_value, blue_value, h, s, v);
         if((v > 220) && (s < 30) && (h < 180))
         {
             return COLOR_WHITE;
