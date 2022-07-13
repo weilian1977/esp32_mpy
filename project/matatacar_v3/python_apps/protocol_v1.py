@@ -420,8 +420,8 @@ def sensor_event(carble, msg):
 
     elif event_monitor_id == 0x0b:    #0xf30c
         while(True):
-            ir_code_tuple = sensor.get_ir_code()
-            if(ir_code_tuple[3] == 0xf30c):
+            ir_code_data = sensor.get_ir_code()
+            if(ir_code_data == 0xF708):
                 return
             else:
                 carble.clear_heart_time()
@@ -429,8 +429,8 @@ def sensor_event(carble, msg):
                 print("wait message 1")
     elif event_monitor_id == 0x0c:    #0xe718
         while(True):
-            ir_code_tuple = sensor.get_ir_code()
-            if(ir_code_tuple[3] == 0xe718):
+            ir_code_data = sensor.get_ir_code()
+            if(ir_code_data == 0xE31C):
                 return
             else:
                 carble.clear_heart_time()
@@ -438,8 +438,8 @@ def sensor_event(carble, msg):
                 print("wait message 2")
     elif event_monitor_id == 0x0d:    #0xa15e
         while(True):
-            ir_code_tuple = sensor.get_ir_code()
-            if(ir_code_tuple[3] == 0xa15e):
+            ir_code_data = sensor.get_ir_code()
+            if(ir_code_data == 0xA55A):
                 return
             else:
                 carble.clear_heart_time()
@@ -447,8 +447,8 @@ def sensor_event(carble, msg):
                 print("wait message 3")
     elif event_monitor_id == 0x0e:    #0xf708
         while(True):
-            ir_code_tuple = sensor.get_ir_code()
-            if(ir_code_tuple[3] == 0xf708):
+            ir_code_data = sensor.get_ir_code()
+            if(ir_code_data == 0xBD42):
                 return
             else:
                 carble.clear_heart_time()
@@ -456,8 +456,8 @@ def sensor_event(carble, msg):
                 print("wait message 4")
     elif event_monitor_id == 0x0f:    #0xe31c
         while(True):
-            ir_code_tuple = sensor.get_ir_code()
-            if(ir_code_tuple[3] == 0xe31c):
+            ir_code_data = sensor.get_ir_code()
+            if(ir_code_data == 0xAD52):
                 return
             else:
                 carble.clear_heart_time()
@@ -465,8 +465,8 @@ def sensor_event(carble, msg):
                 print("wait message 5")
     elif event_monitor_id == 0x10:    #0xa55a
         while(True):
-            ir_code_tuple = sensor.get_ir_code()
-            if(ir_code_tuple[3] == 0xa55a):
+            ir_code_data = sensor.get_ir_code()
+            if(ir_code_data == 0xB54A):
                 return
             else:
                 carble.clear_heart_time()
@@ -486,19 +486,19 @@ def ir_send(carble, msg):
         print("not ir_send!")
         return
     ir_command = 0x0000;
-    ir_addr = 0xfe00;
+    ir_addr = 0xFF00;
     if msg[2] == 1:
-        ir_command = 0xf30c
+        ir_command = 0xF708
     elif msg[2] == 2:
-        ir_command = 0xe718
+        ir_command = 0xE31C
     elif msg[2] == 3:
-        ir_command = 0xa15e
+        ir_command = 0xA55A
     elif msg[2] == 4:
-        ir_command = 0xf708
+        ir_command = 0xBD42
     elif msg[2] == 5:
-        ir_command = 0xe31c
+        ir_command = 0xAD52
     elif msg[2] == 6:
-        ir_command = 0xa55a
+        ir_command = 0xB54A
     sensor.send_ir_code(ir_addr, ir_command)
     print("ir_send msg:%d, cmd:%#x" %(msg[2], ir_command))
 
