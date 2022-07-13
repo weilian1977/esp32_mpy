@@ -779,7 +779,7 @@ void motor_set_speed(motor_configure_type motor, int32_t run_speed, bool immedia
     }
     else
     {   
-        if((motion_data.motor_data[motor].speed / run_speed) < 0)
+        if((motion_data.motor_data[motor].speed / run_speed) <= 0)
         {
             motor_stop(motor);
         }
@@ -787,8 +787,7 @@ void motor_set_speed(motor_configure_type motor, int32_t run_speed, bool immedia
         motion_data.motor_data[motor].dir = (motion_data.motor_data[motor].target_speed > 0) ? DIR_CW : DIR_CCW;
         if(immediately == false)
         {
-            set_max_speed(motor, DEFALUT_MAX_SPEED);
-            set_acceleration(motor, DEFALUT_ACCELERATION); 
+            motion_data.motor_data[motor].speed = 0;
             motion_data.motor_data[motor].motion_status = SPEED_MOVE;
         }
         else
