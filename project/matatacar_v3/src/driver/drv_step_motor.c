@@ -430,7 +430,7 @@ static void compute_motor_new_speed_by_speed(motor_configure_type motor)
         // First step from stopped
         motion_data.motor_data[motor]._cn = motion_data.motor_data[motor]._c0;
     }
-    else
+    else if(abs(motion_data.motor_data[motor].target_speed) != 0)
     {
         // Subsequent step. Works for accel (n is +_ve) and decel (n is -ve).
         int32_t temp_ve;
@@ -737,6 +737,7 @@ void motor_move_to(motor_configure_type motor, long absolute, bool sync)
     set_acceleration(motor, 4000 * STEP_SUBDIVISION);
     xSemaphoreTake(motion_data.motion_task_init_mutex, portMAX_DELAY);
     motor_move_to_cfg(motor, absolute);
+    motion_data.motor_data[motor].target_speed = 0;
     xSemaphoreGive(motion_data.motion_task_init_mutex);
     if(sync == true)
     {
@@ -771,12 +772,6 @@ void motor_set_speed(motor_configure_type motor, int32_t run_speed, bool immedia
         return 0;
     }
 
-    if(immediately == false)
-    {
-        set_max_speed(motor, DEFALUT_MAX_SPEED);
-        set_acceleration(motor, DEFALUT_ACCELERATION); 
-    }
-
     xSemaphoreTake(motion_data.motion_task_init_mutex, portMAX_DELAY); 
     if(run_speed == 0)
     {
@@ -792,6 +787,8 @@ void motor_set_speed(motor_configure_type motor, int32_t run_speed, bool immedia
         motion_data.motor_data[motor].dir = (motion_data.motor_data[motor].target_speed > 0) ? DIR_CW : DIR_CCW;
         if(immediately == false)
         {
+            set_max_speed(motor, DEFALUT_MAX_SPEED);
+            set_acceleration(motor, DEFALUT_ACCELERATION); 
             motion_data.motor_data[motor].motion_status = SPEED_MOVE;
         }
         else

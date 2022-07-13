@@ -171,7 +171,6 @@ STATIC mp_obj_t mpy_move_speed(mp_obj_t self_in, mp_obj_t left_speed, mp_obj_t r
     else if(MP_OBJ_IS_QSTR(left_speed))
     {
         const char *left_str = mp_obj_str_get_str(left_speed);
-        // mp_printf("left_speed is string (%s)\r\n", test_str);
         if(strcmp("unchanged", left_str) == 0)
         {
             left_pulse_speed = motor_get_speed(MOTOR_LEFT);
@@ -189,7 +188,6 @@ STATIC mp_obj_t mpy_move_speed(mp_obj_t self_in, mp_obj_t left_speed, mp_obj_t r
     else if(MP_OBJ_IS_QSTR(right_speed))
     {
         const char *right_str = mp_obj_str_get_str(right_speed);
-        // mp_printf("left_speed is string (%s)\r\n", test_str);
         if(strcmp("unchanged", right_str) == 0)
         {
             right_pulse_speed = motor_get_speed(MOTOR_RIGHT);
