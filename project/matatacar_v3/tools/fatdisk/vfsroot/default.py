@@ -1,12 +1,111 @@
 import sensor, time, draw
-
+import random
 mode = 0
+linefollowflag = 10
 line_following_mode = 0
 draw_mode = 0
 draw_select = 0
-
-
+play_flag = 0
+move_speed = 40
+volume_data = 60
+led_count = 0
 drawing_flag = 0
+sing_index = 0
+last_ir_code_value = 0
+last_state = 'null'
+music_dance_list = [1,2,3,4,5,6]
+audio.set_volume(volume_data)
+led_matrix.show_image(bytearray([0x00,0x00,0x10,0x22,0x10,0x14,0x7c,0x08,0x10,0x14,0x10,0x22,0x00,0x00,0x00,0x00]), "None")
+
+def set_motor_pwm(left_speed,right_speed):
+    motion.motor_pwm('A', -left_speed)
+    motion.motor_pwm('B', right_speed)
+def led_twinkle():
+    global led_count
+    led_count = 5
+    for i in range(3):
+        leds.show_all(255, 0, 0)
+        time.sleep(0.16)
+        leds.show_all(0, 0, 0)
+        time.sleep(0.16)
+    led_count = 0
+
+def random_shuffle(seq):
+    l = len(seq)
+    for i in range(l):
+        j = random.randrange(l)
+        seq[i], seq[j] = seq[j], seq[i]
+    return seq
+
+def led_task():
+    global led_count
+    r_led = 0
+    g_led = 120
+    b_led = 255
+    r_led_tepm = 5
+    g_led_tepm = 5
+    b_led_tepm = -5
+    led_sleep_time = 0
+    mode_3_stop_falg = 1
+    led_mode2_index = [1,2,3]
+    random_list = [1,2,3,4,5,6]
+    while(True):
+        time.sleep(0.02)
+        if(led_count == 0):
+            #关灯
+            leds.show_all(0, 0, 0)
+            led_mode3_index = 0
+            led_mode2_index = [1,2,3]
+            random_list = random_shuffle(random_list)
+            mode_3_stop_falg = 1
+        elif(led_count == 1):
+            #呼吸灯
+            if(r_led >= 255):
+                r_led_tepm = -5
+            elif(r_led <= 0):
+                r_led_tepm = 5
+            if(g_led >= 255):
+                g_led_tepm = -5
+            elif(g_led <= 0):
+                g_led_tepm = 5
+            if(b_led >= 255):
+                b_led_tepm = -5
+            elif(b_led <= 0):
+                b_led_tepm = 5
+            r_led = r_led + r_led_tepm
+            g_led = g_led + g_led_tepm
+            b_led = b_led + b_led_tepm
+            leds.show_all(r_led, g_led, b_led)
+        elif(led_count == 2):
+            #跑马灯
+            time.sleep(0.2)
+            leds.show_all(0, 0, 0)
+            led_mode2_index[0] = led_mode2_index[0] + 1
+            led_mode2_index[1] = led_mode2_index[1] + 1
+            led_mode2_index[2] = led_mode2_index[2] + 1
+            if(led_mode2_index[0] > 6):
+                led_mode2_index[0] = led_mode2_index[0] -6
+            if(led_mode2_index[1] > 6):
+                led_mode2_index[1] = led_mode2_index[1] -6
+            if(led_mode2_index[2] > 6):
+                led_mode2_index[2] = led_mode2_index[2] -6
+            leds.show_single(led_mode2_index[0],100,0,0)
+            leds.show_single(led_mode2_index[1],0,100,0)
+            leds.show_single(led_mode2_index[2],0,0,100)
+        elif(led_count == 3):
+            #随机逐个点亮
+            if(mode_3_stop_falg == 1):
+                mode_3_stop_falg = 0            
+                leds.show_all(0, 0, 0)
+            time.sleep(0.2)
+            led_sleep_time = led_sleep_time + 1
+            if(led_mode3_index == 6):
+                continue
+            if(led_sleep_time >= 5):
+                led_mode3_index = led_mode3_index + 1
+                led_sleep_time = 0
+            leds.show_single(random_list[led_mode3_index - 1], 0, 50, 50)
+
 def draw_task():
     global draw_mode, draw_select, drawing_flag
     gcode_file = "/resources/gcode/plane.gcode"
@@ -46,7 +145,6 @@ def draw_task():
     print("read file end!\r\n")
 
 
-last_ir_code_value = 0
 def get_ir_command():
     global last_ir_code_value
     while True:
@@ -74,38 +172,94 @@ def get_ir_command():
                     return ir_code_value
             else:
                 last_ir_code_value = new_ir_code_value
-
 #工作模式分为：遥控模式，巡线模式，画画模式，（巡线模式，画画模式下）只有在暂停模式下可以切换工作模式
 #巡线模式分为：开始，暂停
 #画画模式分为：选择图案，开始，暂停
 
+        
 def ir_command_process(command):
-    global mode, line_following_mode, draw_mode, draw_select, drawing_flag
-
+    global mode, line_following_mode, draw_mode, draw_select, drawing_flag,play_flag,move_speed,volume_data,last_state,led_count,music_dance_list,sing_index,linefollowflag
+    #ir_code_value = sensor.get_ir_code()
+    #print("ir_code_value:" + str(ir_code_value))
+    #print(ir_code_value)
     #遥控模式
+
     if mode == 0:
         if  command == "play":
-            #mode = 1
-            print("mode 0 play ")
-            #显示巡线表情面板
-            #显示LED
+            #暂停
+            #play_flag = not play_flag
+            #if(play_flag == True):
+            #    print(play_flag)
+            #    motion.stop(2)
+                audio.play_stop()
+        elif command == 'dance':
+            #舞蹈
+            sing_index = sing_index + 1
+            dance_index = random.randint(1,6)
+            action.dance(dance_index)
+        elif command == 'music' :
+            #音乐
+            sing_index = sing_index + 1
+            sing_index = random.randint(1,6)
+            audio.sing(str(sing_index))
+        elif command == 'led' :
+            #led模式
+            #leds.show_all(0, 0, 0)
+            led_count = led_count + 1
+            if led_count > 3 :
+                led_count = 0
         elif command == "forward":
-            #设置前进速度
-            print("mode 0 forward ")
+            #前进
+            set_motor_pwm(move_speed,move_speed)
+            #motion.start_moving('forward', move_speed)
         elif command == "backward":
-            #设置前进速度
-            print("mode 0 backward ")
+            #后退
+            set_motor_pwm(-move_speed,-move_speed)
+            #motion.start_moving('backward', move_speed)
         elif command == "left":
             #左转
-            print("mode 0 left ")
+            set_motor_pwm(-move_speed,move_speed)
+            #motion.motor_pwm('A+B',move_speed)
+            #motion.move_angle('left', 90, 'degrees',False)
         elif command == "right":
             #右转
-            print("mode 0 right ")
+            
+            set_motor_pwm(move_speed,-move_speed)
+            #motion.motor_pwm('A+B',-move_speed)
+            #motion.move_angle('right', 90, 'degrees',False)
+        elif command == "volume":
+            #音量
+            if(volume_data == 50):
+                volume_data = 60
+            elif(volume_data == 60):
+                volume_data = 70
+            elif(volume_data == 70):
+                volume_data = 50
+            else:
+                volume_data = 60
+            audio.set_volume(volume_data)
+        elif command == "speed":
+            #速度
+            if(move_speed == 40):
+                move_speed = 80
+            elif(move_speed == 80):
+                move_speed = 100
+            elif(move_speed == 100):
+                move_speed = 40
+            else:
+                move_speed = 40
+                
+            print(move_speed)
         elif command == "mode":
-            print("mode 0 mode ")
+            #模式切换  1
+            print("mode 1 mode ")
             mode = 1
-            audio.play_say("english", "Line following mode", sync = True)
+            play_flag = 0
+            audio.play_say("english", "Line following mode", sync = False)
+            led_twinkle()
             #显示Line following表情面板
+        else:
+            motion.stop(2)
 
     #巡线模式
     elif mode == 1:
@@ -114,20 +268,65 @@ def ir_command_process(command):
             #在暂停模式下，模式按键可切换工作模式
             if line_following_mode == 0:
                 mode = 2
-                audio.play_say("english", "Drawing mode", sync = True)
-                print("mode 1 mode ")
+                audio.play_say("english", "Drawing mode", sync = False)
+                led_twinkle()
+                print("mode 2 mode ")
         elif command == "play":
             #Play巡线开始，暂停模式切换
             line_following_mode = not line_following_mode
             print("mode 1 play " + str(line_following_mode))
+        elif line_following_mode == 1:
+            irdata = sensor.get_infrared_tube()
+            if(irdata == 0):
+                linefollowflag = 10
+                #forward
+                motion.motor_pwm('A', -100)
+                motion.motor_pwm('B', 100)
+            elif(irdata == 1):
+                linefollowflag = linefollowflag + 1
+                if(linefollowflag >15):
+                    #right
+                    motion.motor_pwm('A', -50)
+                    motion.motor_pwm('B', -30)
+                else:
+                    #forward
+                    motion.motor_pwm('A', -100)
+                    motion.motor_pwm('B', 100)
+            elif(irdata == 2):
+                linefollowflag = linefollowflag - 1
+                if(linefollowflag <= 5):
+                    #left
+                    motion.motor_pwm('A', 30)
+                    motion.motor_pwm('B', 50)
+                else:
+                    #forward
+                    motion.motor_pwm('A', -100)
+                    motion.motor_pwm('B', 100)
+            elif(irdata == 3):
+                if(linefollowflag < 10):
+                    #left
+                    motion.motor_pwm('A', 30)
+                    motion.motor_pwm('B', 50)
+                elif(linefollowflag > 10):
+                    #right
+                    motion.motor_pwm('A', -50)
+                    motion.motor_pwm('B', -30)
+                elif(linefollowflag == 10):
+                    motion.motor_pwm('A', 50)
+                    motion.motor_pwm('B', -50)
+        else:
+            motion.stop(2)
     #画画模式，开始，暂停模式切换，在画画暂停模式下，1,2,3切换图案，模式按键切换工作模式
     elif mode == 2:
         #Play巡线开始，暂停模式切换，只有暂停模式才可切换工作模式
         if command == "mode":
             if draw_mode == 0:
                 mode = 0
-                print("mode 2 mode ")
-                audio.play_say("english", "Remote control mode", sync = True)
+                random_shuffle(music_dance_list)
+                print("mode 0 mode ")
+                audio.play_say("english", "Remote control mode", sync = False)
+                led_twinkle()
+                led_matrix.show_image(bytearray([0x00,0x00,0x10,0x22,0x10,0x14,0x7c,0x08,0x10,0x14,0x10,0x22,0x00,0x00,0x00,0x00]), "None")
                 #显示画画表情面板
                 #显示LED
         elif command == "play":
@@ -137,20 +336,22 @@ def ir_command_process(command):
                 if drawing_flag == 0:
                     _thread.start_new_thread(draw_task, ())
                     drawing_flag = 1
-        elif command == "1":
+        elif command == 1:
             #显示图案1
             draw_select = 1
             led_matrix.show_image(bytearray([0x00,0x00,0x20,0x00,0x26,0x00,0x24,0x00,0x24,0x00,0x24,0x00,0x2e,0x00,0x20,0x00]), "None")
-        elif command == "2":
+        elif command == 2:
             #显示图案2
             draw_select = 2
             led_matrix.show_image(bytearray([0x00,0x00,0x20,0x00,0x2e,0x00,0x28,0x00,0x2e,0x00,0x22,0x00,0x2e,0x00,0x20,0x00]), "None")
-        elif command == "3":
+        elif command == 3:
             #显示图案3
             draw_select = 3
             led_matrix.show_image(bytearray([0x00,0x00,0x20,0x00,0x2e,0x00,0x28,0x00,0x2e,0x00,0x28,0x00,0x2e,0x00,0x20,0x00]), "None")
-
+_thread.start_new_thread(led_task,())
+#led_twinkle()
 while True:
     ir_command = get_ir_command()
     ir_command_process(ir_command)
-    time.sleep(0.2)
+
+    time.sleep(0.02)
