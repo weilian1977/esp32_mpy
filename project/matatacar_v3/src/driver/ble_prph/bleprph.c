@@ -422,7 +422,7 @@ void ble_prph_main(void)
 
     /* Set the default device name. */
     //rc = ble_svc_gap_device_name_set("nimble-bleprph");
-    rc = ble_svc_gap_device_name_set("VinchiBot");
+    rc = ble_svc_gap_device_name_set("VinciBot");
     assert(rc == 0);
 
     /* XXX Need to have template for store */

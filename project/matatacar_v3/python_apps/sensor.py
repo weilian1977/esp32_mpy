@@ -251,17 +251,17 @@ def get_raw_ir_code():
 def get_ir_code():
     ir_code_tuple = _sensor.get_ir_code()
     if(ir_code_tuple[3] == 0xF708):
-        return '1'
+        return 1
     elif(ir_code_tuple[3] == 0xE31C):
-        return '2'
+        return 2
     elif(ir_code_tuple[3] == 0xA55A):
-        return '3'
+        return 3
     elif(ir_code_tuple[3] == 0xBD42):
-        return '4'
+        return 4
     elif(ir_code_tuple[3] == 0xAD52):
-        return '5'
+        return 5
     elif(ir_code_tuple[3] == 0xB54A):
-        return '6'
+        return 6
     elif(ir_code_tuple[3] == 0xBA45):
         return 'volume'
     elif(ir_code_tuple[3] == 0xB946):

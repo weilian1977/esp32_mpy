@@ -9,6 +9,13 @@ import nvs
 import time
 import drv_motion
 import system_state
+import sensor
+import drv_led as leds
+import drv_led_matrix
+import mic
+
+_button = matatalab.button()
+led_matrix = drv_led_matrix._display
 
 # led = matatalab.leds()
 
@@ -128,7 +135,6 @@ def factory_aging_test_start(carble, item, test_hour):
             ret = [0]
             carble.send_upstream(bytes(ret))
             return
-        
         time.sleep(0.1)
     ret = [0]
     carble.send_upstream(bytes(ret))
@@ -143,7 +149,6 @@ def factory_aging_test_stop(carble):
 def factory_aging_test(carble, msg):
     if(msg[0] != 2):
         return
-    
     if(msg[1] == 0):
         factory_aging_test_stop(carble)
     else:
@@ -156,6 +161,106 @@ def factory_usb_detect(carble, msg):
     usb_detect = [ret]
     carble.send_upstream(bytes(usb_detect))
 
+def factory_key_press_test(carble, msg):
+    key_value = 0
+    current_time = time.ticks_ms()
+    while(time.ticks_ms() - current_time < 10000):
+        key_value |= _button.value()
+        if key_value == 7:
+            ret = [0]
+            carble.send_upstream(bytes(ret))
+            return
+        time.sleep(0.02)
+    ret = [key_value]
+    carble.send_upstream(bytes(ret))
+
+def factory_get_obstacle_avoidance_value(carble, msg):
+    ret = int(sensor.get_obstacle_avoidance_value())
+    value = [ret]
+    carble.send_upstream(bytes(value))
+
+def factory_all_led_test(carble, msg):
+    print("factory_all_led_test:%d" %(msg[0]))
+    if msg[0] == 0:
+        led_matrix.clear()
+        leds.show_all(0, 0, 0)
+    elif msg[0] == 1:
+        led_matrix.show_image(bytearray([0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff]), "None")
+        leds.show_all(100, 100, 100)
+    value = [0]
+    carble.send_upstream(bytes(value))
+
+def factory_get_left_light_value(carble, msg):
+    ret = int(sensor.get_brightness("left"))
+    print("factory_get_left_light_value:%d" %(ret))
+    value = [ret]
+    carble.send_upstream(bytes(value))
+
+def factory_get_right_light_value(carble, msg):
+    ret = int(sensor.get_brightness("right"))
+    print("factory_get_right_light_value:%d" %(ret))
+    value = [ret]
+    carble.send_upstream(bytes(value))
+
+def factory_get_loudness_value(carble, msg):
+    ret = int(mic.get_loudness())
+    print("factory_get_loudness_value:%d" %(ret))
+    value = [ret]
+    carble.send_upstream(bytes(value))
+
+def factory_get_left_infrared_tube_value(carble, msg):
+    ret = int(sensor.get_reflection_light("left"))
+    print("factory_get_left_infrared_tube_value:%d" %(ret))
+    value = [ret]
+    carble.send_upstream(bytes(value))
+
+def factory_get_right_infrared_tube_value(carble, msg):
+    ret = int(sensor.get_reflection_light("right"))
+    print("factory_get_right_infrared_tube_value:%d" %(ret))
+    value = [ret]
+    carble.send_upstream(bytes(value))
+
+def factory_ir_code_loopback(carble, msg):
+    sensor.send_ir_code(1234, msg[0])
+    time.sleep(0.02)
+    ret = sensor.get_ir_code()
+    if ret != 1 and ret != 2 and ret != 3 and ret != 4 and ret != 5 and ret != 6:
+        ret = 0
+    value = [ret]
+    carble.send_upstream(bytes(value))
+
+def factory_color_calibration(carble, msg):
+    sensor.color_calibration()
+    r,g,b = sensor.get_color()
+    value = "r=%d,g=%d,b=%d\r\n" %(r,g,b)
+    carble.send_upstream(value.encode('utf-8'))
+
+def factory_get_color_value(carble, msg):
+    r,g,b = sensor.get_color()
+    value = "r=%d,g=%d,b=%d\r\n" %(r,g,b)
+    carble.send_upstream(value.encode('utf-8'))
+
+def factory_get_color_id(carble, msg):
+    ret = sensor.get_color_id()
+    if ret == "black" or ret == "grey":
+        ret = 0
+    elif ret == "white":
+        ret = 1
+    elif ret == "red":
+        ret = 2
+    elif ret == "orange" or ret == "yellow":
+        ret = 5
+    elif ret == "green":
+        ret = 3
+    elif ret == "blue" or ret == "cyan":
+        ret = 4
+    elif ret == "purple":
+        ret = 6
+    elif ret == "unknown":
+        ret = 7
+    value = [ret]
+    carble.send_upstream(bytes(value))
+
 def factory_enter_dfu(carble, msg):
     pass
 
@@ -164,7 +269,6 @@ def factory_update_stm32(carble, msg):
 
 def factory_heart_enable(carble, msg):
     carble.set_heart_enable(True)
-    
 
 def factory_get_version_keep_heart(carble, msg):
     factory_get_version(carble, msg)
@@ -185,10 +289,9 @@ def factory_write_sn_keep_heart(carble, msg):
 def factory_read_sn_keep_heart(carble, msg):
     factory_get_sn(carble, msg)
     carble.set_heart_enable(True)
-    
+
 def factory_cmd_unknow(carble, msg):
     pass
-
 
 def factory_emc_test_start():
     audio.play_music(1,False)
@@ -204,7 +307,7 @@ def factory_emc_test_start():
     # led.show_all(0, 0, 0)
     drv_motion.move_speed(0,0)
     time.sleep(1)
-        
+
 def factory_emc_test_stop():
     audio.play_stop()
     # led.show_all(0, 0, 0)
@@ -228,10 +331,8 @@ def factory_emc_key():
                     emc_test_flag = True
                 else:
                     emc_test_flag = False
-                    
         time.sleep(0.02)
-        
-        
+ 
 def factory_emc_process():
     global emc_test_flag
     while(True):
@@ -254,6 +355,18 @@ factory_opcode = {
 0x0B:[factory_speaker_test],
 0x0D:[factory_aging_test],
 0x0E:[factory_usb_detect],
+0x1C:[factory_key_press_test],
+0x1D:[factory_get_obstacle_avoidance_value],
+0x1F:[factory_all_led_test],
+0x20:[factory_get_left_light_value],
+0x21:[factory_get_right_light_value],
+0x22:[factory_get_loudness_value],
+0x23:[factory_get_left_infrared_tube_value],
+0x24:[factory_get_right_infrared_tube_value],
+0x25:[factory_ir_code_loopback],
+0x26:[factory_color_calibration],
+0x27:[factory_get_color_value],
+0x28:[factory_get_color_id],
 0x81:[factory_enter_dfu],
 0x91:[factory_update_stm32],
 0x92:[factory_heart_enable],
@@ -262,13 +375,12 @@ factory_opcode = {
 0xA3:[factory_get_soc_keep_heart],
 0xA4:[factory_write_sn_keep_heart],
 0xA5:[factory_read_sn_keep_heart],
-
 }
 
 def factory_process(carble, msg):
     if(len(msg) <= 3):
         return
-        
+
     if(msg[0] == 0x80) and (msg[1] == 0xaa) and (msg[2] == 0x55):
         system_state.set_factory_state(True)
         print("factory_process")
