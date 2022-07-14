@@ -79,5 +79,21 @@ upload_bootloader:
 upload_ota_data:
 	./tools/esptool_py/esptool/esptool.py --before default_reset --after hard_reset -p $(PORT) -b $(BAUD) write_flash 0xd000 ./tools/ota_bin/ota_data.bin
 
+upload_all:
+	./tools/esptool_py/esptool/esptool.py --before default_reset --after hard_reset -p $(PORT) -b $(BAUD) write_flash 0x0 ./build-matatacar_v3/bootloader/bootloader.bin 0x8000 ./build-matatacar_v3/partition_table/partition-table.bin
+	./tools/esptool_py/esptool/esptool.py --before default_reset --after hard_reset -p $(PORT) -b $(BAUD) write_flash 0xd000 ./tools/ota_bin/ota_data.bin
+	./tools/esptool_py/esptool/esptool.py --before default_reset --after hard_reset -p $(PORT) -b $(BAUD) write_flash 0x10000 ./build-matatacar_v3/matatacar_v3.bin
+	./tools/esptool_py/esptool/esptool.py --before default_reset --after hard_reset -p $(PORT) -b $(BAUD) write_flash 0x280000 ./tools/fatdisk/vfs_music.bin
+	./tools/esptool_py/esptool/esptool.py --before default_reset --after hard_reset -p $(PORT) -b $(BAUD) write_flash 0x880000 ./tools/fatdisk/vfs.bin
+	./tools/esptool_py/esptool/esptool.py --before default_reset --after hard_reset -p $(PORT) -b $(BAUD) write_flash 0xE80000 ./tools/ota_bin/ota.bin
+
+upload_all:
+	./tools/esptool_py/esptool/esptool.py --before default_reset --after hard_reset -p $(PORT) -b $(BAUD) write_flash 0x0 ./build-matatacar_v3/bootloader/bootloader.bin 0x8000 ./build-matatacar_v3/partition_table/partition-table.bin
+	./tools/esptool_py/esptool/esptool.py --before default_reset --after hard_reset -p $(PORT) -b $(BAUD) write_flash 0xd000 ./tools/ota_bin/ota_data.bin
+	./tools/esptool_py/esptool/esptool.py --before default_reset --after hard_reset -p $(PORT) -b $(BAUD) write_flash 0x10000 ./build-matatacar_v3/matatacar_v3.bin
+	./tools/esptool_py/esptool/esptool.py --before default_reset --after hard_reset -p $(PORT) -b $(BAUD) write_flash 0x280000 ./tools/fatdisk/vfs_music.bin
+	./tools/esptool_py/esptool/esptool.py --before default_reset --after hard_reset -p $(PORT) -b $(BAUD) write_flash 0x880000 ./tools/fatdisk/vfs.bin
+	./tools/esptool_py/esptool/esptool.py --before default_reset --after hard_reset -p $(PORT) -b $(BAUD) write_flash 0xE80000 ./tools/ota_bin/ota.bin
+
 submodules:
 	git submodule update --init $(addprefix ../../,$(GIT_SUBMODULES))
