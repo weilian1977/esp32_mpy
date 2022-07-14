@@ -5,6 +5,130 @@ line_following_mode = 0
 draw_mode = 0
 draw_select = 0
 
+display_drawing_led_matrix_flag = 0
+
+def display_drawing_led_matrix():
+    display_drawing_delay = 0.5
+    print("display_drawing_led_matrix!\n")
+    display_drawing_led_matrix_flag = 1
+    while True:
+        if((draw_mode == 1)|(mode !=2)|(draw_select !=0)):
+            print("break!\n")
+            break
+        led_matrix.clear()
+        for i in range(2, 16):
+            led_matrix.set_pixel(i, 0, 100)
+            led_matrix.set_pixel(i, 1, 100)
+            led_matrix.set_pixel(i, 2, 100)
+
+            if(i > 0):
+                led_matrix.set_pixel(i-1, 0, 100)
+                led_matrix.set_pixel(i-1, 1, 0)
+                led_matrix.set_pixel(i-1, 2, 100)
+
+            if(i > 1):
+                led_matrix.set_pixel(i-2, 0, 100)
+                led_matrix.set_pixel(i-2, 1, 100)
+                led_matrix.set_pixel(i-2, 2, 100)
+
+            if(i > 2):
+                led_matrix.set_pixel(i-3, 0, 0)
+                led_matrix.set_pixel(i-3, 1, 100)
+                led_matrix.set_pixel(i-3, 2, 0)
+            if((draw_mode == 1)|(mode !=2)|(draw_select !=0)):
+                break
+            time.sleep(display_drawing_delay)
+
+        for i in range(3, 8):
+            led_matrix.set_pixel(13, i, 100)
+            led_matrix.set_pixel(14, i, 100)
+            led_matrix.set_pixel(15, i, 100)
+
+            led_matrix.set_pixel(13, i-1, 100)
+            led_matrix.set_pixel(14, i-1, 0)
+            led_matrix.set_pixel(15, i-1, 100)
+
+            led_matrix.set_pixel(13, i-2, 100)
+            led_matrix.set_pixel(14, i-2, 100)
+            led_matrix.set_pixel(15, i-2, 100)
+
+            if(i == 3):
+                led_matrix.set_pixel(13, i-3, 0)
+                led_matrix.set_pixel(14, i-3, 0)
+                led_matrix.set_pixel(15, i-3, 0)
+
+            if(i == 4):
+                led_matrix.set_pixel(15, i-3, 0)
+
+            if(i > 4):
+                led_matrix.set_pixel(13, i-3, 0)
+                led_matrix.set_pixel(14, i-3, 100)
+                led_matrix.set_pixel(15, i-3, 0)
+            if((draw_mode == 1)|(mode !=2)|(draw_select !=0)):
+                break
+            time.sleep(display_drawing_delay)
+
+        for i in range(12, -1, -1):
+            led_matrix.set_pixel(i, 5, 100)
+            led_matrix.set_pixel(i, 6, 100)
+            led_matrix.set_pixel(i, 7, 100)
+
+            if(i < 13):
+                led_matrix.set_pixel(i+1, 5, 100)
+                led_matrix.set_pixel(i+1, 6, 0)
+                led_matrix.set_pixel(i+1, 7, 100)
+
+            if(i < 13):
+                led_matrix.set_pixel(i+2, 5, 100)
+                led_matrix.set_pixel(i+2, 6, 100)
+                led_matrix.set_pixel(i+2, 7, 100)
+
+            if(i == 12):
+                led_matrix.set_pixel(i+3, 5, 0)
+                led_matrix.set_pixel(i+3, 6, 0)
+                led_matrix.set_pixel(i+3, 7, 0)
+
+            if(i == 11):
+                led_matrix.set_pixel(i+3, 7, 0)
+
+            if(i < 11):
+                led_matrix.set_pixel(i+3, 5, 0)
+                led_matrix.set_pixel(i+3, 6, 100)
+                led_matrix.set_pixel(i+3, 7, 0)
+            if((draw_mode == 1)|(mode !=2)|(draw_select !=0)):
+                break
+            time.sleep(display_drawing_delay)
+
+        for i in range(4, -1, -1):
+            led_matrix.set_pixel(0, i, 100)
+            led_matrix.set_pixel(1, i, 100)
+            led_matrix.set_pixel(2, i, 100)
+
+            led_matrix.set_pixel(0, i+1, 100)
+            led_matrix.set_pixel(1, i+1, 0)
+            led_matrix.set_pixel(2, i+1, 100)
+
+            led_matrix.set_pixel(0, i+2, 100)
+            led_matrix.set_pixel(1, i+2, 100)
+            led_matrix.set_pixel(2, i+2, 100)
+
+            if(i == 4):
+                led_matrix.set_pixel(0, i+3, 0)
+                led_matrix.set_pixel(1, i+3, 0)
+                led_matrix.set_pixel(2, i+3, 0)
+
+            if(i == 3):
+                led_matrix.set_pixel(0, i+3, 0)
+
+            if(i < 3):
+                led_matrix.set_pixel(0, i+3, 0)
+                led_matrix.set_pixel(1, i+3, 100)
+                led_matrix.set_pixel(2, i+3, 0)
+            if((draw_mode == 1)|(mode !=2)|(draw_select !=0)):
+                break
+            time.sleep(display_drawing_delay)
+    led_matrix.clear()
+    display_drawing_led_matrix_flag = 0
 
 drawing_flag = 0
 def draw_task():
@@ -114,7 +238,10 @@ def ir_command_process(command):
             #在暂停模式下，模式按键可切换工作模式
             if line_following_mode == 0:
                 mode = 2
+                _thread.start_new_thread(display_drawing_led_matrix, ())
                 audio.play_say("english", "Drawing mode", sync = True)
+                #_thread.start_new_thread(display_drawing_led_matrix, ())
+                #audio.play_say("english", "Drawing mode", sync = True)
                 print("mode 1 mode ")
         elif command == "play":
             #Play巡线开始，暂停模式切换
@@ -126,6 +253,7 @@ def ir_command_process(command):
         if command == "mode":
             if draw_mode == 0:
                 mode = 0
+                draw_select = 0
                 print("mode 2 mode ")
                 audio.play_say("english", "Remote control mode", sync = True)
                 #显示画画表情面板
@@ -140,14 +268,21 @@ def ir_command_process(command):
         elif command == "1":
             #显示图案1
             draw_select = 1
+            while(display_drawing_led_matrix_flag == 1):
+                time.sleep(0.2)
+            time.sleep(0.5)
             led_matrix.show_image(bytearray([0x00,0x00,0x20,0x00,0x26,0x00,0x24,0x00,0x24,0x00,0x24,0x00,0x2e,0x00,0x20,0x00]), "None")
         elif command == "2":
             #显示图案2
             draw_select = 2
+            while(display_drawing_led_matrix_flag == 1):
+                time.sleep(0.2)
             led_matrix.show_image(bytearray([0x00,0x00,0x20,0x00,0x2e,0x00,0x28,0x00,0x2e,0x00,0x22,0x00,0x2e,0x00,0x20,0x00]), "None")
         elif command == "3":
             #显示图案3
             draw_select = 3
+            while(display_drawing_led_matrix_flag == 1):
+                time.sleep(0.2)
             led_matrix.show_image(bytearray([0x00,0x00,0x20,0x00,0x2e,0x00,0x28,0x00,0x2e,0x00,0x28,0x00,0x2e,0x00,0x20,0x00]), "None")
 
 while True:
