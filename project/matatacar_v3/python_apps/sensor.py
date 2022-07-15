@@ -331,7 +331,7 @@ def is_color_detected(color_id):
         return False
 
 def is_obstacle_ahead():
-    if get_obstacle_avoidance_value() > 50:
+    if get_obstacle_avoidance_value() < 70:
         return True
     else:
         return False

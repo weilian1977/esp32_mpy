@@ -104,9 +104,9 @@ def motor_run(motor, value, unit, speed, dir, wait_flag = True):
         if(dir == "clockwise"):
             moto.motor_speed(motor_temp, speed_temp)
         else:
-            moto.motor_speed(motor_temp, speed_temp)
-            time.sleep(abs(value))
-            moto.motor_speed(motor_temp, 0)
+            moto.motor_speed(motor_temp, -speed_temp)
+        time.sleep(abs(value))
+        moto.motor_speed(motor_temp, 0)
     elif unit == "rotations":
         moto.set_max_speed(speed_temp * 8 * 32)
         pos = int(round(45.6 * 3.14 * value))
