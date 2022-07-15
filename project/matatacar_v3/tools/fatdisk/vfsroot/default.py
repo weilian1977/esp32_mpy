@@ -19,6 +19,7 @@ music_dance_list = [1,2,3,4,5,6]
 display_line_following_start_flag = 0
 display_drawing_led_matrix_flag = 0
 new_draw_select = 0
+trun_more_angle = 0
 
 led_color = {
 1:[0,0,255],
@@ -550,18 +551,19 @@ def led_task():
     g_led_tepm = 5
     b_led_tepm = -5
     led_sleep_time = 0
-    mode_3_stop_falg = 1
+    mode_3_stop_falg = 0
     led_mode2_index = [1,2,3]
     random_list = [1,2,3,4,5,6]
     while(True):
         time.sleep(0.02)
         if(led_count == 0):
             #关灯
-            leds.show_all(0, 0, 0)
-            led_mode3_index = 0
-            led_mode2_index = [1,2,3]
-            random_list = random_shuffle(random_list)
-            mode_3_stop_falg = 1
+            if(mode_3_stop_falg == 0):
+                leds.show_all(0, 0, 0)
+                led_mode3_index = 0
+                led_mode2_index = [1,2,3]
+                random_list = random_shuffle(random_list)
+                mode_3_stop_falg = 1
         elif(led_count == 1):
             #呼吸灯
             if(r_led >= 255):
@@ -690,7 +692,7 @@ def get_ir_command():
         
 def ir_command_process(command):
     global mode, line_following_mode, draw_mode, draw_select, drawing_flag,play_flag,move_speed,volume_data,last_state,led_count, display_drawing_led_matrix_flag, last_draw_select, new_draw_select
-    global music_dance_list,sing_index,linefollowflag,move_flag
+    global music_dance_list, sing_index, linefollowflag, move_flag, trun_more_angle
     #ir_code_value = sensor.get_ir_code()
     #print("ir_code_value:" + str(ir_code_value))
     #print(ir_code_value)
@@ -797,17 +799,23 @@ def ir_command_process(command):
             print("mode 1 play " + str(line_following_mode))
             if(line_following_mode == 1):
                 move_flag = 1
+                trun_more_angle = 0
         elif line_following_mode == 1:
             irdata = sensor.get_infrared_tube()
             if(irdata == 0):
                 linefollowflag = 10
                 #forward
+                trun_more_angle = 0
                 set_motor_pwm(100,100)
             elif(irdata == 1):
                 linefollowflag = linefollowflag + 1
                 if(linefollowflag > 10):
                     #right
-                    motion.move_speed(80,-60)
+                    if(trun_more_angle == 1):
+                        set_motor_pwm(100,-50)
+                    else:
+                        set_motor_pwm(80,40)
+                        #motion.move_speed(80,40)
                 else:
                     #forward
                     set_motor_pwm(100,100)
@@ -815,16 +823,22 @@ def ir_command_process(command):
                 linefollowflag = linefollowflag - 1
                 if(linefollowflag < 10):
                     #left
-                    motion.move_speed(-60,80)
+                    if(trun_more_angle == 1):
+                        set_motor_pwm(-50,100)
+                    else:
+                        set_motor_pwm(40,80)
+                        #motion.move_speed(40,80)
                 else:
                     #forward
                     set_motor_pwm(100,100)
             elif(irdata == 3):
                 if(linefollowflag < 10):
                     #left
+                    trun_more_angle = 1
                     set_motor_pwm(-50,100)
                 elif(linefollowflag > 10):
                     #right
+                    trun_more_angle = 1
                     set_motor_pwm(100,-50)
                 elif(linefollowflag == 10):
                     set_motor_pwm(-100,-100)
