@@ -95,7 +95,14 @@ action_unit = {
 0x20:[1, action_eye, drv_led.BOTH_EYE_MODE, 0x05],
 
 }
-
+dance_index_name = {
+1:'name1',
+2:'name2',
+3:'name3',
+4:'name4',
+5:'name5',
+6:'name6',
+}
 dance_code = {
 1:[3,4,1,2,5,6,7,8,9,0x0a],
 2:[26,26,26,5,8,0x0a,27,27,27,6,9,0x0a],
@@ -145,9 +152,14 @@ def action_movement(index):
 
 def dance(dance_name):
     print("dance:%s" %(dance_name))
-    audio.play_dance(1, 0)
-    dance_list = action_dance_code_get(1)
-    action_parse(dance_list)
+    if dance_name in dance_index_name.keys() :
+        action_dance(dance_name)
+    #elif dance_name in dance_index_name.values():
+    #    action_dance(dance_name)
+    else :
+        audio.play_dance(1, 0)
+        dance_list = action_dance_code_get(1)
+        action_parse(dance_list)
 
 def behavior(behavior_name):
     print("behavior:%s" %(behavior_name))

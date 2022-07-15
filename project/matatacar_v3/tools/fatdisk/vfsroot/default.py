@@ -6,7 +6,31 @@ line_following_mode = 0
 draw_mode = 0
 draw_select = 0
 play_flag = 0
+move_speed = 40
+volume_data = 60
+led_count = 0
+drawing_flag = 0
+sing_index = 0
+last_ir_code_value = 0
+last_state = 'null'
+move_flag = 0
+music_dance_list = [1,2,3,4,5,6]
 display_drawing_led_matrix_flag = 0
+led_color = {
+1:[0,0,255],
+2:[0,255,0],
+3:[255,0,0],
+4:[255,255,0],
+5:[255,0,255],
+6:[0,255,255],
+7:[202,235,216],
+8:[255,127,80],
+9:[0,191,255],
+10:[0,255,127],
+}
+
+audio.set_volume(volume_data)
+led_matrix.show_image(bytearray([0x00,0x00,0x10,0x22,0x10,0x14,0x7c,0x08,0x10,0x14,0x10,0x22,0x00,0x00,0x00,0x00]), "None")
 
 def display_drawing_led_matrix():
     display_drawing_delay = 0.5
@@ -130,16 +154,7 @@ def display_drawing_led_matrix():
             time.sleep(display_drawing_delay)
     led_matrix.clear()
     display_drawing_led_matrix_flag = 0
-move_speed = 40
-volume_data = 60
-led_count = 0
-drawing_flag = 0
-sing_index = 0
-last_ir_code_value = 0
-last_state = 'null'
-music_dance_list = [1,2,3,4,5,6]
-audio.set_volume(volume_data)
-led_matrix.show_image(bytearray([0x00,0x00,0x10,0x22,0x10,0x14,0x7c,0x08,0x10,0x14,0x10,0x22,0x00,0x00,0x00,0x00]), "None")
+
 
 def set_motor_pwm(left_speed,right_speed):
     motion.motor_pwm('A', -left_speed)
@@ -162,7 +177,7 @@ def random_shuffle(seq):
     return seq
 
 def led_task():
-    global led_count
+    global led_count,led_color
     r_led = 0
     g_led = 120
     b_led = 255
@@ -213,9 +228,9 @@ def led_task():
                 led_mode2_index[1] = led_mode2_index[1] -6
             if(led_mode2_index[2] > 6):
                 led_mode2_index[2] = led_mode2_index[2] -6
-            leds.show_single(led_mode2_index[0],100,0,0)
-            leds.show_single(led_mode2_index[1],0,100,0)
-            leds.show_single(led_mode2_index[2],0,0,100)
+            leds.show_single(led_mode2_index[0],255,0,0)
+            leds.show_single(led_mode2_index[1],0,255,0)
+            leds.show_single(led_mode2_index[2],0,0,255)
         elif(led_count == 3):
             #随机逐个点亮
             if(mode_3_stop_falg == 1):
@@ -223,12 +238,16 @@ def led_task():
                 leds.show_all(0, 0, 0)
             time.sleep(0.2)
             led_sleep_time = led_sleep_time + 1
-            if(led_mode3_index == 6):
-                continue
+            if(led_mode3_index >= 6):
+                random_list = random_shuffle(random_list)
+                leds.show_all(0, 0, 0)
+                led_mode3_index = 0
             if(led_sleep_time >= 5):
                 led_mode3_index = led_mode3_index + 1
                 led_sleep_time = 0
-            leds.show_single(random_list[led_mode3_index - 1], 0, 50, 50)
+            led_color_index = random.randint(1,10)
+            led_rgb_color = led_color.get(led_color_index,[])
+            leds.show_single(random_list[led_mode3_index - 1], led_rgb_color[0],led_rgb_color[1],led_rgb_color[2])
 
 def draw_task():
     global draw_mode, draw_select, drawing_flag
@@ -302,7 +321,8 @@ def get_ir_command():
 
         
 def ir_command_process(command):
-    global mode, line_following_mode, draw_mode, draw_select, drawing_flag,play_flag,move_speed,volume_data,last_state,led_count,music_dance_list,sing_index,linefollowflag
+    global mode, line_following_mode, draw_mode, draw_select, drawing_flag,play_flag,move_speed,volume_data,last_state,led_count
+    global music_dance_list,sing_index,linefollowflag,move_flag
     #ir_code_value = sensor.get_ir_code()
     #print("ir_code_value:" + str(ir_code_value))
     #print(ir_code_value)
@@ -334,20 +354,23 @@ def ir_command_process(command):
                 led_count = 0
         elif command == "forward":
             #前进
+            move_flag = 1
             set_motor_pwm(move_speed,move_speed)
             #motion.start_moving('forward', move_speed)
         elif command == "backward":
             #后退
+            move_flag = 1
             set_motor_pwm(-move_speed,-move_speed)
             #motion.start_moving('backward', move_speed)
         elif command == "left":
             #左转
+            move_flag = 1
             set_motor_pwm(-move_speed,move_speed)
             #motion.motor_pwm('A+B',move_speed)
             #motion.move_angle('left', 90, 'degrees',False)
         elif command == "right":
             #右转
-            
+            move_flag = 1
             set_motor_pwm(move_speed,-move_speed)
             #motion.motor_pwm('A+B',-move_speed)
             #motion.move_angle('right', 90, 'degrees',False)
@@ -383,7 +406,9 @@ def ir_command_process(command):
             led_twinkle()
             #显示Line following表情面板
         else:
-            motion.stop(2)
+            if(move_flag == 1):
+                move_flag = 0
+                motion.stop(2)
 
     #巡线模式
     elif mode == 1:
@@ -401,47 +426,43 @@ def ir_command_process(command):
             #Play巡线开始，暂停模式切换
             line_following_mode = not line_following_mode
             print("mode 1 play " + str(line_following_mode))
+            if(line_following_mode == 1):
+                move_flag = 1
         elif line_following_mode == 1:
             irdata = sensor.get_infrared_tube()
             if(irdata == 0):
                 linefollowflag = 10
                 #forward
-                motion.motor_pwm('A', -100)
-                motion.motor_pwm('B', 100)
+                set_motor_pwm(100,100)
             elif(irdata == 1):
                 linefollowflag = linefollowflag + 1
-                if(linefollowflag >15):
+                if(linefollowflag > 10):
                     #right
-                    motion.motor_pwm('A', -50)
-                    motion.motor_pwm('B', -30)
+                    motion.move_speed(80,-60)
                 else:
                     #forward
-                    motion.motor_pwm('A', -100)
-                    motion.motor_pwm('B', 100)
+                    set_motor_pwm(100,100)
             elif(irdata == 2):
                 linefollowflag = linefollowflag - 1
-                if(linefollowflag <= 5):
+                if(linefollowflag < 10):
                     #left
-                    motion.motor_pwm('A', 30)
-                    motion.motor_pwm('B', 50)
+                    motion.move_speed(-60,80)
                 else:
                     #forward
-                    motion.motor_pwm('A', -100)
-                    motion.motor_pwm('B', 100)
+                    set_motor_pwm(100,100)
             elif(irdata == 3):
                 if(linefollowflag < 10):
                     #left
-                    motion.motor_pwm('A', 30)
-                    motion.motor_pwm('B', 50)
+                    set_motor_pwm(-50,100)
                 elif(linefollowflag > 10):
                     #right
-                    motion.motor_pwm('A', -50)
-                    motion.motor_pwm('B', -30)
+                    set_motor_pwm(100,-50)
                 elif(linefollowflag == 10):
-                    motion.motor_pwm('A', 50)
-                    motion.motor_pwm('B', -50)
+                    set_motor_pwm(-100,-100)
         else:
-            motion.stop(2)
+            if(move_flag == 1):
+                move_flag = 0
+                motion.stop(2)
     #画画模式，开始，暂停模式切换，在画画暂停模式下，1,2,3切换图案，模式按键切换工作模式
     elif mode == 2:
         #Play巡线开始，暂停模式切换，只有暂停模式才可切换工作模式
@@ -469,6 +490,7 @@ def ir_command_process(command):
             while(display_drawing_led_matrix_flag == 1):
                 time.sleep(0.2)
             time.sleep(0.5)
+
             led_matrix.show_image(bytearray([0x00,0x00,0x20,0x00,0x26,0x00,0x24,0x00,0x24,0x00,0x24,0x00,0x2e,0x00,0x20,0x00]), "None")
         elif command == 2:
             #显示图案2
