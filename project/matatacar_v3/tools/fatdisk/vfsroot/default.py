@@ -251,13 +251,13 @@ def led_task():
 
 def draw_task():
     global draw_mode, draw_select, drawing_flag
-    gcode_file = "/resources/gcode/plane.gcode"
+    gcode_file = "/resources/gcode/square.gcode"
     if(draw_select == 1):
-        gcode_file = "/resources/gcode/plane.gcode"
-    elif draw_select == 2:
         gcode_file = "/resources/gcode/square.gcode"
-    elif draw_select == 3:
+    elif draw_select == 2:
         gcode_file = "/resources/gcode/pentagram.gcode"
+    elif draw_select == 3:
+        gcode_file = "/resources/gcode/plane.gcode"
     with open(gcode_file, "r") as f:
         if mode != 2:
             print("draw mode to other mode 0\n")
@@ -497,12 +497,14 @@ def ir_command_process(command):
             draw_select = 2
             while(display_drawing_led_matrix_flag == 1):
                 time.sleep(0.2)
+            time.sleep(0.5)
             led_matrix.show_image(bytearray([0x00,0x00,0x20,0x00,0x2e,0x00,0x28,0x00,0x2e,0x00,0x22,0x00,0x2e,0x00,0x20,0x00]), "None")
         elif command == 3:
             #显示图案3
             draw_select = 3
             while(display_drawing_led_matrix_flag == 1):
                 time.sleep(0.2)
+            time.sleep(0.5)
             led_matrix.show_image(bytearray([0x00,0x00,0x20,0x00,0x2e,0x00,0x28,0x00,0x2e,0x00,0x28,0x00,0x2e,0x00,0x20,0x00]), "None")
 _thread.start_new_thread(led_task,())
 #led_twinkle()
