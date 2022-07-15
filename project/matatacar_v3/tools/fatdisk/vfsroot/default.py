@@ -771,7 +771,7 @@ def ir_command_process(command):
             mode = 1
             play_flag = 0
             _thread.start_new_thread(display_line_following_start_led_matrix, ())
-            audio.play_say("english", "Line following mode", sync = False)
+            #audio.play_say("english", "Line following mode", sync = False)
             led_twinkle()
             #显示Line following表情面板
         else:
@@ -787,7 +787,7 @@ def ir_command_process(command):
             if line_following_mode == 0:
                 mode = 2
                 _thread.start_new_thread(display_drawing_led_matrix, ())
-                audio.play_say("english", "Drawing mode", sync = False)
+                #audio.play_say("english", "Drawing mode", sync = False)
                 led_twinkle()
                 #audio.play_say("english", "Drawing mode", sync = True)
                 print("mode 2 mode ")
@@ -841,7 +841,7 @@ def ir_command_process(command):
                 random_shuffle(music_dance_list)
                 draw_select = 0
                 print("mode 0 mode ")
-                audio.play_say("english", "Remote control mode", sync = False)
+                #audio.play_say("english", "Remote control mode", sync = False)
                 led_twinkle()
                 led_matrix.show_image(bytearray([0x00,0x00,0x10,0x22,0x10,0x14,0x7c,0x08,0x10,0x14,0x10,0x22,0x00,0x00,0x00,0x00]), "None")
                 #显示画画表情面板
