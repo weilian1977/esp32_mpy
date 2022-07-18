@@ -67,8 +67,8 @@ def prepareMove():
           dAng += (2*PI);
         angle = (dAng / (2 * PI)) * 360
         print("move_command- angle:%f, distance:%f" %(angle, distance))
-        motion.move_raw_angle(angle, 100, 1)
-        motion.move_raw_position(distance, 100, 1)
+        motion.move_raw_angle(angle, 60, 1)
+        motion.move_raw_position(distance, 60, 1)
     else:
         print("useHermit move");
     curD = tarD;

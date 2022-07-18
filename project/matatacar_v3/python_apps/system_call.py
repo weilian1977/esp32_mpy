@@ -177,7 +177,7 @@ if __name__ == '__main__':
     _thread.start_new_thread(audio.media_process, ())
 
     _thread.stack_size(THREAD_COMMUNICATION_SIZE)
-    _thread.start_new_thread(communication_process, ())
+    _thread.start_new_thread(communication_process, (), 1, 2)
 
     _thread.stack_size(THREAD_LED_MATRIX_SIZE)
-    _thread.start_new_thread(led_matrix_process, ())
+    _thread.start_new_thread(led_matrix_process, (), 1, 2)

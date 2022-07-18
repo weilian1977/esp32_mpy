@@ -21,6 +21,8 @@ display_drawing_led_matrix_flag = 0
 new_draw_select = 0
 trun_more_angle = 0
 
+THREAD_SIZE = 4 * 1024
+
 led_color = {
 1:[0,0,255],
 2:[0,255,0],
@@ -39,7 +41,7 @@ led_matrix.show_image(bytearray([0x00,0x00,0x10,0x22,0x10,0x14,0x7c,0x08,0x10,0x
 
 def display_drawing_led_matrix():
     global display_line_following_start_flag
-    display_drawing_delay = 0.5
+    display_drawing_delay = 0.2
     print("display_drawing_led_matrix!\n")
     while(display_line_following_start_flag == 1):
         time.sleep(0.1)
@@ -776,6 +778,7 @@ def ir_command_process(command):
             print("mode 1 mode ")
             mode = 1
             play_flag = 0
+            _thread.stack_size(THREAD_SIZE)
             _thread.start_new_thread(display_line_following_start_led_matrix, (), 1, 2)
             #audio.play_say("english", "Line following mode", sync = False)
             led_twinkle()
@@ -792,6 +795,7 @@ def ir_command_process(command):
             #在暂停模式下，模式按键可切换工作模式
             if line_following_mode == 0:
                 mode = 2
+                _thread.stack_size(THREAD_SIZE)
                 _thread.start_new_thread(display_drawing_led_matrix, (), 1, 2)
                 #audio.play_say("english", "Drawing mode", sync = False)
                 led_twinkle()
@@ -874,6 +878,7 @@ def ir_command_process(command):
                     new_draw_select = 0
                     draw_mode = not draw_mode
                     if(draw_mode == 1):
+                        _thread.stack_size(THREAD_SIZE)
                         _thread.start_new_thread(draw_task, ())
                         last_draw_select = draw_select
                         drawing_flag = 1
@@ -908,21 +913,21 @@ def ir_command_process(command):
                 time.sleep(0.2)
             time.sleep(0.5)
 
-            led_matrix.show_image(bytearray([0x00,0x00,0x20,0x00,0x26,0x00,0x24,0x00,0x24,0x00,0x24,0x00,0x2e,0x00,0x20,0x00]), "None")
+            led_matrix.show_image(bytearray([0x00,0x01,0x80,0x01,0x00,0x01,0x00,0x01,0x00,0x01,0x00,0x01,0x80,0x03,0x00,0x00]), "None")
         elif command == 2:
             #显示图案2
             draw_select = 2
             while(display_drawing_led_matrix_flag == 1):
                 time.sleep(0.2)
             time.sleep(0.5)
-            led_matrix.show_image(bytearray([0x00,0x00,0x20,0x00,0x2e,0x00,0x28,0x00,0x2e,0x00,0x22,0x00,0x2e,0x00,0x20,0x00]), "None")
+            led_matrix.show_image(bytearray([0x80,0x03,0x40,0x04,0x00,0x04,0x00,0x03,0x80,0x00,0x40,0x00,0xc0,0x07,0x00,0x00]), "None")
         elif command == 3:
             #显示图案3
             draw_select = 3
             while(display_drawing_led_matrix_flag == 1):
                 time.sleep(0.2)
             time.sleep(0.5)
-            led_matrix.show_image(bytearray([0x00,0x00,0x20,0x00,0x2e,0x00,0x28,0x00,0x2e,0x00,0x28,0x00,0x2e,0x00,0x20,0x00]), "None")
+            led_matrix.show_image(bytearray([0xc0,0x07,0x00,0x04,0x00,0x02,0x00,0x03,0x00,0x04,0x40,0x04,0x80,0x03,0x00,0x00]), "None")
 _thread.start_new_thread(led_task,())
 #led_twinkle()
 while True:
