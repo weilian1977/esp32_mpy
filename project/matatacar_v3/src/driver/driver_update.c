@@ -122,7 +122,8 @@ void driver_event_listenning(void)
 
 #if MODULE_INFRARED_TUBE_SENSOR_ENABLE
   float ir_value = get_infrared_tube_value(0);
-  if(ir_value > 3.0f)
+  ir_value *= 100.0 / 3.3;
+  if(ir_value < 70.0f)
   {
     para[0] = 1;
     mt_eve_trigger_by_type_t(EVENT_OBSTACLE_DETECTED, para);
