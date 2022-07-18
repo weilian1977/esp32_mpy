@@ -1,4 +1,5 @@
-import sensor, time, draw
+import sensor, time
+import resources.py.draw as draw
 import random
 mode = 0
 linefollowflag = 10
