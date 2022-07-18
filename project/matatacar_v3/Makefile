@@ -9,6 +9,8 @@ BOARD ?= $(notdir $(CURDIR))
 # If the build directory is not given, make it reflect the board name.
 BUILD ?= build-$(BOARD)
 
+TOOLS ?= tools
+
 # Device serial settings.
 PORT ?= /dev/ttyS14
 BAUD ?= 921600
@@ -87,13 +89,11 @@ upload_all:
 	./tools/esptool_py/esptool/esptool.py --before default_reset --after hard_reset -p $(PORT) -b $(BAUD) write_flash 0x880000 ./tools/fatdisk/vfs.bin
 	./tools/esptool_py/esptool/esptool.py --before default_reset --after hard_reset -p $(PORT) -b $(BAUD) write_flash 0xE80000 ./tools/ota_bin/ota.bin
 
-upload_all:
-	./tools/esptool_py/esptool/esptool.py --before default_reset --after hard_reset -p $(PORT) -b $(BAUD) write_flash 0x0 ./build-matatacar_v3/bootloader/bootloader.bin 0x8000 ./build-matatacar_v3/partition_table/partition-table.bin
-	./tools/esptool_py/esptool/esptool.py --before default_reset --after hard_reset -p $(PORT) -b $(BAUD) write_flash 0xd000 ./tools/ota_bin/ota_data.bin
-	./tools/esptool_py/esptool/esptool.py --before default_reset --after hard_reset -p $(PORT) -b $(BAUD) write_flash 0x10000 ./build-matatacar_v3/matatacar_v3.bin
-	./tools/esptool_py/esptool/esptool.py --before default_reset --after hard_reset -p $(PORT) -b $(BAUD) write_flash 0x280000 ./tools/fatdisk/vfs_music.bin
-	./tools/esptool_py/esptool/esptool.py --before default_reset --after hard_reset -p $(PORT) -b $(BAUD) write_flash 0x880000 ./tools/fatdisk/vfs.bin
-	./tools/esptool_py/esptool/esptool.py --before default_reset --after hard_reset -p $(PORT) -b $(BAUD) write_flash 0xE80000 ./tools/ota_bin/ota.bin
+total_bin:
+	@$(PYTHON) $(TOOLS)/total_bin/makeimg_flash.py $(BUILD)/bootloader/bootloader.bin $(BUILD)/partition_table/partition-table.bin $(BUILD)/../tools/ota_bin/ota_data.bin $(BUILD)/matatacar_v3.bin  $(BUILD)/../tools/fatdisk/vfs_music.bin $(BUILD)/../tools/fatdisk/vfs.bin $(BUILD)/../tools/ota_bin/ota.bin $(BUILD)/flash.bin
+
+upload_all2:
+	./tools/esptool_py/esptool/esptool.py --before default_reset --after hard_reset -p $(PORT) -b $(BAUD) write_flash 0x0 $(BUILD)/flash.bin
 
 submodules:
 	git submodule update --init $(addprefix ../../,$(GIT_SUBMODULES))

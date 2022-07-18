@@ -51,7 +51,7 @@ def display_drawing_led_matrix():
             display_drawing_led_matrix_flag = 0
             break
         led_matrix.clear()
-        for i in range(2, 16):
+        for i in range(3, 16):
             led_matrix.set_pixel(i, 0, 100)
             led_matrix.set_pixel(i, 1, 100)
             led_matrix.set_pixel(i, 2, 100)
@@ -66,7 +66,11 @@ def display_drawing_led_matrix():
                 led_matrix.set_pixel(i-2, 1, 100)
                 led_matrix.set_pixel(i-2, 2, 100)
 
-            if(i > 2):
+            if(i == 3):
+                led_matrix.set_pixel(i-3, 0, 0)
+                led_matrix.set_pixel(i-3, 1, 0)
+                led_matrix.set_pixel(i-3, 2, 0)
+            if(i > 3):
                 led_matrix.set_pixel(i-3, 0, 0)
                 led_matrix.set_pixel(i-3, 1, 100)
                 led_matrix.set_pixel(i-3, 2, 0)
@@ -772,7 +776,7 @@ def ir_command_process(command):
             print("mode 1 mode ")
             mode = 1
             play_flag = 0
-            _thread.start_new_thread(display_line_following_start_led_matrix, ())
+            _thread.start_new_thread(display_line_following_start_led_matrix, (), 1, 2)
             #audio.play_say("english", "Line following mode", sync = False)
             led_twinkle()
             #显示Line following表情面板
@@ -788,7 +792,7 @@ def ir_command_process(command):
             #在暂停模式下，模式按键可切换工作模式
             if line_following_mode == 0:
                 mode = 2
-                _thread.start_new_thread(display_drawing_led_matrix, ())
+                _thread.start_new_thread(display_drawing_led_matrix, (), 1, 2)
                 #audio.play_say("english", "Drawing mode", sync = False)
                 led_twinkle()
                 #audio.play_say("english", "Drawing mode", sync = True)
