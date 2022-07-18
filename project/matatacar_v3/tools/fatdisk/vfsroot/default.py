@@ -7,23 +7,20 @@ line_following_mode = 0
 draw_mode = 0
 draw_select = 0
 last_draw_select = 0
-play_flag = 0
 move_speed = 40
 volume_data = 60
 led_count = 0
 drawing_flag = 0
-sing_index = 0
 last_ir_code_value = 0
-last_state = 'null'
 move_flag = 0
-music_dance_list = [1,2,3,4,5,6]
 display_line_following_start_flag = 0
 display_drawing_led_matrix_flag = 0
 new_draw_select = 0
 trun_more_angle = 0
+show_xflag = 0
+wait_flag = 0
 
 THREAD_SIZE = 4 * 1024
-
 led_color = {
 1:[0,0,255],
 2:[0,255,0],
@@ -36,9 +33,20 @@ led_color = {
 9:[0,191,255],
 10:[0,255,127],
 }
+face_table = [
+    [0x00,0x00,0x1c,0x38,0x3e,0x7c,0x2e,0x5c,0x2e,0x5c,0x22,0x44,0x1c,0x38,0x00,0x00],
+    [0x00,0x00,0x00,0x00,0x3e,0x7c,0x2e,0x5c,0x2e,0x5c,0x3e,0x7c,0x00,0x00,0x00,0x00],
+    [0x00,0x00,0x00,0x00,0x00,0x00,0x3e,0x7c,0x3e,0x7c,0x00,0x00,0x00,0x00,0x00,0x00]
+]
 
 audio.set_volume(volume_data)
-led_matrix.show_image(bytearray([0x00,0x00,0x10,0x22,0x10,0x14,0x7c,0x08,0x10,0x14,0x10,0x22,0x00,0x00,0x00,0x00]), "None")
+led_matrix.picture_bank(0,face_table[0],1)
+led_matrix.picture_bank(1,face_table[1],1)
+led_matrix.picture_bank(2,face_table[2],1)
+led_matrix.picture_bank(3,face_table[1],1)
+led_matrix.picture_bank(4,face_table[0],200)
+led_matrix.set_orientation('turn pages')
+led_matrix.auto_play(5)
 
 def display_drawing_led_matrix():
     global display_line_following_start_flag
@@ -698,29 +706,40 @@ def get_ir_command():
 
         
 def ir_command_process(command):
-    global mode, line_following_mode, draw_mode, draw_select, drawing_flag,play_flag,move_speed,volume_data,last_state,led_count, display_drawing_led_matrix_flag, last_draw_select, new_draw_select
-    global music_dance_list, sing_index, linefollowflag, move_flag, trun_more_angle
+    global mode, line_following_mode, draw_mode, draw_select, drawing_flag, move_speed, volume_data, led_count, display_drawing_led_matrix_flag, last_draw_select, new_draw_select
+    global linefollowflag, move_flag, trun_more_angle, loca_time, show_xflag, wait_flag
     #ir_code_value = sensor.get_ir_code()
     #print("ir_code_value:" + str(ir_code_value))
     #print(ir_code_value)
     #遥控模式
 
     if mode == 0:
+        if(show_xflag == 1):
+            loca_time = time.time()
+            led_matrix.show_image(bytearray([0x00,0x00,0x10,0x22,0x10,0x14,0x7c,0x08,0x10,0x14,0x10,0x22,0x00,0x00,0x00,0x00]), "None")
+            show_xflag = 0
+            wait_flag = 1
+        elif(wait_flag == 1):
+            wait_time = time.time() - loca_time
+            if(wait_time > 5):
+                wait_flag = 0
+                led_matrix.picture_bank(0,face_table[0],1)
+                led_matrix.picture_bank(1,face_table[1],1)
+                led_matrix.picture_bank(2,face_table[2],1)
+                led_matrix.picture_bank(3,face_table[1],1)
+                led_matrix.picture_bank(4,face_table[0],200)
+                led_matrix.set_orientation('turn pages')
+                led_matrix.auto_play(5)
+                print('draw face')
         if  command == "play":
             #暂停
-            #play_flag = not play_flag
-            #if(play_flag == True):
-            #    print(play_flag)
-            #    motion.stop(2)
                 audio.play_stop()
         elif command == 'dance':
             #舞蹈
-            sing_index = sing_index + 1
             dance_index = random.randint(1,6)
             action.dance(dance_index)
         elif command == 'music' :
             #音乐
-            sing_index = sing_index + 1
             sing_index = random.randint(1,6)
             audio.sing(str(sing_index))
         elif command == 'led' :
@@ -778,7 +797,7 @@ def ir_command_process(command):
             #模式切换  1
             print("mode 1 mode ")
             mode = 1
-            play_flag = 0
+            led_matrix.clear()
             _thread.stack_size(THREAD_SIZE)
             _thread.start_new_thread(display_line_following_start_led_matrix, (), 1, 2)
             #audio.play_say("english", "Line following mode", sync = False)
@@ -861,8 +880,9 @@ def ir_command_process(command):
         if command == "mode":
             if draw_mode == 0:
                 mode = 0
-                random_shuffle(music_dance_list)
                 draw_select = 0
+                show_xflag = 1
+                loca_time = time.time()
                 print("mode 0 mode ")
                 #audio.play_say("english", "Remote control mode", sync = False)
                 led_twinkle()
@@ -931,6 +951,7 @@ def ir_command_process(command):
             led_matrix.show_image(bytearray([0xc0,0x07,0x00,0x04,0x00,0x02,0x00,0x03,0x00,0x04,0x40,0x04,0x80,0x03,0x00,0x00]), "None")
 _thread.start_new_thread(led_task,())
 #led_twinkle()
+loca_time = time.time()
 while True:
     ir_command = get_ir_command()
     ir_command_process(ir_command)

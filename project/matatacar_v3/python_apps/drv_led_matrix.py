@@ -34,6 +34,7 @@ class display():
     _refresh_mode = MOVE_LEFT_MODE
     _refresh_time = 0.1
     _screen_rotate_flag = False
+    _bank_time = [0] * 8
 
     def __init__(self):
         self._frame = 0
@@ -44,17 +45,18 @@ class display():
         self._mode = PICTURE_MODE
         for frame in range(8):
             empty_picture = bytearray([0] * 16)
-            self.picture_bank(frame, empty_picture)
+            self.picture_bank(frame, empty_picture,1)
         self.sleep(False)
         self._currently_display_data = bytearray(led_matrix_data.face_data_table.get('face1'))
         self._screen_rotate_flag = False
         self.show_image(self._currently_display_data, "None")
 
-    def picture_bank(self, bank, data_array):
+    def picture_bank(self, bank, data_array, bank_time):
         if(bank < 0) or (bank > 7):
             return
         for i in range(len(data_array)):
             self._display_bank[bank][i] = data_array[i]
+        self._bank_time[bank]  = bank_time
 
     def auto_play(self, frames = 0):
         self._frame = frames
@@ -192,14 +194,23 @@ _display = display()
 def _led_matrix_process():
     if(_display._mode == ANIMATION_MODE) and _display._frame > 0:
         if (_display._refresh_mode == TURN_PAGES_MODE):
+            
             for frame_index in range(_display._frame):
+                time_sleep_count = 0
                 char_bytes = _display._display_bank[frame_index]
-                if (_display._refresh_mode != TURN_PAGES_MODE):
+                if (_display._refresh_mode != TURN_PAGES_MODE) or (_display._mode != ANIMATION_MODE):
                     break
                 for frame_byte in range(16):
                     _display._currently_display_data[frame_byte] =  char_bytes[frame_byte]
                 _led_matrix.show_image(bytearray(_display._currently_display_data))
-                time.sleep(_display._refresh_time * 8)
+                if(_display._bank_time[frame_index] == 0):
+                    time.sleep(_display._refresh_time)
+                else:
+                    while(time_sleep_count < _display._bank_time[frame_index]):
+                        if (_display._refresh_mode != TURN_PAGES_MODE) or (_display._mode != ANIMATION_MODE):
+                            break
+                        time_sleep_count = time_sleep_count + 1
+                        time.sleep(0.01)
         elif (_display._refresh_mode == MOVE_LEFT_MODE) or (_display._refresh_mode == MOVE_RIGHT_MODE):
             char_byte_list = [[0 for i in range(16)] for j in range(2)]
             for frame_index in range(_display._frame):
@@ -207,7 +218,7 @@ def _led_matrix_process():
                     char_byte_list[i] =  _display._display_bank[(frame_index + i) % _display._frame]
                 if(_display._refresh_mode == MOVE_LEFT_MODE):
                     for j in range(16):
-                        if (_display._refresh_mode != MOVE_LEFT_MODE):
+                        if (_display._refresh_mode != MOVE_LEFT_MODE) or (_display._mode != ANIMATION_MODE):
                             break
                         for frame_byte in range(8):
                             if j < 8:
@@ -220,7 +231,7 @@ def _led_matrix_process():
                         time.sleep(_display._refresh_time)
                 elif (_display._refresh_mode == MOVE_RIGHT_MODE):
                     for j in range(16):
-                        if (_display._refresh_mode != MOVE_RIGHT_MODE):
+                        if (_display._refresh_mode != MOVE_RIGHT_MODE) or (_display._mode != ANIMATION_MODE):
                             break
                         for frame_byte in range(8):
                             if j < 8:
@@ -238,7 +249,7 @@ def _led_matrix_process():
                     char_byte_list[i] = _display._display_bank[(frame_index + i) % _display._frame]
                 if (_display._refresh_mode == MOVE_UP_MODE):
                     for j in range(8):
-                        if (_display._refresh_mode != MOVE_UP_MODE):
+                        if (_display._refresh_mode != MOVE_UP_MODE) or (_display._mode != ANIMATION_MODE):
                             break
                         for frame_byte in range(8):
                             if((frame_byte + j) < 8):
@@ -251,7 +262,7 @@ def _led_matrix_process():
                         time.sleep(_display._refresh_time)
                 elif (_display._refresh_mode == MOVE_DOWN_MODE):
                     for j in range(8):
-                        if (_display._refresh_mode != MOVE_DOWN_MODE):
+                        if (_display._refresh_mode != MOVE_DOWN_MODE) or (_display._mode != ANIMATION_MODE):
                             break
                         for frame_byte in range(8):
                             if(frame_byte < j):
