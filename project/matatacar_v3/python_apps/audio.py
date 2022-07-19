@@ -156,13 +156,13 @@ def set_play_info(path, sync = False, s_time = 0,rate_info = '', speed_info = 1.
 
 def play(path, sync = False, play_time = 0, speed = 1.0, pitch =1.0, rate = ''):
     type = "file:/"
-    play_path = "%s%s" % (type,path)
+    play_path = "%s%s" % (type, path)
     set_play_info(play_path,sync,play_time,rate,speed,pitch)
     
 def play_times(path, play_time = 0):
     type = "file:/"
-    play_path = "%s%s" % (type,path)
-    set_play_info(play_path,True,play_time)
+    play_path = "%s%s" % (type, path)
+    set_play_info(play_path, True, play_time)
     
 def play_until_done(path):
     type = "file:/"

@@ -45,7 +45,7 @@ class display():
         self._mode = PICTURE_MODE
         for frame in range(8):
             empty_picture = bytearray([0] * 16)
-            self.picture_bank(frame, empty_picture,1)
+            self.picture_bank(frame, empty_picture, 1)
         self.sleep(False)
         self._currently_display_data = bytearray(led_matrix_data.face_data_table.get('face1'))
         self._screen_rotate_flag = False
@@ -56,7 +56,7 @@ class display():
             return
         for i in range(len(data_array)):
             self._display_bank[bank][i] = data_array[i]
-        self._bank_time[bank]  = bank_time
+        self._bank_time[bank] = bank_time
 
     def auto_play(self, frames = 0):
         self._frame = frames
