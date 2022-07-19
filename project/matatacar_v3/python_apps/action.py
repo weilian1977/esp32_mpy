@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from utility import if_file_exists
-
 import time
 import drv_led
 import drv_motion
@@ -49,17 +47,11 @@ face_data_dict = {
 def play(file_name, sync):
     music_root = '/sdcard/music/'
     file_full_name = "%s%s" %(music_root, file_name)
-    if(if_file_exists(file_full_name) == False):
-        print("file not exist:",file_full_name)
-        return
     audio.play(file_full_name, sync)
 
 def play_emotion(file_name, sync):
     music_root = '/sdcard/music/emotion/'
     file_full_name = "%s%s%s" %(music_root, file_name, ".mp3")
-    if(if_file_exists(file_full_name) == False):
-        print("file not exist:",file_full_name)
-        return
     audio.play(file_full_name, sync)
 
 def play_move_time(index, delay):
