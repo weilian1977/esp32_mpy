@@ -277,7 +277,7 @@ uint8_t drv_get_color_id()
         {
             return COLOR_YELLOW;
         }
-        else if((v > 46) && (s > 43) && (h > 35) && (h < 77))
+        else if((v > 46) && (s > 43) && (h > 35) && (h < 88))
         {
             return COLOR_GREEN;
         }
@@ -285,7 +285,7 @@ uint8_t drv_get_color_id()
         // {
         //     return COLOR_CYAN;
         // }
-        else if((v > 46) && (s > 43) && (h > 78) && (h < 124))
+        else if((v > 46) && (s > 43) && (h > 89) && (h < 124))
         {
             return COLOR_BLUE;
         }

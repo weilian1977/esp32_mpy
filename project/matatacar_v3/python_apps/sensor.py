@@ -210,15 +210,15 @@ def get_color_id():
             return "grey"
         elif (v > 46) and (s > 43) and ((h < 10) or ((h > 156) and (h < 180))):
             return "red"
-        elif (v > 46) and (s > 43) and ((h > 11) and (h < 25)):
-            return "orange"
-        elif (v > 46) and (s > 43) and ((h > 26) and (h < 34)):
+        elif (v > 46) and (s > 43) and ((h > 11) and (h < 34)):
             return "yellow"
-        elif (v > 46) and (s > 43) and ((h > 35) and (h < 77)):
+        # elif (v > 46) and (s > 43) and ((h > 26) and (h < 34)):
+        #     return "yellow"
+        elif (v > 46) and (s > 43) and ((h > 35) and (h < 88)):
             return "green"
-        elif (v > 46) and (s > 43) and ((h > 78) and (h < 99)):
-            return "cyan"
-        elif (v > 46) and (s > 43) and ((h > 100) and (h < 124)):
+        # elif (v > 46) and (s > 43) and ((h > 78) and (h < 99)):
+        #     return "cyan"
+        elif (v > 46) and (s > 43) and ((h > 89) and (h < 124)):
             return "blue"
         elif (v > 46) and (s > 43) and ((h > 125) and (h < 155)):
             return "purple"
