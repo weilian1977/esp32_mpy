@@ -7,7 +7,7 @@ line_following_mode = 0
 draw_mode = 0
 draw_select = 0
 last_draw_select = 0
-move_speed = 40
+move_speed = 80
 volume_data = 60
 led_count = 0
 drawing_flag = 0
@@ -781,16 +781,21 @@ def ir_command_process(command):
             else:
                 volume_data = 60
             audio.set_volume(volume_data)
+            audio.play("/ding.mp3")
         elif command == "speed":
             #速度
             if(move_speed == 40):
                 move_speed = 80
+                audio.play("/sdcard/music/effect/32-medium speed.mp3")
             elif(move_speed == 80):
                 move_speed = 100
+                audio.play("/sdcard/music/effect/33-high speed.mp3")
             elif(move_speed == 100):
                 move_speed = 40
+                audio.play("/sdcard/music/effect/31-low speed.mp3")
             else:
                 move_speed = 40
+                audio.play("/music/effect/31-low speed.mp3")
                 
             print(move_speed)
         elif command == "mode":

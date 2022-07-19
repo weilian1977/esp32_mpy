@@ -63,7 +63,7 @@ def move_angle(dir, angle, unit, wait_flag = True):
         angle_value = -angle_value
         time_speed = -time_speed
     if unit == "seconds":
-        moto.move_speed(-time_speed, time_speed)
+        moto.move_speed(time_speed, -time_speed)
         time.sleep(abs(angle_value))
         moto.move_speed(0, 0)
     elif unit == "rotations":
@@ -99,7 +99,10 @@ def motor_run(motor, value, unit, speed, dir, wait_flag = True):
     elif motor_temp == "A":
         motor_temp = 0
     elif motor_temp == "B":
-        motor_temp = 1    
+        motor_temp = 1
+    
+    if(dir != "clockwise"):
+        value = -value
     if unit == "seconds":
         if(dir == "clockwise"):
             moto.motor_speed(motor_temp, speed_temp)
