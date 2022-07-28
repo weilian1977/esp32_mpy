@@ -69,7 +69,7 @@ uint16_t sin_data[] =
     309,320,332,343,355,367,379,390,402,415,427,439,451,463,475,488,
 };
 
-motion_data_type motion_data = {0};
+volatile motion_data_type motion_data = {0};
 int32_t motion_max_speed = 700 * STEP_SUBDIVISION;
 
 static void sleep_pin_init(void)
@@ -92,7 +92,6 @@ static void set_spwm_freq(ledc_timer_t timer_num, uint32_t freq_hz)
         motion_data.motor_data[MOTOR_RIGHT].current_spwm_freq = freq_hz;
     }
 }
-
 
 static void spwm_stop(motor_configure_type motor)
 {
@@ -272,7 +271,7 @@ static void step_right_start(void)
     }
     else
     {
-        uint32_t freq_temp = abs(motion_data.motor_data[MOTOR_RIGHT].speed);        
+        uint32_t freq_temp = abs(motion_data.motor_data[MOTOR_RIGHT].speed);
         if(freq_temp < DEFAULT_MIN_SPEED)
         {
             freq_temp = DEFAULT_MIN_SPEED;
@@ -415,7 +414,7 @@ static void compute_motor_new_speed(motor_configure_type motor)
         motion_data.motor_data[motor]._cn = motion_data.motor_data[motor]._cn - temp_ve;    //Equation 13
         motion_data.motor_data[motor]._cn = max(motion_data.motor_data[motor]._cn, motion_data.motor_data[motor]._cmin);
     }
-    motion_data.motor_data[motor]._n++ ;
+    motion_data.motor_data[motor]._n++;
     motion_data.motor_data[motor].speed = 1000000000 / motion_data.motor_data[motor]._cn;
     if(motion_data.motor_data[motor].dir == DIR_CCW)
     {
@@ -619,7 +618,7 @@ void compute_new_speed(motor_configure_type motor)
     {
         compute_motor_new_speed_by_speed(motor);
     }
-    else if(motion_data.motor_data[motor].motion_status != PWM_MOVE)
+    else if(motion_data.motor_data[motor].motion_status == POS_MOVE)
     {
         compute_motor_new_speed(motor);
     }
@@ -769,7 +768,7 @@ void motor_set_speed(motor_configure_type motor, int32_t run_speed, bool immedia
 {
     if((motor_get_speed(motor) == run_speed) && (motion_data.motor_data[motor].motion_status != STOP_MOVE))
     {
-        return 0;
+        return;
     }
 
     xSemaphoreTake(motion_data.motion_task_init_mutex, portMAX_DELAY); 

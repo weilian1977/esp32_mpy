@@ -116,7 +116,7 @@ typedef struct
     SemaphoreHandle_t motion_task_init_mutex;
 }motion_data_type;
 
-extern motion_data_type motion_data;
+extern volatile motion_data_type motion_data;
 
 extern void step_motor_init(void);
 extern void step_sleep(motor_configure_type motor, bool enable);

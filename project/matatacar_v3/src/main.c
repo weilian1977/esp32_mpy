@@ -37,6 +37,7 @@
 #include "esp_task.h"
 #include "soc/cpu.h"
 #include "esp_log.h"
+#include "esp_wifi.h"
 
 #if CONFIG_IDF_TARGET_ESP32
 #include "esp32/spiram.h"
@@ -281,6 +282,7 @@ void app_main(void) {
     MICROPY_BOARD_STARTUP();
     mt_eve_init_t();
     driver_update_task_init();
+    esp_wifi_stop();
     ble_prph_main();
     xTaskCreatePinnedToCore(drv_coprpcessor_task, "drv_coprpcessor_task", DRV_COPROCESSOR_TASK_STACK_SIZE / sizeof(StackType_t), NULL, DRV_COPROCESSOR_TASK_PRIORITY, NULL, 0);
     xTaskCreatePinnedToCore(step_motor_task, "step_motor_task", STEP_MOTOR_TASK_STACK_SIZE / sizeof(StackType_t), NULL, 0, NULL, 0);

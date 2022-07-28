@@ -51,7 +51,7 @@ def move_position(dir, position, unit, wait_flag = True):
         position_value = int(round(position_value * 25.4))
         moto.move_position(position_value, wait_flag)
 
-def move_raw_position(position, speed, wait_flag):
+def move_raw_position(position, speed, wait_flag = True):
     moto.set_max_speed(int(speed * 10 * 32))
     moto.move_position(position, wait_flag)
     
@@ -73,7 +73,7 @@ def move_angle(dir, angle, unit, wait_flag = True):
         angle_value = int(round(angle_value * (nvs.save_angle) / 90.0))
         moto.move_angle(angle_value, wait_flag)
 
-def move_raw_angle(angle, speed, wait_flag):
+def move_raw_angle(angle, speed, wait_flag = True):
     moto.set_max_speed(int(speed * 10 * 32))
     angle = int(round(angle * (nvs.save_angle) / 90.0))
     moto.move_angle(angle, wait_flag)

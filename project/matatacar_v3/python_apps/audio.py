@@ -288,7 +288,7 @@ def play_tone(tone, meter, instruments = ''):
         play_instrument_tone(instrument_type, tone)
 
     time_space = time.ticks_diff(time.ticks_ms(), time_start)
-    time_space=tempo * beats - time_space
+    time_space = tempo * beats - time_space
     if(time_space < 0):
         time_space = 0
     time.sleep(time_space / 1000)
@@ -348,9 +348,8 @@ def play_melody(name, sync = True, play_time = 0):
     play(path, sync, play_time)
 
 def rest(meter):
-    global beats
-    beats = meter
-    time_space = tempo * beats
+    global tempo
+    time_space = tempo * meter
     time.sleep(time_space / 1000)
 
 def play_drums(name, meter):

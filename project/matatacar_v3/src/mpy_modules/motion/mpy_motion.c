@@ -355,8 +355,6 @@ STATIC mp_obj_t mpy_set_max_speed(mp_obj_t self_in, mp_obj_t max_speed)
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(set_max_speed_obj, mpy_set_max_speed);
 
-
-
 STATIC const mp_rom_map_elem_t mpy_motion_locals_dict_table[] =
 {
     { MP_OBJ_NEW_QSTR(MP_QSTR_forward),              (mp_obj_t)&forward_obj },
@@ -376,7 +374,6 @@ STATIC const mp_rom_map_elem_t mpy_motion_locals_dict_table[] =
     { MP_OBJ_NEW_QSTR(MP_QSTR_get_motion_status),   (mp_obj_t)&get_motion_status_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_get_motor_speed),      (mp_obj_t)&get_motor_speed_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_set_max_speed),        (mp_obj_t)&set_max_speed_obj },
-        
 };
 
 MP_DEFINE_CONST_DICT(mpy_motion_locals_dict, mpy_motion_locals_dict_table);
