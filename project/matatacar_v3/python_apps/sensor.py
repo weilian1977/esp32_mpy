@@ -226,7 +226,7 @@ def get_color_id():
             return "unknown"
 
 def send_ir_code(addr, command):
-    if addr == 1234:
+    if addr == 0xFF00:
         if command == 1:
             _sensor.send_ir_code(addr, 0xF708)
         elif command == 2:
