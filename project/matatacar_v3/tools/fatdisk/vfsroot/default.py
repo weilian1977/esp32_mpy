@@ -19,6 +19,10 @@ new_draw_select = 0
 trun_more_angle = 0
 show_xflag = 0
 wait_flag = 0
+out_forward = 0
+
+turn_flag = 0
+out_light = 0
 
 THREAD_SIZE = 4 * 1024
 led_color = {
@@ -707,7 +711,7 @@ def get_ir_command():
         
 def ir_command_process(command):
     global mode, line_following_mode, draw_mode, draw_select, drawing_flag, move_speed, volume_data, led_count, display_drawing_led_matrix_flag, last_draw_select, new_draw_select
-    global linefollowflag, move_flag, trun_more_angle, loca_time, show_xflag, wait_flag
+    global linefollowflag, move_flag, trun_more_angle, loca_time, show_xflag, wait_flag, out_forward, turn_flag, out_light
     #ir_code_value = sensor.get_ir_code()
     #print("ir_code_value:" + str(ir_code_value))
     #print(ir_code_value)
@@ -834,47 +838,103 @@ def ir_command_process(command):
                 move_flag = 1
                 trun_more_angle = 0
         elif line_following_mode == 1:
-            irdata = sensor.get_infrared_tube()
-            if(irdata == 0):
-                linefollowflag = 10
-                #forward
-                trun_more_angle = 0
+            left_light = sensor.get_reflection_light('left')
+            right_light = sensor.get_reflection_light('right')
+            
+            if(left_light < 10 and right_light < 10):
+                out_light = out_light + 1
+
+                if(out_light < 4 ):
+                    #leds.show_all(0, 0, 0)
+                    #leds.show_single(4, 100, 0, 0) 
+                    set_motor_pwm(100, 100)
+                else:
+                    if(turn_flag == 1):
+                        #leds.show_all(0, 0, 0)
+                        #leds.show_single(1, 0, 0, 0)
+                        #leds.show_single(2, 100, 0, 0)
+                        if(out_light > 120):
+                            out_light = 120
+                        set_motor_pwm(-80 + out_light, 80)
+                        #    set_motor_pwm(50, 100)
+                        #else:
+                        #    set_motor_pwm(-100, 50)
+                    elif(turn_flag == 2):
+                        #leds.show_all(0, 0, 0)
+                        #leds.show_single(6, 0, 0, 0)
+                        #leds.show_single(5, 100, 0, 0)
+                        if(out_light > 120):
+                            out_light = 120
+                        set_motor_pwm(80, -80 + out_light)
+                    else:
+                        if(out_light > 120):
+                            out_light = 120
+                        set_motor_pwm(-80 + out_light, 80)
+                # else:
+                #     leds.show_all(0, 0, 0)
+                #     leds.show_single(4, 100, 0, 0) 
+                #     if(out_light < 5):
+                #         set_motor_pwm(100, 100)
+                #     else:
+                #         set_motor_pwm(100, -100)
+
+                    #backward
+            elif(left_light >= 20 and right_light >= 20):
+                #print('in line')
+                turn_flag = 0
+
+                out_light = 0
+                #leds.show_all(0, 0, 0)
                 set_motor_pwm(100,100)
-            elif(irdata == 1):
-                linefollowflag = linefollowflag + 1
-                if(linefollowflag > 10):
-                    #right
-                    if(trun_more_angle == 1):
-                        set_motor_pwm(100,-50)
-                    else:
-                        set_motor_pwm(80,40)
-                        #motion.move_speed(80,40)
+                #forward
+            elif((left_light - right_light) > 5):                
+                offset = left_light - right_light
+                if(offset > 40):
+                    offset = 40
+                turn_flag = 1
+                out_light = 0
+                #leds.show_all(0, 0, 0)
+                #leds.show_single(2,0,0,0)
+                #leds.show_single(1,100,0,0)
+                set_motor_pwm(80 - int(offset / 1.2), 80)
+            elif((right_light - left_light) > 5 ):                
+                offset = right_light - left_light
+                if(offset > 40):
+                    offset = 40
+                turn_flag = 2
+                out_light = 0
+                #leds.show_all(0, 0, 0)
+                #leds.show_single(5,0,0,0)
+                #leds.show_single(6,100,0,0)
+                set_motor_pwm(80,80 - int(offset / 1.2))
+            else:
+                #leds.show_all(0, 0, 0)
+                #leds.show_single(3,100,0,0)
+                out_light = out_light + 1
+                if(out_light < 4 ):                   
+                    #leds.show_all(0, 0, 0)
+                    #leds.show_single(3, 0, 100, 0) 
+                    set_motor_pwm(100, 100)
                 else:
-                    #forward
-                    set_motor_pwm(100,100)
-            elif(irdata == 2):
-                linefollowflag = linefollowflag - 1
-                if(linefollowflag < 10):
-                    #left
-                    if(trun_more_angle == 1):
-                        set_motor_pwm(-50,100)
+                    if(turn_flag == 1):
+                        #leds.show_all(0, 0, 0)
+                        #leds.show_single(1, 0, 0, 0)
+                        #leds.show_single(2, 100, 0, 0)
+                        if(out_light > 120):
+                            out_light = 120
+                        set_motor_pwm(-80 + out_light, 80)
+                    elif(turn_flag == 2):
+                        #leds.show_all(0, 0, 0)
+                        #leds.show_single(6, 0, 0, 0)
+                        #leds.show_single(5, 100, 0, 0)
+                        #set_motor_pwm(50,-100)
+                        if(out_light > 120):
+                            out_light = 120
+                        set_motor_pwm(80, -80 + out_light)
                     else:
-                        set_motor_pwm(40,80)
-                        #motion.move_speed(40,80)
-                else:
-                    #forward
-                    set_motor_pwm(100,100)
-            elif(irdata == 3):
-                if(linefollowflag < 10):
-                    #left
-                    trun_more_angle = 1
-                    set_motor_pwm(-50,100)
-                elif(linefollowflag > 10):
-                    #right
-                    trun_more_angle = 1
-                    set_motor_pwm(100,-50)
-                elif(linefollowflag == 10):
-                    set_motor_pwm(-100,-100)
+                        if(out_light > 120):
+                            out_light = 120
+                        set_motor_pwm(-80 + out_light, 80)
         else:
             if(move_flag == 1):
                 move_flag = 0
