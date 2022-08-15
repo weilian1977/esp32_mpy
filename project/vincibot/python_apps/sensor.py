@@ -22,7 +22,10 @@ def get_right_light():
     return _sensor.get_light_value(0);
 
 def get_obstacle_avoidance_value():
-    return _sensor.get_obstacle_avoidance_value() * 100.0 / 3.3;
+    distance = _sensor.get_tof_distance()
+    if distance > 2500:
+        distance = 2500
+    return distance
 
 def get_infrared_tube():
     left_value = get_left_infrared_tube()
@@ -67,6 +70,11 @@ def get_color_offset():
     if(b < 0):
         b = 0
     return r,g,b
+def get_tof_distance():
+    return _sensor.get_tof_distance()
+
+def tof_offset_calibration():
+    return _sensor.tof_offset_calibration()
 
 def max_data(a, b, c):
     max_value = 0
@@ -434,7 +442,7 @@ def is_color_detected(color_id):
         return False
 
 def is_obstacle_ahead():
-    if get_obstacle_avoidance_value() < 70:
+    if get_obstacle_avoidance_value() < 250:
         return True
     else:
         return False

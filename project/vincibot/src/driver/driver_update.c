@@ -35,6 +35,7 @@
 #include "drv_infrared_tube.h"
 #include "drv_coprocessor.h"
 #include "drv_infrared_transceiver.h"
+#include "mt_tof.h"
 #include "i2s_mic.h"
 
 /******************************************************************************
@@ -120,10 +121,10 @@ void driver_event_listenning(void)
   mt_eve_trigger_by_type_t(EVENT_LIGHT_RIGHT_MORE, para);
 #endif
 
-#if MODULE_INFRARED_TUBE_SENSOR_ENABLE
-  float ir_value = get_infrared_tube_value(0);
-  ir_value *= 100.0 / 3.3;
-  if(ir_value < 70.0f)
+#if MODULE_TOF_ENABLE
+  float tof_distance = 0;
+  mt_tof_get_distance_t(&tof_distance);
+  if(tof_distance < 250.0f)
   {
     para[0] = 1;
     mt_eve_trigger_by_type_t(EVENT_OBSTACLE_DETECTED, para);

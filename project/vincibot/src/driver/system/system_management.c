@@ -16,6 +16,7 @@
 #include "adc_check.h"
 #include "drv_infrared_transceiver.h"
 #include "drv_ota.h"
+#include "mt_tof.h"
 
 extern void mp_hal_delay_ms(uint32_t ms);
 
@@ -29,6 +30,7 @@ void system_status_update(void)
     infrared_tube_sensor_voltage_update();
     ir_code_update();
     usb_status_update();
+    mt_tof_update_t();
 }
 
 void system_management_task(void *pvParameter)
@@ -46,6 +48,7 @@ void system_management_task(void *pvParameter)
     show_firmware_version_t();
     indicator_led_init();
     esp32_ota_config_init();  
+    mt_tof_init_t();
     while(true)
     {       
         system_status_update();

@@ -8,6 +8,7 @@
 #include "mpy_sensor.h"
 #include "drv_coprocessor.h"
 #include "drv_infrared_transceiver.h"
+#include "mt_tof.h"
 #include "esp_err.h"
 #include "esp_log.h"
 
@@ -145,6 +146,25 @@ STATIC mp_obj_t mpy_send_ir_code(mp_obj_t self_in, mp_obj_t addr, mp_obj_t comma
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(send_ir_code_obj, mpy_send_ir_code);
 
+static mp_obj_t  mpy_get_tof_distance(mp_obj_t self_in)
+{
+  float value = 0;  
+
+  mt_tof_get_distance_t(&value);
+
+  return mp_obj_new_float(value);
+}
+static MP_DEFINE_CONST_FUN_OBJ_1(get_tof_distance_obj, mpy_get_tof_distance);
+
+static mp_obj_t  mpy_tof_offset_calibration(mp_obj_t self_in)
+{
+    int value = 0;
+    value = mt_tof_offset_calibration();
+
+  return mp_obj_new_int(value);
+}
+static MP_DEFINE_CONST_FUN_OBJ_1(tof_offset_calibration_obj, mpy_tof_offset_calibration);
+
 STATIC const mp_rom_map_elem_t mpy_sensor_locals_dict_table[] =
 {
     { MP_OBJ_NEW_QSTR(MP_QSTR_get_light_value),                (mp_obj_t)&get_light_value_obj },
@@ -154,6 +174,8 @@ STATIC const mp_rom_map_elem_t mpy_sensor_locals_dict_table[] =
     { MP_OBJ_NEW_QSTR(MP_QSTR_get_color),                      (mp_obj_t)&get_color_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_get_ir_code),                    (mp_obj_t)&get_ir_code_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_send_ir_code),                   (mp_obj_t)&send_ir_code_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_get_tof_distance),               (mp_obj_t)&get_tof_distance_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_tof_offset_calibration),         (mp_obj_t)&tof_offset_calibration_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_LEFT),                           MP_OBJ_NEW_SMALL_INT(0) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_RIGHT),                          MP_OBJ_NEW_SMALL_INT(1) },
 };

@@ -87,6 +87,7 @@ set(MICROPY_SOURCE_PORT
     ${PROJECT_DIR}/src/driver/drv_i2s.c
     ${PROJECT_DIR}/src/driver/drv_nvs.c
     ${PROJECT_DIR}/src/driver/vfs_stream.c
+    ${PROJECT_DIR}/src/driver/mt_tof.c
     ${PROJECT_DIR}/src/driver/drv_step_motor.c
     ${PROJECT_DIR}/src/driver/mt_event_mechanism.c
     ${PROJECT_DIR}/src/driver/mt_stop_python_thread.c
@@ -216,6 +217,7 @@ elseif(IDF_TARGET STREQUAL "esp32s3")
     list(APPEND IDF_COMPONENTS esp-adf-libs)
     list(APPEND IDF_COMPONENTS esp-sr)
     list(APPEND IDF_COMPONENTS tone_partition)
+    list(APPEND IDF_COMPONENTS ND03_SDK_V1.0.4)
 endif()
 
 # Register the main IDF component.
