@@ -6,7 +6,7 @@ from matatalab import stop_script
 stop_script_o = stop_script()
 
 EVENT_THREAD_DEFAULT_STACK_SIZE = 1024 * 8
-EVENT_THREAD_DEFAULT_PRIORITY = 1
+EVENT_THREAD_DEFAULT_PRIORITY = 4
 
 EVENT_STATUS_FATAL_ERROR = -1
 EVENT_STATUS_NOT_START = 0
@@ -132,7 +132,7 @@ class event_operation(object):
             # catch the exception and make this task never out is a temporary solution
             except KeyboardInterrupt:
                 stop_script_o.set_thread_sta(thread_id, stop_script_o.THREAD_RESTARTED)
-                print("restart the thread proactively", "id is", self.eve_id)
+                #print("restart the thread proactively", "id is", self.eve_id)
                 KeyboardInterrupt_flag = True
             
             except Exception as e:

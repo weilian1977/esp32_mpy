@@ -294,7 +294,7 @@ void driver_update_task_t(void *parameter)
 void driver_update_task_init(void)
 {
   //driver_init_t();
-  xTaskCreatePinnedToCore(driver_update_task_t, "driver_update_task", 4 * 1024, NULL, 0, NULL, 0);
+  xTaskCreatePinnedToCore(driver_update_task_t, "driver_update_task", 4 * 1024, NULL, 4, NULL, 0);
 }
 /******************************************************************************
  DEFINE PRIVATE FUNCTIONS

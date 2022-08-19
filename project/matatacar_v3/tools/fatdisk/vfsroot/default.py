@@ -638,43 +638,47 @@ def led_task():
 def draw_task():
     global draw_mode, draw_select, drawing_flag, last_draw_select
     print("draw_task\n")
-    gcode_file = "/resources/gcode/square.gcode"
-    if(draw_select == 1):
-        gcode_file = "/resources/gcode/square.gcode"
-    elif draw_select == 2:
-        gcode_file = "/resources/gcode/pentagram.gcode"
-    elif draw_select == 3:
-        gcode_file = "/resources/gcode/plane.gcode"
-    with open(gcode_file, "r") as f:
-        if ((mode != 2) or (new_draw_select == 1)):
-            print("break drawing mode1\n")
-            f.close()
-            drawing_flag = 0
-            return
-        line = f.readline()
-        while line:
-            if ((mode != 2) or (new_draw_select == 1)):
-                print("break drawing mode2\n")
-                break
-            print("readline:%s" %line)
-            #time.sleep(1)
-            draw.processGcode(line)
+    while 1:
+        if(drawing_flag == 1):
+            gcode_file = "/resources/gcode/square.gcode"
+            if(draw_select == 1):
+                gcode_file = "/resources/gcode/square.gcode"
+            elif draw_select == 2:
+                gcode_file = "/resources/gcode/pentagram.gcode"
+            elif draw_select == 3:
+                gcode_file = "/resources/gcode/plane.gcode"
+            with open(gcode_file, "r") as f:
+                if ((mode != 2) or (new_draw_select == 1)):
+                    print("break drawing mode1\n")
+                    f.close()
+                    drawing_flag = 0
+                    return
+                line = f.readline()
+                while line:
+                    if ((mode != 2) or (new_draw_select == 1)):
+                        print("break drawing mode2\n")
+                        break
+                    print("readline:%s" %line)
+                    #time.sleep(1)
+                    draw.processGcode(line)
 
-            #暂停模式 不继续执行
-            while((draw_mode == 0) & (mode == 2) & (new_draw_select == 0)):
-                print("draw_mode == 0")
-                time.sleep(0.5)
-            
-            if ((mode != 2) or (new_draw_select == 1)):
-                print("break drawing mode3\n")
-                break
-            line = f.readline()
-    f.close()
-    #if((new_draw_select != 1)):
-    draw_mode = 0
-    drawing_flag = 0
-    last_draw_select = 0
-    print("read file end!\r\n")
+                    #暂停模式 不继续执行
+                    while((draw_mode == 0) & (mode == 2) & (new_draw_select == 0)):
+                        print("draw_mode == 0")
+                        time.sleep(0.5)
+                    
+                    if ((mode != 2) or (new_draw_select == 1)):
+                        print("break drawing mode3\n")
+                        break
+                    line = f.readline()
+            f.close()
+            #if((new_draw_select != 1)):
+            draw_mode = 0
+            drawing_flag = 0
+            last_draw_select = 0
+            print("read file end!\r\n")
+        else:
+            time.sleep(0.1)
 
 
 def get_ir_command():
@@ -963,34 +967,10 @@ def ir_command_process(command):
                         time.sleep(0.02)
                     new_draw_select = 0
                     draw_mode = not draw_mode
-                    if(draw_mode == 1):
-                        _thread.stack_size(THREAD_SIZE)
-                        _thread.start_new_thread(draw_task, ())
-                        last_draw_select = draw_select
-                        drawing_flag = 1
+                    last_draw_select = draw_select
+                    drawing_flag = 1
                 else:
                     draw_mode = not draw_mode
-
-                # draw_mode = not draw_mode
-                # print("draw_mode2: " + str(draw_mode))
-                # if(draw_mode == 1):
-                #     print("draw_mode3: " + str(draw_mode))
-                #     if(last_draw_select != draw_select):
-                #         if(last_draw_select != 0):
-                #             new_draw_select = 1
-                #         while(drawing_flag):
-                #             time.sleep(0.02)
-                #         new_draw_select = 0
-                #         _thread.start_new_thread(draw_task, ())
-                #         last_draw_select = draw_select
-                #         drawing_flag = 1
-                    # if drawing_flag == 0:
-                    #     _thread.start_new_thread(draw_task, ())
-                    #     drawing_flag = 1
-                    #     last_draw_select = draw_select
-                    # else:
-                    #     if(last_draw_select != draw_select):
-                    #         new_draw_select = 1
         elif command == 1:
             #显示图案1
             draw_select = 1
@@ -1015,6 +995,8 @@ def ir_command_process(command):
             time.sleep(0.5)
             led_matrix.show_image(bytearray([0xc0,0x07,0x00,0x04,0x00,0x02,0x00,0x03,0x00,0x04,0x40,0x04,0x80,0x03,0x00,0x00]), "None")
 _thread.start_new_thread(led_task,())
+_thread.stack_size(THREAD_SIZE)
+_thread.start_new_thread(draw_task, ())
 #led_twinkle()
 loca_time = time.time()
 while True:
