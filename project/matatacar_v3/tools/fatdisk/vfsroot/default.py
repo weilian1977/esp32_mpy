@@ -634,6 +634,8 @@ def led_task():
             led_color_index = random.randint(1,10)
             led_rgb_color = led_color.get(led_color_index,[])
             leds.show_single(random_list[led_mode3_index - 1], led_rgb_color[0],led_rgb_color[1],led_rgb_color[2])
+        elif(led_count == 4):
+            time.sleep(0.02)
 
 def draw_task():
     global draw_mode, draw_select, drawing_flag, last_draw_select
@@ -744,8 +746,13 @@ def ir_command_process(command):
                 audio.play_stop()
         elif command == 'dance':
             #舞蹈
+            led_last_count = led_count
+            led_count = 4
+            time.sleep(0.2)
+            leds.show_all(0, 0, 0)
             dance_index = random.randint(1,6)
             action.dance(dance_index)
+            led_count = led_last_count
         elif command == 'music' :
             #音乐
             sing_index = random.randint(1,6)
