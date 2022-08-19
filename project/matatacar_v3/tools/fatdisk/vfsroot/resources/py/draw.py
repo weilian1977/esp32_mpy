@@ -60,7 +60,7 @@ def prepareMove():
     if (distance < 1):
         return
     if(useHermit == 0):
-        dAng = tarD - curD;
+        dAng = curD - tarD
         if(dAng > PI):
           dAng -= (2*PI);
         elif(dAng < -PI):
@@ -75,12 +75,45 @@ def prepareMove():
     curX = tarX;
     curY = tarY;
 
+def prepareTurn():
+    global tarX
+    global tarY
+    global curX
+    global curY
+    global tarVecX
+    global tarVecY
+    global tmpVecX
+    global tmpVecY
+    global useHermit
+    global curD
+    global tarD
+
+    if(tarD > PI):
+        tarD -= (2 * PI);
+    elif(tarD < -PI):
+        tarD += (2 * PI);
+    if(useHermit == 0):
+        dAng = curD - tarD
+        if(dAng > PI):
+          dAng -= (2*PI);
+        elif(dAng < -PI):
+          dAng += (2*PI);
+        angle = (dAng / (2 * PI)) * 360
+        print("move_command- angle:%f" %(angle))
+        motion.move_raw_angle(angle, 60, 1)
+    else:
+        print("useHermit move");
+    curD = tarD;
+    curX = tarX;
+    curY = tarY;
+
 def processGcode(line):
     global tarX
     global tarY
     global curX
     global curY
     global preCommand
+    global tarD
     if("G100" in line):
         line_data = line.split(' ')
         for data in line_data:
@@ -118,3 +151,6 @@ def processGcode(line):
         initPosition()
         prepareMove()
         #initPosition()
+    elif("G200" in line):
+        tarD = 0
+        prepareTurn()
